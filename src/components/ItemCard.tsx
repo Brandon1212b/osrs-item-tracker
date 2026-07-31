@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Sparkline } from "@/components/Sparkline";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp, signalOf } from "@/lib/format";
@@ -10,6 +11,12 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
 
   return (
     <article className="panel group relative flex flex-col gap-3 p-4 transition-transform duration-200 hover:-translate-y-0.5">
+      <Link
+        to="/item/$id"
+        params={{ id: String(row.id) }}
+        className="absolute inset-0 z-10 rounded-[inherit]"
+        aria-label={`View ${row.name} price history`}
+      />
       <div className="flex items-start gap-3">
         <img
           src={`${ICON_BASE}${encodeURIComponent(row.icon.replace(/ /g, "_"))}`}
