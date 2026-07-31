@@ -175,3 +175,70 @@ export async function getTrends(names: string[]): Promise<Record<number, Trend>>
 
   return trendInFlight;
 }
+
+export type RangeKey = "1d" | "1w" | "1m" | "3m" | "6m" | "1y";
+
+const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points: number; label: string }> = {
+  "1d": { step: "5m", points: 288, label: "24 hours" },
+  "1w": { step: "1h", points: 168, label: "7 days" },
+  "1m": { step: "6h", points: 120, label: "30 days" },
+  "3m": { step: "24h", points: 90, label: "3 months" },
+  "6m": { step: "24h", points: 180, label: "6 months" },
+  "1y": { step: "24h", points: 365, label: "1 year" },
+};
+
+export type ItemDetail = {
+  row: PriceRow;
+  range: RangeKey;
+  rangeLabel: string;
+  series: { t: number; p: number }[];
+  min: number;
+  max: number;
+  avg: number;
+  change: number;
+  trend: Trend | null;
+};
+
+const detailCache = new Map<string, Cache<ItemDetail>>();
+
+export async function getItemDetail(names: string[], id: number, range: RangeKey): Promise<ItemDetail> {
+  const key = `${id}:${range}`;
+  const cached = detailCache.get(key);
+  const ttl = range === "1d" ? 2 * MIN : 15 * MIN;
+  if (cached && Date.now() - cached.at < ttl) return cached.value;
+
+  const rows = await getSnapshot(names);
+  const row = rows.find((r) => r.id === id);
+  if (!row) throw new Error("Unknown item");
+
+  const cfg = RANGES[range];
+  const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+    `/timeseries?timestep=${cfg.step}&id=${id}`,
+  );
+  const series = (res.data ?? [])
+    .map((p) => {
+      const mid = p.avgHighPrice != null && p.avgLowPrice != null ? (p.avgHighPrice + p.avgLowPrice) / 2 : (p.avgHighPrice ?? p.avgLowPrice);
+      return mid != null ? { t: p.timestamp * 1000, p: Math.round(mid) } : null;
+    })
+    .filter((x): x is { t: number; p: number } => x !== null)
+    .slice(-cfg.points);
+
+  const prices = series.map((s) => s.p);
+  const first = prices[0] ?? 0;
+  const last = prices[prices.length - 1] ?? 0;
+  const trend = summarise(id, res.data ?? []);
+
+  const value: ItemDetail = {
+    row,
+    range,
+    rangeLabel: cfg.label,
+    series,
+    min: prices.length ? Math.min(...prices) : 0,
+    max: prices.length ? Math.max(...prices) : 0,
+    avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+    change: first ? Math.round(((last - first) / first) * 1000) / 10 : 0,
+    trend: range === "6m" ? trend : trend,
+  };
+  detailCache.set(key, { at: Date.now(), value });
+  return value;
+}
