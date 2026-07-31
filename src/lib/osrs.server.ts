@@ -114,21 +114,21 @@ function summarise(id: number, points: { timestamp: number; avgHighPrice: number
 
   const window = series.slice(-180);
   const prices = window.map((s) => s.p);
-  const current = prices[prices.length - 1];
+  const current = prices[prices.length - 1]!;
   const sorted = [...prices].sort((a, b) => a - b);
   const below = sorted.filter((p) => p < current).length;
   const percentile = Math.round((below / sorted.length) * 100);
 
   const last30 = prices.slice(-30);
   const avg30 = Math.round(last30.reduce((a, b) => a + b, 0) / last30.length);
-  const at = (back: number) => prices[Math.max(0, prices.length - 1 - back)];
+  const at = (back: number) => prices[Math.max(0, prices.length - 1 - back)]!;
   const pct = (from: number) => (from ? ((current - from) / from) * 100 : 0);
 
   return {
     id,
     percentile,
-    low180: sorted[0],
-    high180: sorted[sorted.length - 1],
+    low180: sorted[0]!,
+    high180: sorted[sorted.length - 1]!,
     avg30,
     change30: Math.round(pct(30) * 10) / 10,
     change90: Math.round(pct(90) * 10) / 10,
@@ -143,7 +143,7 @@ async function pool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>)
     Array.from({ length: size }, async () => {
       while (i < items.length) {
         const idx = i++;
-        out[idx] = await fn(items[idx]);
+        out[idx] = await fn(items[idx]!);
       }
     }),
   );
