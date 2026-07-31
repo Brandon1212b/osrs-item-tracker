@@ -130,8 +130,8 @@ function summarise(id: number, points: { timestamp: number; avgHighPrice: number
     low180: sorted[0]!,
     high180: sorted[sorted.length - 1]!,
     avg30,
-    change30: Math.round(pct(30) * 10) / 10,
-    change90: Math.round(pct(90) * 10) / 10,
+    change30: Math.round(pct(at(30)) * 10) / 10,
+    change90: Math.round(pct(at(90)) * 10) / 10,
     series: window.filter((_, i) => i % 2 === 0),
   };
 }
