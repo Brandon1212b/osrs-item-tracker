@@ -4,7 +4,7 @@ import { gp, signalOf } from "@/lib/format";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 
-export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend }) {
+export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefined }) {
   const price = row.high ?? row.low;
   const signal = signalOf(trend);
 
