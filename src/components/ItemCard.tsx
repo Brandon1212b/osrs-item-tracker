@@ -20,7 +20,7 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
           className="mt-0.5 size-9 shrink-0 object-contain drop-shadow"
         />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold text-foreground" title={row.name}>
+          <h3 className="truncate font-sans text-sm font-semibold text-foreground" title={row.name}>
             {row.name}
           </h3>
           <p className="mt-0.5 text-lg font-bold tabular-nums gold-text">{gp(price)}</p>
