@@ -74,75 +74,9 @@ function Home() {
       .filter((g) => g.rows.length > 0);
   }, [filter, query, rowsByName, trends.data]);
 
-  const topDeals = useMemo(() => {
-    if (!trends.data) return [];
-    return (snapshot.data ?? [])
-      .map((r) => ({ row: r, trend: trends.data![r.id] }))
-      .filter((x) => x.trend && x.trend.percentile <= 20 && (x.row.volume ?? 0) > 0)
-      .sort((a, b) => a.trend!.percentile - b.trend!.percentile)
-      .slice(0, 6);
-  }, [snapshot.data, trends.data]);
-
-  const lastUpdate = snapshot.data?.reduce((acc, r) => Math.max(acc, r.updated ?? 0), 0);
-
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      <header className="panel relative overflow-hidden p-6 sm:p-9">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          Old School RuneScape
-        </p>
-        <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">
-          <span className="gold-text">GE Watch</span>
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Live Grand Exchange prices for the gear you're saving for and the skilling supplies from the
-          wiki's popular training methods. Not a flipping tool — every item is scored against its own
-          180-day range so you can tell whether today is a good day to buy.
-        </p>
-        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <RefreshCw className={`size-3.5 ${snapshot.isFetching ? "animate-spin" : ""}`} />
-            Prices updated {timeAgo(lastUpdate)}
-          </span>
-          <span>{snapshot.data?.length ?? 0} tracked items</span>
-          <span>{trends.isLoading ? "Loading 180-day history…" : "Buy signals ready"}</span>
-        </div>
-      </header>
-
-      {topDeals.length > 0 && (
-        <section className="mt-8">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <TrendingDown className="size-4 text-deal" />
-            Best buying opportunities right now
-          </h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {topDeals.map(({ row, trend }) => (
-              <div key={row.id} className="panel flex items-center gap-3 p-3">
-                <img
-                  src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(row.icon.replace(/ /g, "_"))}`}
-                  alt=""
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  className="size-8 object-contain"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium">{row.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {gp(trend!.avg30)} avg · now{" "}
-                    <span className="font-semibold text-deal">{gp(row.high ?? row.low)}</span>
-                  </div>
-                </div>
-                <div className="text-right text-xs font-bold text-deal tabular-nums">
-                  {trend!.percentile}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div className="sticky top-0 z-10 -mx-4 mt-8 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
+      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
         <div className="flex flex-wrap gap-2">
           <Tab active={filter === "all"} onClick={() => setFilter("all")} label="Everything" />
           <Tab
