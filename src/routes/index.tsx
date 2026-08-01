@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Search, RefreshCw, TrendingDown, Shield, Pickaxe } from "lucide-react";
+import { Search, Shield, Pickaxe } from "lucide-react";
 
 import { CATALOG } from "@/lib/osrs-catalog";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
-import { gp, signalOf, timeAgo } from "@/lib/format";
+import { signalOf } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/")({
