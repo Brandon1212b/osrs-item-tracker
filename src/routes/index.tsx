@@ -2,9 +2,36 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Search, Shield, Pickaxe } from "lucide-react";
+import {
+  Search,
+  Shield,
+  Pickaxe,
+  Sword,
+  Target,
+  Sparkles,
+  Package,
+  HardHat,
+  Shirt,
+  Circle,
+  Hand,
+  Grip,
+  CircleDot,
+  Footprints,
+  Gem,
+  UtensilsCrossed,
+  FlaskConical,
+  Hammer,
+  Scissors,
+  Sprout,
+} from "lucide-react";
 
-import { CATALOG } from "@/lib/osrs-catalog";
+import {
+  CATALOG,
+  GEAR_COMBAT_FILTERS,
+  GEAR_SLOT_FILTERS,
+  SKILLING_FILTERS,
+  type CatalogItem,
+} from "@/lib/osrs-catalog";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { signalOf } from "@/lib/format";
@@ -32,6 +59,27 @@ export const Route = createFileRoute("/")({
 
 type Filter = "all" | "gear" | "skilling" | "deals";
 
+const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sword,
+  Target,
+  Sparkles,
+  Package,
+  HardHat,
+  Shirt,
+  Circle,
+  Hand,
+  Grip,
+  CircleDot,
+  Footprints,
+  Gem,
+  Shield,
+  UtensilsCrossed,
+  FlaskConical,
+  Hammer,
+  Scissors,
+  Sprout,
+};
+
 function Home() {
   const snapshotFn = useServerFn(fetchSnapshot);
   const trendsFn = useServerFn(fetchTrends);
@@ -49,11 +97,24 @@ function Home() {
 
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [gearCombat, setGearCombat] = useState<string>("all");
+  const [gearSlot, setGearSlot] = useState<string>("all");
+  const [skill, setSkill] = useState<string>("all");
 
   const rowsByName = useMemo(
     () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
     [snapshot.data],
   );
+
+  const itemByName = useMemo(() => {
+    const map = new Map<string, CatalogItem>();
+    for (const g of CATALOG) {
+      for (const i of g.items) {
+        map.set(i.name, i);
+      }
+    }
+    return map;
+  }, []);
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -61,9 +122,22 @@ function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((name) => rowsByName.get(name))
+          .map((item) => rowsByName.get(item.name))
           .filter((r): r is NonNullable<typeof r> => !!r)
           .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
+          .filter((r) => {
+            if (filter !== "gear") return true;
+            const tags = itemByName.get(r.name)?.tags ?? [];
+            if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
+            if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
+            return true;
+          })
+          .filter((r) => {
+            if (filter !== "skilling") return true;
+            const tags = itemByName.get(r.name)?.tags ?? [];
+            if (skill !== "all" && !tags.includes(skill)) return false;
+            return true;
+          })
           .filter((r) => (filter === "deals" ? signalOf(trends.data?.[r.id]).rank <= 1 : true))
           .sort(
             (a, b) =>
@@ -72,28 +146,81 @@ function Home() {
           ),
       }))
       .filter((g) => g.rows.length > 0);
-  }, [filter, query, rowsByName, trends.data]);
+  }, [filter, query, rowsByName, trends.data, gearCombat, gearSlot, skill, itemByName]);
+
+  const handleFilterChange = (next: Filter) => {
+    setFilter(next);
+    setGearCombat("all");
+    setGearSlot("all");
+    setSkill("all");
+  };
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
-        <div className="flex flex-wrap gap-2">
-          <Tab active={filter === "all"} onClick={() => setFilter("all")} label="Everything" />
-          <Tab
-            active={filter === "gear"}
-            onClick={() => setFilter("gear")}
-            label="Gear"
-            icon={<Shield className="size-3.5" />}
-          />
-          <Tab
-            active={filter === "skilling"}
-            onClick={() => setFilter("skilling")}
-            label="Skilling"
-            icon={<Pickaxe className="size-3.5" />}
-          />
-          <Tab active={filter === "deals"} onClick={() => setFilter("deals")} label="Cheap now" />
+      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-start sm:px-6">
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
+            <Tab
+              active={filter === "gear"}
+              onClick={() => handleFilterChange("gear")}
+              label="Gear"
+              icon={<Shield className="size-3.5" />}
+            />
+            <Tab
+              active={filter === "skilling"}
+              onClick={() => handleFilterChange("skilling")}
+              label="Skilling"
+              icon={<Pickaxe className="size-3.5" />}
+            />
+            <Tab active={filter === "deals"} onClick={() => handleFilterChange("deals")} label="Cheap now" />
+          </div>
+
+          {filter === "gear" && (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap gap-1.5">
+                <SubTab active={gearCombat === "all"} onClick={() => setGearCombat("all")} label="All combat" />
+                {GEAR_COMBAT_FILTERS.map((f) => (
+                  <SubTab
+                    key={f.key}
+                    active={gearCombat === f.key}
+                    onClick={() => setGearCombat(f.key)}
+                    label={f.label}
+                    icon={ICONS[f.icon]}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <SubTab active={gearSlot === "all"} onClick={() => setGearSlot("all")} label="All items" />
+                {GEAR_SLOT_FILTERS.map((f) => (
+                  <SubTab
+                    key={f.key}
+                    active={gearSlot === f.key}
+                    onClick={() => setGearSlot(f.key)}
+                    label={f.label}
+                    icon={ICONS[f.icon]}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filter === "skilling" && (
+            <div className="flex flex-wrap gap-1.5">
+              <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All skills" />
+              {SKILLING_FILTERS.map((f) => (
+                <SubTab
+                  key={f.key}
+                  active={skill === f.key}
+                  onClick={() => setSkill(f.key)}
+                  label={f.label}
+                  icon={ICONS[f.icon]}
+                />
+              ))}
+            </div>
+          )}
         </div>
-        <div className="relative sm:ml-auto sm:w-72">
+        <div className="relative sm:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
@@ -166,6 +293,32 @@ function Tab({
       }`}
     >
       {icon}
+      {label}
+    </button>
+  );
+}
+
+function SubTab({
+  active,
+  onClick,
+  label,
+  icon: Icon,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }> | undefined;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+        active
+          ? "border-primary/70 bg-primary/15 text-primary"
+          : "border-border/60 bg-secondary/30 text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {Icon && <Icon className="size-3" />}
       {label}
     </button>
   );
