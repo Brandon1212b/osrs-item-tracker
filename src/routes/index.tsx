@@ -307,7 +307,7 @@ function SubTab({
   active: boolean;
   onClick: () => void;
   label: string;
-  icon: React.ComponentType<{ className?: string }> | undefined;
+  icon?: React.ComponentType<{ className?: string }> | undefined;
 }) {
   return (
     <button
