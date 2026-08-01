@@ -35,13 +35,13 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
       </div>
 
       {trend ? (
-        <>
+        <div className="relative">
           <Sparkline series={trend.series} tone={signal.token} />
-          <div className="flex items-center justify-between text-[11px] tabular-nums">
-            <span className="text-muted-foreground">Low <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
-            <span className="text-muted-foreground">High <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
+          <div className="absolute top-1 right-1 flex gap-2 text-[10px] tabular-nums leading-none">
+            <span className="text-muted-foreground">L <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
+            <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
           </div>
-        </>
+        </div>
       ) : (
         <div className="h-12 rounded-md border border-dashed border-border/60 bg-muted/30" />
       )}
