@@ -18,9 +18,9 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
         aria-label={`View ${row.name} price history`}
       />
       {trend ? (
-        <div className="absolute top-2 right-2 z-20 flex gap-2 text-[10px] tabular-nums leading-none">
-          <span className="text-muted-foreground">L <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
+        <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 text-[10px] tabular-nums leading-none text-right">
           <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
+          <span className="text-muted-foreground">L <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
         </div>
       ) : null}
       <div className="flex items-start gap-3">
@@ -48,4 +48,3 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
     </article>
   );
 }
-
