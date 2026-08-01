@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { CATALOG } from "./osrs-catalog";
 import type { ItemDetail, PriceRow, RangeKey, Trend } from "./osrs.server";
 
-const allNames = () => CATALOG.flatMap((g) => g.items);
+const allNames = () => CATALOG.flatMap((g) => g.items.map((i) => i.name));
 
 export const fetchSnapshot = createServerFn({ method: "GET" }).handler(async (): Promise<PriceRow[]> => {
   const { getSnapshot } = await import("./osrs.server");

@@ -40,7 +40,7 @@ export const Route = createFileRoute("/item/$id")({
 });
 
 function groupFor(name: string) {
-  return CATALOG.find((g) => g.items.includes(name));
+  return CATALOG.find((g) => g.items.some((i) => i.name === name));
 }
 
 function ItemPage() {
