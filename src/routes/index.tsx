@@ -61,7 +61,7 @@ function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((name) => rowsByName.get(name))
+          .map((item) => rowsByName.get(item.name))
           .filter((r): r is NonNullable<typeof r> => !!r)
           .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
           .filter((r) => (filter === "deals" ? signalOf(trends.data?.[r.id]).rank <= 1 : true))
