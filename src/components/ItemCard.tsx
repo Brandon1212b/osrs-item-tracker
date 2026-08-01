@@ -17,6 +17,12 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
         className="absolute inset-0 z-10 rounded-[inherit]"
         aria-label={`View ${row.name} price history`}
       />
+      {trend ? (
+        <div className="absolute top-2 right-2 z-20 flex gap-2 text-[10px] tabular-nums leading-none">
+          <span className="text-muted-foreground">L <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
+          <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
+        </div>
+      ) : null}
       <div className="flex items-start gap-3">
         <img
           src={`${ICON_BASE}${encodeURIComponent(row.icon.replace(/ /g, "_"))}`}
@@ -35,13 +41,7 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
       </div>
 
       {trend ? (
-        <div className="relative">
-          <Sparkline series={trend.series} tone={signal.token} />
-          <div className="absolute top-1 right-1 flex gap-2 text-[10px] tabular-nums leading-none">
-            <span className="text-muted-foreground">L <span className="font-medium text-foreground">{gp(trend.low180)}</span></span>
-            <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
-          </div>
-        </div>
+        <Sparkline series={trend.series} tone={signal.token} />
       ) : (
         <div className="h-12 rounded-md border border-dashed border-border/60 bg-muted/30" />
       )}
