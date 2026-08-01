@@ -49,23 +49,3 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  const negative = value.startsWith("-");
-  return (
-    <div className="rounded-md bg-secondary/60 px-2 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div
-        className="font-semibold tabular-nums"
-        style={{ color: negative ? "var(--deal)" : "var(--steep)" }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function pctStr(fraction: number) {
-  if (!isFinite(fraction)) return "—";
-  const v = fraction * 100;
-  return `${v > 0 ? "+" : ""}${v.toFixed(1)}%`;
-}
