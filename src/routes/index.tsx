@@ -23,6 +23,7 @@ import {
 } from "@/lib/osrs-catalog";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
+import { CraftingMethodsPanel } from "@/components/CraftingMethods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,6 +37,8 @@ import {
 type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "drop" | "cheap" | "upgrade";
 
+const DEFAULT_G = 2_000_000;
+
 const homeSearchSchema = z.object({
   filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
   sort: z.enum(["drop", "cheap", "upgrade"]).catch("drop"),
@@ -44,6 +47,7 @@ const homeSearchSchema = z.object({
   slot: z.string().catch("all"),
   tier: z.string().catch("all"),
   skill: z.string().catch("all"),
+  g: z.coerce.number().catch(DEFAULT_G),
 });
 
 export type HomeSearch = z.infer<typeof homeSearchSchema>;
@@ -141,13 +145,14 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
 function Home() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
-  const { filter, sort, q: query, combat: gearCombat, slot: gearSlot, tier: gearTier, skill } = search;
+  const { filter, sort, q: query, combat: gearCombat, slot: gearSlot, tier: gearTier, skill, g } = search;
+  const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
 
   const patchSearch = (patch: Partial<HomeSearch>) => {
     void navigate({
       search: (prev) => {
         const next = { ...prev, ...patch };
-        const cleaned: Record<string, string> = {};
+        const cleaned: Record<string, string | number> = {};
         if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
         if (next.sort && next.sort !== "drop") cleaned.sort = next.sort;
         if (next.q) cleaned.q = next.q;
@@ -155,6 +160,7 @@ function Home() {
         if (next.slot && next.slot !== "all") cleaned.slot = next.slot;
         if (next.tier && next.tier !== "all") cleaned.tier = next.tier;
         if (next.skill && next.skill !== "all") cleaned.skill = next.skill;
+        if (next.g && next.g !== DEFAULT_G) cleaned.g = next.g;
         return cleaned as HomeSearch;
       },
       replace: true,
@@ -198,7 +204,10 @@ function Home() {
     return map;
   }, []);
 
+  const showCraftingMethods = filter === "skilling" && skill === "crafting";
+
   const groups = useMemo(() => {
+    if (showCraftingMethods) return [];
     const q = query.trim().toLowerCase();
     return CATALOG.filter((g) => {
       if (filter === "all") return true;
@@ -231,7 +240,17 @@ function Home() {
           }),
       }))
       .filter((g) => g.rows.length > 0);
-  }, [filter, query, rowsByName, gearCombat, gearSlot, gearTier, skill, itemByName]);
+  }, [
+    showCraftingMethods,
+    filter,
+    query,
+    rowsByName,
+    gearCombat,
+    gearSlot,
+    gearTier,
+    skill,
+    itemByName,
+  ]);
 
   const allRows = useMemo(() => {
     const rows = uniqueById(groups.flatMap((g) => g.rows));
@@ -311,27 +330,29 @@ function Home() {
             icon={<Package className="size-3.5" />}
           />
         </div>
-        <div className="flex flex-col gap-2 sm:w-72">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => patchSearch({ q: e.target.value })}
-              placeholder="Search items…"
-              className="pl-9"
-            />
+        {!showCraftingMethods && (
+          <div className="flex flex-col gap-2 sm:w-72">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => patchSearch({ q: e.target.value })}
+                placeholder="Search items…"
+                className="pl-9"
+              />
+            </div>
+            <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
+              <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
+                <SelectValue placeholder="Sort by…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="drop">Largest drop</SelectItem>
+                <SelectItem value="cheap">Cheapest</SelectItem>
+                <SelectItem value="upgrade">Best upgrade</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
-            <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
-              <SelectValue placeholder="Sort by…" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="drop">Largest drop</SelectItem>
-              <SelectItem value="cheap">Cheapest</SelectItem>
-              <SelectItem value="upgrade">Best upgrade</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        )}
       </div>
 
       {showGearSub && (
@@ -411,7 +432,15 @@ function Home() {
         </p>
       )}
 
-      {!snapshot.isLoading && allRows.length > 0 && (
+      {!snapshot.isLoading && showCraftingMethods && (
+        <CraftingMethodsPanel
+          rowsByName={rowsByName}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+        />
+      )}
+
+      {!snapshot.isLoading && !showCraftingMethods && allRows.length > 0 && (
         <div
           key={gridKey}
           className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
@@ -422,7 +451,7 @@ function Home() {
         </div>
       )}
 
-      {!snapshot.isLoading && allRows.length === 0 && (
+      {!snapshot.isLoading && !showCraftingMethods && allRows.length === 0 && (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nothing matches that filter right now.
         </p>
