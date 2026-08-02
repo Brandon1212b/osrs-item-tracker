@@ -21,6 +21,7 @@ import {
   SKILLING_FILTERS,
   type CatalogItem,
 } from "@/lib/osrs-catalog";
+import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
@@ -58,6 +59,7 @@ const homeSearchSchema = z.object({
   combat: z.string().catch("all"),
   slot: z.string().catch("all"),
   tier: z.string().catch("all"),
+  set: z.string().catch("all"),
   skill: z.string().catch("all"),
   g: z.coerce.number().catch(DEFAULT_G),
 });
@@ -119,6 +121,13 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
   return out;
 }
 
+function formatGp(n: number): string {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
 function Home() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
@@ -130,6 +139,7 @@ function Home() {
     combat: gearCombat,
     slot: gearSlot,
     tier: gearTier,
+    set: gearSet,
     skill,
     g,
   } = search;
@@ -147,6 +157,7 @@ function Home() {
         if (next.combat && next.combat !== "all") cleaned.combat = next.combat;
         if (next.slot && next.slot !== "all") cleaned.slot = next.slot;
         if (next.tier && next.tier !== "all") cleaned.tier = next.tier;
+        if (next.set && next.set !== "all") cleaned.set = next.set;
         if (next.skill && next.skill !== "all") cleaned.skill = next.skill;
         if (next.g && next.g !== DEFAULT_G) cleaned.g = next.g;
         return cleaned as HomeSearch;
@@ -192,6 +203,13 @@ function Home() {
     return map;
   }, []);
 
+  const setItemNames = useMemo(() => gearSetItemNames(gearSet), [gearSet]);
+
+  const availableSets = useMemo(
+    () => gearSetsForTier(gearTier, gearCombat),
+    [gearTier, gearCombat],
+  );
+
   const showCraftingMethods = filter === "skilling" && skill === "crafting";
 
   const groups = useMemo(() => {
@@ -217,6 +235,7 @@ function Home() {
               if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
               if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
               if (gearTier !== "all" && !tags.includes(gearTier)) return false;
+              if (setItemNames && !setItemNames.has(r.name)) return false;
             }
             if (filter === "skilling") {
               if (skill !== "all" && !tags.includes(skill)) return false;
@@ -236,6 +255,7 @@ function Home() {
     gearCombat,
     gearSlot,
     gearTier,
+    setItemNames,
     skill,
     itemByName,
   ]);
@@ -263,6 +283,11 @@ function Home() {
     });
   }, [groups, trends.data, sort]);
 
+  const totalCost = useMemo(() => {
+    if (filter !== "gear") return 0;
+    return allRows.reduce((sum, r) => sum + priceOf(r), 0);
+  }, [filter, allRows]);
+
   const restoredScroll = useRef(false);
   useEffect(() => {
     if (restoredScroll.current || snapshot.isLoading) return;
@@ -287,13 +312,14 @@ function Home() {
       combat: "all",
       slot: "all",
       tier: "all",
+      set: "all",
       skill: "all",
     });
   };
 
   const showGearSub = filter === "gear";
   const showSkillSub = filter === "skilling";
-  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${skill}:${sort}:${range}:${query}`;
+  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${sort}:${range}:${query}`;
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
@@ -368,14 +394,19 @@ function Home() {
           <div className="flex flex-wrap gap-1.5">
             <SubTab
               active={gearCombat === "all"}
-              onClick={() => patchSearch({ combat: "all" })}
+              onClick={() => patchSearch({ combat: "all", set: "all" })}
               label="All combat"
             />
             {GEAR_COMBAT_FILTERS.map((f) => (
               <SubTab
                 key={f.key}
                 active={gearCombat === f.key}
-                onClick={() => patchSearch({ combat: f.key })}
+                onClick={() =>
+                  patchSearch({
+                    combat: gearCombat === f.key ? "all" : f.key,
+                    set: "all",
+                  })
+                }
                 label={f.label}
                 icon={ICONS[f.icon]}
               />
@@ -394,19 +425,49 @@ function Home() {
               <div className="flex flex-col gap-1">
                 <SubTab
                   active={gearTier === "all"}
-                  onClick={() => patchSearch({ tier: "all" })}
+                  onClick={() => patchSearch({ tier: "all", set: "all" })}
                   label="All stages"
                 />
                 {GEAR_TIER_FILTERS.map((t) => (
                   <SubTab
                     key={t.key}
                     active={gearTier === t.key}
-                    onClick={() => patchSearch({ tier: gearTier === t.key ? "all" : t.key })}
+                    onClick={() =>
+                      patchSearch({
+                        tier: gearTier === t.key ? "all" : t.key,
+                        set: "all",
+                      })
+                    }
                     label={t.label}
                   />
                 ))}
               </div>
             </div>
+
+            {availableSets.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Gear set
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  <SubTab
+                    active={gearSet === "all"}
+                    onClick={() => patchSearch({ set: "all" })}
+                    label="All sets"
+                  />
+                  {availableSets.map((s) => (
+                    <SubTab
+                      key={s.key}
+                      active={gearSet === s.key}
+                      onClick={() =>
+                        patchSearch({ set: gearSet === s.key ? "all" : s.key })
+                      }
+                      label={s.label}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -450,14 +511,25 @@ function Home() {
       )}
 
       {!snapshot.isLoading && !showCraftingMethods && allRows.length > 0 && (
-        <div
-          key={gridKey}
-          className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          {allRows.map((row) => (
-            <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
-          ))}
-        </div>
+        <>
+          {showGearSub && totalCost > 0 && (
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Total cost of shown items: </span>
+              <span className="font-semibold tabular-nums text-foreground">{formatGp(totalCost)} gp</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">
+                ({allRows.length} item{allRows.length === 1 ? "" : "s"})
+              </span>
+            </div>
+          )}
+          <div
+            key={gridKey}
+            className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            {allRows.map((row) => (
+              <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
+            ))}
+          </div>
+        </>
       )}
 
       {!snapshot.isLoading && !showCraftingMethods && allRows.length === 0 && (
