@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import { fetchItemDetail } from "@/lib/osrs.functions";
-import type { RangeKey } from "@/lib/osrs.server";
+import type { EquipmentStats, RangeKey } from "@/lib/osrs.server";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { PriceChart } from "@/components/PriceChart";
 import { gp, signalOf, timeAgo } from "@/lib/format";
@@ -43,6 +43,11 @@ function groupFor(name: string) {
   return CATALOG.find((g) => g.items.some((i) => i.name === name));
 }
 
+function fmtBonus(n: number) {
+  if (n > 0) return `+${n}`;
+  return String(n);
+}
+
 function ItemPage() {
   const { id } = Route.useParams();
   const router = useRouter();
@@ -60,6 +65,7 @@ function ItemPage() {
   const signal = signalOf(d?.trend ?? undefined);
   const group = row ? groupFor(row.name) : undefined;
   const price = row ? (row.high ?? row.low) : null;
+  const eq = d?.equipment ?? null;
 
   const goBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -105,6 +111,9 @@ function ItemPage() {
                 </span>
                 <span>{row.limit ? `Buy limit ${row.limit.toLocaleString()}` : "No buy limit"}</span>
                 <span>{row.members ? "Members" : "Free to play"}</span>
+                {eq?.slot && (
+                  <span className="capitalize">Slot: {eq.slot.replace(/_/g, " ")}</span>
+                )}
               </div>
             </div>
             <div className="text-right">
@@ -123,8 +132,9 @@ function ItemPage() {
             </div>
           </header>
 
+          {eq && <EquipmentPanel eq={eq} />}
+
           <section className="panel relative mt-4 p-5 sm:p-6">
-            {/* % change badge — top right of graph card */}
             <div
               className="absolute right-4 top-4 z-10 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums sm:right-5 sm:top-5"
               style={{
@@ -212,5 +222,94 @@ function ItemPage() {
         </>
       )}
     </main>
+  );
+}
+
+function EquipmentPanel({ eq }: { eq: EquipmentStats }) {
+  const attack = [
+    { label: "Stab", value: eq.attack_stab },
+    { label: "Slash", value: eq.attack_slash },
+    { label: "Crush", value: eq.attack_crush },
+    { label: "Magic", value: eq.attack_magic },
+    { label: "Range", value: eq.attack_ranged },
+  ];
+  const defence = [
+    { label: "Stab", value: eq.defence_stab },
+    { label: "Slash", value: eq.defence_slash },
+    { label: "Crush", value: eq.defence_crush },
+    { label: "Magic", value: eq.defence_magic },
+    { label: "Range", value: eq.defence_ranged },
+  ];
+  const other = [
+    { label: "Strength", value: eq.melee_strength },
+    { label: "Ranged str.", value: eq.ranged_strength },
+    { label: "Magic dmg", value: eq.magic_damage, suffix: "%" },
+    { label: "Prayer", value: eq.prayer },
+  ];
+
+  const reqs = eq.requirements
+    ? Object.entries(eq.requirements).sort(([a], [b]) => a.localeCompare(b))
+    : [];
+
+  return (
+    <section className="panel mt-4 p-5 sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-lg font-semibold">Equipment stats</h2>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {eq.slot && <span className="capitalize">Slot: {eq.slot.replace(/_/g, " ")}</span>}
+          {eq.weapon_type && <span className="capitalize">Type: {eq.weapon_type.replace(/_/g, " ")}</span>}
+          {eq.attack_speed != null && <span>Speed: {eq.attack_speed}</span>}
+        </div>
+      </div>
+
+      {reqs.length > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Requires{" "}
+          {reqs.map(([skill, level], i) => (
+            <span key={skill}>
+              {i > 0 ? ", " : ""}
+              <span className="font-medium text-foreground capitalize">{skill}</span> {level}
+            </span>
+          ))}
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <StatGroup title="Attack bonuses" rows={attack} />
+        <StatGroup title="Defence bonuses" rows={defence} />
+        <StatGroup title="Other bonuses" rows={other} />
+      </div>
+    </section>
+  );
+}
+
+function StatGroup({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: { label: string; value: number; suffix?: string }[];
+}) {
+  return (
+    <div className="rounded-lg border border-border/50 bg-secondary/20 p-3">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </div>
+      <dl className="space-y-1.5">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between gap-2 text-sm">
+            <dt className="text-muted-foreground">{r.label}</dt>
+            <dd
+              className={`font-semibold tabular-nums ${
+                r.value > 0 ? "text-foreground" : r.value < 0 ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
+              {fmtBonus(r.value)}
+              {r.suffix ?? ""}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
