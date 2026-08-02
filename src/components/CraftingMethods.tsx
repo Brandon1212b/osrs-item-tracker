@@ -60,6 +60,7 @@ type Ranked = {
   method: CraftingMethod;
   xpPerHour: number;
   gpPerHour: number | null;
+  profitPerCraft: number | null;
   costPerXp: number | null;
   missing: boolean;
 };
@@ -91,14 +92,14 @@ export function CraftingMethodsPanel({
       const out = sellPrice(rowsByName.get(method.output.name));
       if (out == null) missing = true;
 
-      const profitPerAction = missing || out == null ? null : out - inputCost;
+      const profitPerCraft = missing || out == null ? null : out - inputCost;
       const gpPerHour =
-        profitPerAction == null ? null : Math.round(profitPerAction * method.actionsPerHour);
+        profitPerCraft == null ? null : Math.round(profitPerCraft * method.actionsPerHour);
 
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, g);
 
-      return { method, xpPerHour, gpPerHour, costPerXp, missing };
+      return { method, xpPerHour, gpPerHour, profitPerCraft, costPerXp, missing };
     });
 
     // Lower effective cost/xp is better; nulls last
@@ -218,6 +219,7 @@ function MethodRow({
   rowsByName,
   xpPerHour,
   gpPerHour,
+  profitPerCraft,
   costPerXp,
   missing,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow> }) {
@@ -263,7 +265,7 @@ function MethodRow({
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
         {method.inputs.map((part, idx) => (
           <span key={part.name} className="inline-flex items-center gap-1">
-            {idx > 0 && <span className="text-muted-foreground">+</span>}
+            {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
             <PartChip
               name={part.name}
               qty={part.qty}
@@ -272,14 +274,33 @@ function MethodRow({
             />
           </span>
         ))}
-        <span className="px-1 text-muted-foreground">→</span>
+        <span className="px-0.5 text-muted-foreground">→</span>
         <PartChip
           name={method.output.name}
           qty={method.output.qty}
           row={rowsByName.get(method.output.name)}
           kind="output"
         />
-        {missing && (
+
+        {profitPerCraft != null && (
+          <span
+            className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/20 px-2 py-1 tabular-nums"
+            title="Profit or loss per single craft"
+          >
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Per craft</span>
+            <span
+              className="font-bold"
+              style={{
+                color: profitPerCraft >= 0 ? "var(--deal)" : "var(--steep)",
+              }}
+            >
+              {profitPerCraft > 0 ? "+" : ""}
+              {gp(profitPerCraft)}
+            </span>
+          </span>
+        )}
+
+        {missing && profitPerCraft == null && (
           <span className="text-[11px] text-muted-foreground">(missing price data)</span>
         )}
       </div>
@@ -306,19 +327,22 @@ function PartChip({
 
   const inner = (
     <>
-      <img
-        src={iconUrl(row, name)}
-        alt=""
-        width={18}
-        height={18}
-        className="size-[18px] object-contain"
-        loading="lazy"
-      />
-      <span className="max-w-[7rem] truncate sm:max-w-none">
-        {qty > 1 ? `${qty}× ` : ""}
-        {name}
+      <span className="relative inline-flex">
+        <img
+          src={iconUrl(row, name)}
+          alt={name}
+          width={24}
+          height={24}
+          className="size-6 object-contain"
+          loading="lazy"
+        />
+        {qty > 1 && (
+          <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">
+            {qty}
+          </span>
+        )}
       </span>
-      <span className={`font-semibold tabular-nums ${color}`}>
+      <span className={`text-[11px] font-semibold tabular-nums ${color}`}>
         {price == null ? "—" : gp(price)}
       </span>
     </>
@@ -333,6 +357,7 @@ function PartChip({
         to="/item/$id"
         params={{ id: String(row.id) }}
         className={className}
+        title={name}
         aria-label={`View ${name} price history`}
         onClick={saveScroll}
       >
@@ -341,7 +366,11 @@ function PartChip({
     );
   }
 
-  return <span className={className}>{inner}</span>;
+  return (
+    <span className={className} title={name}>
+      {inner}
+    </span>
+  );
 }
 
 function Stat({
