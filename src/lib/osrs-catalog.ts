@@ -120,12 +120,10 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Ranged progression milestones",
     items: [
-      // Early — bows / crossbows only (ammo lives under Supplies)
       { name: "Maple shortbow", tags: ["range", "weapon", "two-handed", "early"] },
       { name: "Magic shortbow", tags: ["range", "weapon", "two-handed", "early", "mid"] },
       { name: "Rune crossbow", tags: ["range", "weapon", "one-handed", "early", "mid"] },
       { name: "Dorgeshuun crossbow", tags: ["range", "weapon", "one-handed", "early"] },
-      // Mid
       { name: "Dragon crossbow", tags: ["range", "weapon", "one-handed", "mid", "late"] },
       { name: "Toxic blowpipe (empty)", tags: ["range", "weapon", "two-handed", "mid", "late"] },
       { name: "Twisted buckler", tags: ["range", "shield", "late"] },
@@ -136,7 +134,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Eclipse moon chestplate", tags: ["range", "chest", "mid", "late"] },
       { name: "Eclipse moon tassets", tags: ["range", "legs", "mid", "late"] },
       { name: "Hunters' sunlight crossbow", tags: ["range", "weapon", "one-handed", "mid"] },
-      // Late
       { name: "Armadyl crossbow", tags: ["range", "weapon", "one-handed", "late"] },
       { name: "Armadyl helmet", tags: ["range", "head", "late"] },
       { name: "Armadyl chestplate", tags: ["range", "chest", "late"] },
@@ -151,7 +148,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Crystal helm", tags: ["range", "head", "late"] },
       { name: "Crystal body", tags: ["range", "chest", "late"] },
       { name: "Crystal legs", tags: ["range", "legs", "late"] },
-      // End
       { name: "Twisted bow", tags: ["range", "weapon", "two-handed", "end"] },
       { name: "Zaryte crossbow", tags: ["range", "weapon", "one-handed", "end"] },
       { name: "Venator bow (uncharged)", tags: ["range", "weapon", "two-handed", "end"] },
@@ -173,7 +169,6 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Magic progression milestones",
     items: [
-      // Early
       { name: "Mystic hat (dark)", tags: ["magic", "head", "early"] },
       { name: "Mystic robe top (dark)", tags: ["magic", "chest", "early"] },
       { name: "Mystic robe bottom (dark)", tags: ["magic", "legs", "early"] },
@@ -194,7 +189,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Dagon'hai robe bottom", tags: ["magic", "legs", "mid"] },
       { name: "Warped sceptre", tags: ["magic", "weapon", "one-handed", "mid"] },
       { name: "Iban's staff (u)", tags: ["magic", "weapon", "two-handed", "early", "mid"] },
-      // Mid / Late
       { name: "Ahrim's hood", tags: ["magic", "head", "mid"] },
       { name: "Ahrim's robetop", tags: ["magic", "chest", "mid"] },
       { name: "Ahrim's robeskirt", tags: ["magic", "legs", "mid"] },
@@ -221,7 +215,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Elidinis' ward (f)", tags: ["magic", "shield", "end"] },
       { name: "Eternal boots", tags: ["magic", "feet", "late", "end"] },
       { name: "Tormented bracelet", tags: ["magic", "hands", "late", "end"] },
-      // End
       { name: "Virtus mask", tags: ["magic", "head", "late", "end"] },
       { name: "Virtus robe top", tags: ["magic", "chest", "late", "end"] },
       { name: "Virtus robe bottom", tags: ["magic", "legs", "late", "end"] },
@@ -242,7 +235,6 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Consumables, ammo, and everyday kit",
     items: [
-      // Potions
       { name: "Saradomin brew(4)", tags: ["supplies", "potion"] },
       { name: "Zamorak brew(4)", tags: ["supplies", "potion"] },
       { name: "Ancient brew(4)", tags: ["supplies", "potion"] },
@@ -266,7 +258,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Anti-venom+(4)", tags: ["supplies", "potion"] },
       { name: "Guthix rest(4)", tags: ["supplies", "potion"] },
       { name: "Saturated heart", tags: ["supplies", "potion"] },
-      // Food
       { name: "Anglerfish", tags: ["supplies", "food"] },
       { name: "Shark", tags: ["supplies", "food"] },
       { name: "Manta ray", tags: ["supplies", "food"] },
@@ -278,16 +269,13 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Blighted karambwan", tags: ["supplies", "food"] },
       { name: "Cooked moonlight antelope", tags: ["supplies", "food"] },
       { name: "Cooked dashing kebbit", tags: ["supplies", "food"] },
-      // Utility
       { name: "Amulet of glory(6)", tags: ["supplies", "neck"] },
       { name: "Zulrah's scales", tags: ["supplies"] },
       { name: "Revenant ether", tags: ["supplies"] },
-      // Ammo — arrows
       { name: "Adamant arrow", tags: ["supplies", "ammo"] },
       { name: "Rune arrow", tags: ["supplies", "ammo"] },
       { name: "Amethyst arrow", tags: ["supplies", "ammo"] },
       { name: "Dragon arrow", tags: ["supplies", "ammo"] },
-      // Ammo — bolts
       { name: "Bone bolts", tags: ["supplies", "ammo"] },
       { name: "Broad bolts", tags: ["supplies", "ammo"] },
       { name: "Diamond bolts (e)", tags: ["supplies", "ammo"] },
@@ -296,13 +284,11 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Moonlight antler bolts", tags: ["supplies", "ammo"] },
       { name: "Ruby dragon bolts (e)", tags: ["supplies", "ammo"] },
       { name: "Diamond dragon bolts (e)", tags: ["supplies", "ammo"] },
-      // Ammo — darts
       { name: "Adamant dart", tags: ["supplies", "ammo"] },
       { name: "Rune dart", tags: ["supplies", "ammo"] },
       { name: "Amethyst dart", tags: ["supplies", "ammo"] },
       { name: "Dragon dart", tags: ["supplies", "ammo"] },
       { name: "Atlatl dart", tags: ["supplies", "ammo"] },
-      // Ammo — throwables / cannon
       { name: "Red chinchompa", tags: ["supplies", "ammo"] },
       { name: "Black chinchompa", tags: ["supplies", "ammo"] },
       { name: "Steel cannonball", tags: ["supplies", "ammo"] },
@@ -368,7 +354,7 @@ export const CATALOG: CatalogGroup[] = [
     id: "crafting",
     label: "Crafting",
     kind: "skilling",
-    note: "Glassblowing, d'hide bodies and battlestaves",
+    note: "Glassblowing, d'hide bodies, battlestaves and amethyst tips",
     items: [
       { name: "Molten glass", tags: ["crafting"] },
       { name: "Giant seaweed", tags: ["crafting"] },
@@ -382,6 +368,12 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Water orb", tags: ["crafting"] },
       { name: "Uncut diamond", tags: ["crafting"] },
       { name: "Gold bar", tags: ["crafting", "smithing"] },
+      // Amethyst cutting (Crafting 83–89)
+      { name: "Amethyst", tags: ["crafting", "mining"] },
+      { name: "Amethyst bolt tips", tags: ["crafting", "fletching"] },
+      { name: "Amethyst arrowtips", tags: ["crafting", "fletching"] },
+      { name: "Amethyst javelin tips", tags: ["crafting", "fletching"] },
+      { name: "Amethyst dart tip", tags: ["crafting", "fletching"] },
     ],
   },
   {
