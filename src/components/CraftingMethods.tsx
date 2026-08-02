@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow } from "@/lib/osrs.server";
@@ -6,6 +6,10 @@ import { gp } from "@/lib/format";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 const SCROLL_KEY = "ge-watch-home-scroll";
+
+const G_MIN = 250_000;
+const G_MAX = 10_000_000;
+const G_STEP = 250_000;
 
 function buyPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
@@ -32,11 +36,31 @@ function saveScroll() {
   }
 }
 
+function clampG(n: number) {
+  if (!Number.isFinite(n) || n <= 0) return G_MIN;
+  return Math.min(G_MAX, Math.max(G_MIN, Math.round(n / G_STEP) * G_STEP));
+}
+
+/** Effective gp spent per XP once your money-making rate is counted in. Lower = better. */
+function effectiveGpPerXp(xpPerHour: number, gpPerHour: number, moneyPerHour: number): number | null {
+  if (xpPerHour <= 0 || moneyPerHour <= 0) return null;
+  const effectiveCostPerHour = moneyPerHour - gpPerHour;
+  // Negative = you're paid to train (better than free)
+  return Math.round((effectiveCostPerHour / xpPerHour) * 10) / 10;
+}
+
+function formatCost(v: number | null): string {
+  if (v == null) return "—";
+  if (v <= 0) return "Free+";
+  if (Math.abs(v) >= 100) return Math.round(v).toLocaleString();
+  return v.toFixed(1);
+}
+
 type Ranked = {
   method: CraftingMethod;
   xpPerHour: number;
   gpPerHour: number | null;
-  score: number | null;
+  costPerXp: number | null;
   missing: boolean;
 };
 
@@ -49,6 +73,8 @@ export function CraftingMethodsPanel({
   moneyPerHour: number;
   onMoneyPerHourChange: (n: number) => void;
 }) {
+  const g = clampG(moneyPerHour);
+
   const ranked = useMemo(() => {
     const list: Ranked[] = CRAFTING_METHODS.map((method) => {
       const xpPerHour = method.xp * method.actionsPerHour;
@@ -69,46 +95,33 @@ export function CraftingMethodsPanel({
       const gpPerHour =
         profitPerAction == null ? null : Math.round(profitPerAction * method.actionsPerHour);
 
-      // Higher score = better. XP earned per unit of effective wealth spent this hour.
-      // Effective wealth/hour ≈ money-making rate − training GP/h.
-      let score: number | null = null;
-      if (gpPerHour != null && moneyPerHour > 0) {
-        const effectiveCostPerHour = Math.max(moneyPerHour - gpPerHour, 1);
-        score = Math.round((xpPerHour / effectiveCostPerHour) * 1_000_000);
-      }
+      const costPerXp =
+        gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, g);
 
-      return { method, xpPerHour, gpPerHour, score, missing };
+      return { method, xpPerHour, gpPerHour, costPerXp, missing };
     });
 
+    // Lower effective cost/xp is better; nulls last
     return list.sort((a, b) => {
-      if (a.score == null && b.score == null) return a.method.level - b.method.level;
-      if (a.score == null) return 1;
-      if (b.score == null) return -1;
-      return b.score - a.score;
+      if (a.costPerXp == null && b.costPerXp == null) return a.method.level - b.method.level;
+      if (a.costPerXp == null) return 1;
+      if (b.costPerXp == null) return -1;
+      return a.costPerXp - b.costPerXp || a.method.level - b.method.level;
     });
-  }, [rowsByName, moneyPerHour]);
+  }, [rowsByName, g]);
 
   return (
     <div className="mt-4 space-y-3">
-      <div className="panel flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+      <div className="panel flex flex-col gap-3 p-3 sm:p-4">
         <div>
           <h2 className="text-sm font-semibold">Crafting methods</h2>
           <p className="text-xs text-muted-foreground">
-            Ranked for you using live GE prices. Higher score = better given how fast you make money.
+            Sorted by what each XP costs <em>you</em> — supplies plus the gold you could have made instead.
+            Lower cost is better.
           </p>
         </div>
-        <label className="flex items-center gap-2 text-xs">
-          <span className="whitespace-nowrap text-muted-foreground">My money-making</span>
-          <input
-            type="number"
-            min={0}
-            step={100_000}
-            value={moneyPerHour}
-            onChange={(e) => onMoneyPerHourChange(Math.max(0, Number(e.target.value) || 0))}
-            className="h-9 w-32 rounded-md border border-border bg-background px-2 text-sm font-semibold tabular-nums"
-          />
-          <span className="text-muted-foreground">gp/h</span>
-        </label>
+
+        <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>
 
       <div className="space-y-2">
@@ -120,13 +133,92 @@ export function CraftingMethodsPanel({
   );
 }
 
+function MoneyMakingSlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  const commit = () => {
+    const raw = draft.replace(/,/g, "").trim().toLowerCase();
+    let n = Number(raw);
+    if (raw.endsWith("m")) n = Number(raw.slice(0, -1)) * 1_000_000;
+    else if (raw.endsWith("k")) n = Number(raw.slice(0, -1)) * 1_000;
+    if (Number.isFinite(n) && n > 0) onChange(clampG(n));
+    setEditing(false);
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="text-muted-foreground">My money-making rate</span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="decimal"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            className="h-7 w-28 rounded-full border border-primary/60 bg-primary/10 px-2.5 text-right text-sm font-bold tabular-nums outline-none"
+            aria-label="Money-making gp per hour"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(String(value));
+              setEditing(true);
+            }}
+            className="inline-flex h-7 items-center rounded-full border border-border/60 bg-secondary/40 px-2.5 text-sm font-bold tabular-nums transition-colors hover:border-primary/50 hover:bg-primary/10"
+            title="Tap to type a value"
+          >
+            {gp(value)}
+            <span className="ml-1 text-[10px] font-medium text-muted-foreground">gp/h</span>
+          </button>
+        )}
+      </div>
+
+      <input
+        type="range"
+        min={G_MIN}
+        max={G_MAX}
+        step={G_STEP}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        aria-label="Money-making rate slider"
+      />
+
+      <div className="flex justify-between text-[10px] text-muted-foreground">
+        <span>250k</span>
+        <span>Slow → Fast money</span>
+        <span>10m</span>
+      </div>
+    </div>
+  );
+}
+
 function MethodRow({
   rank,
   method,
   rowsByName,
   xpPerHour,
   gpPerHour,
-  score,
+  costPerXp,
   missing,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow> }) {
   return (
@@ -149,9 +241,21 @@ function MethodRow({
             tone={gpPerHour == null ? undefined : gpPerHour >= 0 ? "deal" : "steep"}
           />
           <Stat
-            label="Score"
-            value={score == null ? "—" : score.toLocaleString()}
+            label="Your cost"
+            value={costPerXp == null ? "—" : `${formatCost(costPerXp)} gp/xp`}
             emphasis
+            tone={
+              costPerXp == null
+                ? undefined
+                : costPerXp <= 0
+                  ? "deal"
+                  : costPerXp <= 15
+                    ? "deal"
+                    : costPerXp >= 40
+                      ? "steep"
+                      : undefined
+            }
+            title="Supplies + opportunity cost of not money-making, per XP. Lower is better."
           />
         </div>
       </div>
@@ -245,14 +349,16 @@ function Stat({
   value,
   tone,
   emphasis,
+  title,
 }: {
   label: string;
   value: string;
   tone?: "deal" | "steep";
   emphasis?: boolean;
+  title?: string;
 }) {
   return (
-    <div className="min-w-[4.5rem]">
+    <div className="min-w-[4.5rem]" title={title}>
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div
         className={`font-semibold ${emphasis ? "text-sm text-foreground" : ""}`}
