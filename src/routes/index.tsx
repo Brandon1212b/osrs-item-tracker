@@ -39,6 +39,7 @@ type SortKey = "gainers" | "losers" | "expensive" | "cheap";
 
 const DEFAULT_G = 2_000_000;
 const DEFAULT_RANGE: RangeKey = "6m";
+const DEFAULT_SORT: SortKey = "losers";
 
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
   { key: "1d", label: "24h" },
@@ -51,7 +52,7 @@ const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
 
 const homeSearchSchema = z.object({
   filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
-  sort: z.enum(["gainers", "losers", "expensive", "cheap"]).catch("gainers"),
+  sort: z.enum(["gainers", "losers", "expensive", "cheap"]).catch(DEFAULT_SORT),
   range: z.enum(["1d", "1w", "1m", "3m", "6m", "1y"]).catch(DEFAULT_RANGE),
   q: z.string().catch(""),
   combat: z.string().catch("all"),
@@ -140,7 +141,7 @@ function Home() {
         const next = { ...prev, ...patch };
         const cleaned: Record<string, string | number> = {};
         if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
-        if (next.sort && next.sort !== "gainers") cleaned.sort = next.sort;
+        if (next.sort && next.sort !== DEFAULT_SORT) cleaned.sort = next.sort;
         if (next.range && next.range !== DEFAULT_RANGE) cleaned.range = next.range;
         if (next.q) cleaned.q = next.q;
         if (next.combat && next.combat !== "all") cleaned.combat = next.combat;
@@ -296,7 +297,7 @@ function Home() {
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-start sm:px-6">
+      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:flex-row sm:items-start sm:px-6 pointer-events-auto isolate">
         <div className="flex flex-1 flex-wrap gap-2">
           <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
           <Tab
