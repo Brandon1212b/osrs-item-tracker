@@ -23,9 +23,6 @@ import {
   Hammer,
   Scissors,
   Sprout,
-  ArrowDownWideNarrow,
-  Coins,
-  TrendingDown,
 } from "lucide-react";
 
 import {
@@ -40,6 +37,13 @@ import { ItemCard } from "@/components/ItemCard";
 import { signalOf } from "@/lib/format";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -311,37 +315,27 @@ function Home() {
               ))}
             </div>
           )}
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] font-medium text-muted-foreground">Sort</span>
-            <SubTab
-              active={sort === "drop"}
-              onClick={() => setSort("drop")}
-              label="Largest drop"
-              icon={TrendingDown}
-            />
-            <SubTab
-              active={sort === "cheap"}
-              onClick={() => setSort("cheap")}
-              label="Cheapest"
-              icon={Coins}
-            />
-            <SubTab
-              active={sort === "upgrade"}
-              onClick={() => setSort("upgrade")}
-              label="Best upgrade"
-              icon={ArrowDownWideNarrow}
+        </div>
+        <div className="flex flex-col gap-2 sm:w-72">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search items…"
+              className="pl-9"
             />
           </div>
-        </div>
-        <div className="relative sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search items…"
-            className="pl-9"
-          />
+          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+            <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
+              <SelectValue placeholder="Sort by…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="drop">Largest drop</SelectItem>
+              <SelectItem value="cheap">Cheapest</SelectItem>
+              <SelectItem value="upgrade">Best upgrade</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
