@@ -30,7 +30,6 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Melee progression milestones",
     items: [
-      // Early
       { name: "Amulet of strength", tags: ["melee", "neck", "early"] },
       { name: "Combat bracelet", tags: ["melee", "hands", "early"] },
       { name: "Rune boots", tags: ["melee", "feet", "early"] },
@@ -39,7 +38,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Helm of neitiznot", tags: ["melee", "head", "early", "mid"] },
       { name: "Mixed hide cape", tags: ["melee", "cape", "early"] },
       { name: "Dragon boots", tags: ["melee", "feet", "early", "mid"] },
-      // Mid
       { name: "Abyssal whip", tags: ["melee", "weapon", "one-handed", "mid"] },
       { name: "Kraken tentacle", tags: ["melee", "weapon", "one-handed", "mid", "late"] },
       { name: "Amulet of fury", tags: ["melee", "neck", "mid"] },
@@ -71,7 +69,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Verac's flail", tags: ["melee", "weapon", "one-handed", "mid"] },
       { name: "Karil's coif", tags: ["melee", "head", "mid"] },
       { name: "Ahrim's hood", tags: ["melee", "head", "mid"] },
-      // Late
       { name: "Serpentine helm", tags: ["melee", "head", "late"] },
       { name: "Blood moon helm", tags: ["melee", "head", "mid", "late"] },
       { name: "Blood moon chestplate", tags: ["melee", "chest", "mid", "late"] },
@@ -94,7 +91,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Dragon claws", tags: ["melee", "weapon", "two-handed", "late"] },
       { name: "Noxious halberd", tags: ["melee", "weapon", "two-handed", "late"] },
       { name: "Ghrazi rapier", tags: ["melee", "weapon", "one-handed", "late", "end"] },
-      // End
       { name: "Justiciar faceguard", tags: ["melee", "head", "end"] },
       { name: "Justiciar chestguard", tags: ["melee", "chest", "end"] },
       { name: "Justiciar legguards", tags: ["melee", "legs", "end"] },
@@ -320,7 +316,7 @@ export const CATALOG: CatalogGroup[] = [
     id: "construction",
     label: "Construction",
     kind: "skilling",
-    note: "Oak larders → mahogany tables → myth capes",
+    note: "POH tables/benches/doors, mythical capes, hull parts & repair kits",
     items: [
       { name: "Oak plank", tags: ["construction"] },
       { name: "Teak plank", tags: ["construction"] },
@@ -332,6 +328,10 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Gold leaf", tags: ["construction"] },
       { name: "Marble block", tags: ["construction"] },
       { name: "Magic stone", tags: ["construction"] },
+      { name: "Mahogany hull parts", tags: ["construction"] },
+      { name: "Mahogany repair kit", tags: ["construction"] },
+      { name: "Mithril nails", tags: ["construction"] },
+      { name: "Swamp paste", tags: ["construction"] },
     ],
   },
   {
@@ -368,7 +368,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Water orb", tags: ["crafting"] },
       { name: "Uncut diamond", tags: ["crafting"] },
       { name: "Gold bar", tags: ["crafting", "smithing"] },
-      // Amethyst cutting (Crafting 83–89)
       { name: "Amethyst", tags: ["crafting", "mining"] },
       { name: "Amethyst bolt tips", tags: ["crafting", "fletching"] },
       { name: "Amethyst arrowtips", tags: ["crafting", "fletching"] },
