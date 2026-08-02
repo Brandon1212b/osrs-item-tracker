@@ -19,6 +19,7 @@ import {
   GEAR_SLOT_FILTERS,
   GEAR_TIER_FILTERS,
   SKILLING_FILTERS,
+  SUPPLIES_FILTERS,
   type CatalogItem,
 } from "@/lib/osrs-catalog";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
@@ -63,6 +64,7 @@ const homeSearchSchema = z.object({
   tier: z.string().catch("all"),
   set: z.string().catch("all"),
   skill: z.string().catch("all"),
+  supply: z.string().catch("all"),
   g: z.coerce.number().catch(DEFAULT_G),
 });
 
@@ -146,6 +148,7 @@ function Home() {
     tier: gearTier,
     set: gearSet,
     skill,
+    supply: supplyType,
     g,
   } = search;
   const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
@@ -164,6 +167,7 @@ function Home() {
         if (next.tier && next.tier !== "all") cleaned.tier = next.tier;
         if (next.set && next.set !== "all") cleaned.set = next.set;
         if (next.skill && next.skill !== "all") cleaned.skill = next.skill;
+        if (next.supply && next.supply !== "all") cleaned.supply = next.supply;
         if (next.g && next.g !== DEFAULT_G) cleaned.g = next.g;
         return cleaned as HomeSearch;
       },
@@ -246,7 +250,8 @@ function Home() {
               if (skill !== "all" && !tags.includes(skill)) return false;
             }
             if (filter === "supplies") {
-              return isSuppliesItem(tags) || tags.includes("neck");
+              if (!(isSuppliesItem(tags) || tags.includes("neck"))) return false;
+              if (supplyType !== "all" && !tags.includes(supplyType)) return false;
             }
             return true;
           }),
@@ -262,6 +267,7 @@ function Home() {
     gearTier,
     setItemNames,
     skill,
+    supplyType,
     itemByName,
   ]);
 
@@ -327,12 +333,14 @@ function Home() {
       tier: "all",
       set: "all",
       skill: "all",
+      supply: "all",
     });
   };
 
   const showGearSub = filter === "gear";
   const showSkillSub = filter === "skilling";
-  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${sort}:${range}:${query}`;
+  const showSupplySub = filter === "supplies";
+  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${supplyType}:${sort}:${range}:${query}`;
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
@@ -500,6 +508,27 @@ function Home() {
               key={f.key}
               active={skill === f.key}
               onClick={() => patchSearch({ skill: f.key })}
+              label={f.label}
+              wikiIcon={f.wikiIcon}
+            />
+          ))}
+        </div>
+      )}
+
+      {showSupplySub && (
+        <div className="mt-4 flex flex-wrap items-center gap-1.5">
+          <SubTab
+            active={supplyType === "all"}
+            onClick={() => patchSearch({ supply: "all" })}
+            label="All"
+          />
+          {SUPPLIES_FILTERS.map((f) => (
+            <WikiIconTab
+              key={f.key}
+              active={supplyType === f.key}
+              onClick={() =>
+                patchSearch({ supply: supplyType === f.key ? "all" : f.key })
+              }
               label={f.label}
               wikiIcon={f.wikiIcon}
             />
