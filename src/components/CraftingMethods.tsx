@@ -262,9 +262,9 @@ function MethodRow({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+      <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
         {method.inputs.map((part, idx) => (
-          <span key={part.name} className="inline-flex items-center gap-1">
+          <span key={part.name} className="inline-flex shrink-0 items-center gap-1">
             {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
             <PartChip
               name={part.name}
@@ -274,7 +274,7 @@ function MethodRow({
             />
           </span>
         ))}
-        <span className="px-0.5 text-muted-foreground">→</span>
+        <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
         <PartChip
           name={method.output.name}
           qty={method.output.qty}
@@ -284,10 +284,12 @@ function MethodRow({
 
         {profitPerCraft != null && (
           <span
-            className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/20 px-2 py-1 tabular-nums"
-            title="Profit or loss per single craft"
+            className="ml-auto inline-flex shrink-0 items-center gap-1 tabular-nums"
+            title="Net profit or loss per single craft"
           >
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Per craft</span>
+            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              Net
+            </span>
             <span
               className="font-bold"
               style={{
@@ -301,7 +303,7 @@ function MethodRow({
         )}
 
         {missing && profitPerCraft == null && (
-          <span className="text-[11px] text-muted-foreground">(missing price data)</span>
+          <span className="shrink-0 text-[11px] text-muted-foreground">(missing price data)</span>
         )}
       </div>
     </article>
