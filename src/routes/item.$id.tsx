@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
@@ -45,6 +45,7 @@ function groupFor(name: string) {
 
 function ItemPage() {
   const { id } = Route.useParams();
+  const router = useRouter();
   const [range, setRange] = useState<RangeKey>("6m");
   const getDetail = useServerFn(fetchItemDetail);
 
@@ -60,11 +61,24 @@ function ItemPage() {
   const group = row ? groupFor(row.name) : undefined;
   const price = row ? (row.high ?? row.low) : null;
 
+  const goBack = () => {
+    // Prefer history back so URL search (filters) + browser scroll restoration apply
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.history.back();
+    } else {
+      void router.navigate({ to: "/" });
+    }
+  };
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-8 sm:px-6">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <button
+        type="button"
+        onClick={goBack}
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="size-4" /> Back to all items
-      </Link>
+      </button>
 
       {detail.isLoading && <div className="panel mt-4 h-[520px] animate-pulse opacity-60" />}
 

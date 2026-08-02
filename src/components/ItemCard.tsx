@@ -4,6 +4,7 @@ import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp, signalOf } from "@/lib/format";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
+const SCROLL_KEY = "ge-watch-home-scroll";
 
 export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefined }) {
   const price = row.high ?? row.low;
@@ -16,6 +17,13 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
         params={{ id: String(row.id) }}
         className="absolute inset-0 z-10 rounded-[inherit]"
         aria-label={`View ${row.name} price history`}
+        onClick={() => {
+          try {
+            sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+          } catch {
+            /* private mode */
+          }
+        }}
       />
       {trend ? (
         <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 text-[10px] tabular-nums leading-none text-right">
