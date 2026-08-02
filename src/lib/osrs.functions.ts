@@ -3,6 +3,7 @@ import { CATALOG } from "./osrs-catalog";
 import { craftingMethodItemNames } from "./crafting-methods";
 import { constructionMethodItemNames } from "./construction-methods";
 import { prayerMethodItemNames } from "./prayer-methods";
+import { smithingMethodItemNames } from "./smithing-methods";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -13,6 +14,7 @@ const allNames = () => {
       ...craftingMethodItemNames(),
       ...constructionMethodItemNames(),
       ...prayerMethodItemNames(),
+      ...smithingMethodItemNames(),
     ]),
   ];
 };
