@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
+import type { PlayerSkills } from "@/lib/player-stats";
 import { gp } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import {
@@ -61,7 +62,6 @@ function clampG(n: number) {
 function effectiveGpPerXp(xpPerHour: number, gpPerHour: number, moneyPerHour: number): number | null {
   if (xpPerHour <= 0 || moneyPerHour <= 0) return null;
   const effectiveCostPerHour = moneyPerHour - gpPerHour;
-  // Negative = you're paid to train (better than free)
   return Math.round((effectiveCostPerHour / xpPerHour) * 10) / 10;
 }
 
@@ -72,7 +72,6 @@ function formatCost(v: number | null): string {
   return v.toFixed(1);
 }
 
-/** Baseline mid price from 30-day trend average. */
 function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend> | undefined): number | null {
   if (!row) return null;
   const t = trendsById?.[row.id];
@@ -80,10 +79,6 @@ function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend>
   return null;
 }
 
-/**
- * % change of current net vs net at 30-day average component prices.
- * Positive = net improved (more profit / less loss) vs recent average.
- */
 function netPctChange(current: number, baseline: number): number | null {
   const denom = Math.abs(baseline);
   if (denom < 1) return null;
@@ -105,6 +100,7 @@ type Ranked = {
   netChangePct: number | null;
   costPerXp: number | null;
   missing: boolean;
+  locked: boolean;
 };
 
 export function CraftingMethodsPanel({
@@ -112,14 +108,17 @@ export function CraftingMethodsPanel({
   trendsById,
   moneyPerHour,
   onMoneyPerHourChange,
+  playerSkills,
 }: {
   rowsByName: Map<string, PriceRow>;
   trendsById?: Record<number, Trend>;
   moneyPerHour: number;
   onMoneyPerHourChange: (n: number) => void;
+  playerSkills?: PlayerSkills | null;
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
+  const craftingLevel = playerSkills?.crafting;
 
   const ranked = useMemo(() => {
     const list: Ranked[] = CRAFTING_METHODS.map((method) => {
@@ -165,6 +164,8 @@ export function CraftingMethodsPanel({
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, g);
 
+      const locked = craftingLevel != null && craftingLevel < method.level;
+
       return {
         method,
         xpPerHour,
@@ -173,10 +174,13 @@ export function CraftingMethodsPanel({
         netChangePct,
         costPerXp,
         missing,
+        locked,
       };
     });
 
     return list.sort((a, b) => {
+      // Unlocked methods first when player is loaded
+      if (craftingLevel != null && a.locked !== b.locked) return a.locked ? 1 : -1;
       let cmp = 0;
       switch (sort) {
         case "gp_desc":
@@ -201,7 +205,7 @@ export function CraftingMethodsPanel({
       }
       return cmp || a.method.level - b.method.level;
     });
-  }, [rowsByName, trendsById, g, sort]);
+  }, [rowsByName, trendsById, g, sort, craftingLevel]);
 
   return (
     <div className="mt-4 space-y-3">
@@ -212,6 +216,12 @@ export function CraftingMethodsPanel({
             <p className="text-xs text-muted-foreground">
               Sorted by what each XP costs <em>you</em> — supplies plus the gold you could have made
               instead. Lower cost is better.
+              {craftingLevel != null && (
+                <>
+                  {" "}
+                  Methods above your Crafting level ({craftingLevel}) are greyed out.
+                </>
+              )}
             </p>
           </div>
           <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
@@ -354,9 +364,13 @@ function MethodRow({
   netChangePct,
   costPerXp,
   missing,
+  locked,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow> }) {
   return (
-    <article className="panel flex flex-col gap-2 p-3 sm:p-3.5">
+    <article
+      className={`panel flex flex-col gap-2 p-3 sm:p-3.5 ${locked ? "opacity-45" : ""}`}
+      title={locked ? `Requires Crafting ${method.level}` : undefined}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="flex size-6 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-muted-foreground">
@@ -364,7 +378,10 @@ function MethodRow({
           </span>
           <div>
             <h3 className="text-sm font-semibold leading-tight">{method.label}</h3>
-            <p className="text-[11px] text-muted-foreground">Lvl {method.level}</p>
+            <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
+              Lvl {method.level}
+              {locked ? " · locked" : ""}
+            </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
