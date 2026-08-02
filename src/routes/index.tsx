@@ -107,7 +107,12 @@ function rangeChange(trend?: Trend): number {
 }
 
 function isSuppliesItem(tags: string[]) {
-  return tags.includes("supplies") || tags.includes("food") || tags.includes("potion");
+  return (
+    tags.includes("supplies") ||
+    tags.includes("food") ||
+    tags.includes("potion") ||
+    tags.includes("ammo")
+  );
 }
 
 function uniqueById(rows: PriceRow[]): PriceRow[] {
