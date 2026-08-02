@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Search,
   Shield,
@@ -11,6 +11,7 @@ import {
   Sparkles,
   Package,
 } from "lucide-react";
+import { z } from "zod";
 
 import {
   CATALOG,
@@ -32,7 +33,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type Filter = "all" | "gear" | "skilling" | "supplies";
+type SortKey = "drop" | "cheap" | "upgrade";
+
+const homeSearchSchema = z.object({
+  filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
+  sort: z.enum(["drop", "cheap", "upgrade"]).catch("drop"),
+  q: z.string().catch(""),
+  combat: z.string().catch("all"),
+  slot: z.string().catch("all"),
+  tier: z.string().catch("all"),
+  skill: z.string().catch("all"),
+});
+
+export type HomeSearch = z.infer<typeof homeSearchSchema>;
+
+const SCROLL_KEY = "ge-watch-home-scroll";
+
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): HomeSearch => homeSearchSchema.parse(search),
   head: () => ({
     meta: [
       { title: "GE Watch — OSRS Gear & Skilling Price Tracker" },
@@ -51,9 +70,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
-
-type Filter = "all" | "gear" | "skilling" | "supplies";
-type SortKey = "drop" | "cheap" | "upgrade";
 
 const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
 
@@ -111,7 +127,6 @@ function isSuppliesItem(tags: string[]) {
   return tags.includes("supplies") || tags.includes("food") || tags.includes("potion");
 }
 
-/** Deduplicate rows by GE item id (same item can appear in multiple catalog groups). */
 function uniqueById(rows: PriceRow[]): PriceRow[] {
   const seen = new Set<number>();
   const out: PriceRow[] = [];
@@ -124,6 +139,28 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
 }
 
 function Home() {
+  const navigate = useNavigate({ from: "/" });
+  const search = Route.useSearch();
+  const { filter, sort, q: query, combat: gearCombat, slot: gearSlot, tier: gearTier, skill } = search;
+
+  const patchSearch = (patch: Partial<HomeSearch>) => {
+    void navigate({
+      search: (prev) => {
+        const next = { ...prev, ...patch };
+        const cleaned: Record<string, string> = {};
+        if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
+        if (next.sort && next.sort !== "drop") cleaned.sort = next.sort;
+        if (next.q) cleaned.q = next.q;
+        if (next.combat && next.combat !== "all") cleaned.combat = next.combat;
+        if (next.slot && next.slot !== "all") cleaned.slot = next.slot;
+        if (next.tier && next.tier !== "all") cleaned.tier = next.tier;
+        if (next.skill && next.skill !== "all") cleaned.skill = next.skill;
+        return cleaned as HomeSearch;
+      },
+      replace: true,
+    });
+  };
+
   const snapshotFn = useServerFn(fetchSnapshot);
   const trendsFn = useServerFn(fetchTrends);
 
@@ -138,20 +175,11 @@ function Home() {
     staleTime: 30 * 60_000,
   });
 
-  const [filter, setFilter] = useState<Filter>("all");
-  const [query, setQuery] = useState("");
-  const [gearCombat, setGearCombat] = useState<string>("all");
-  const [gearSlot, setGearSlot] = useState<string>("all");
-  const [gearTier, setGearTier] = useState<string>("all");
-  const [skill, setSkill] = useState<string>("all");
-  const [sort, setSort] = useState<SortKey>("drop");
-
   const rowsByName = useMemo(
     () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
     [snapshot.data],
   );
 
-  // Merge tags when the same item appears in multiple catalog groups
   const itemByName = useMemo(() => {
     const map = new Map<string, CatalogItem>();
     for (const g of CATALOG) {
@@ -206,9 +234,6 @@ function Home() {
   }, [filter, query, rowsByName, gearCombat, gearSlot, gearTier, skill, itemByName]);
 
   const allRows = useMemo(() => {
-    // Deduplicate first — same GE id can come from multiple catalog groups
-    // (e.g. Avernic treads, Steel bar, Ahrim's hood). Duplicate React keys
-    // caused cards to stick/repeat when filters changed.
     const rows = uniqueById(groups.flatMap((g) => g.rows));
     const trendMap = trends.data ?? {};
 
@@ -230,18 +255,37 @@ function Home() {
     });
   }, [groups, trends.data, sort]);
 
+  // Restore scroll after data is ready (returning from item detail)
+  const restoredScroll = useRef(false);
+  useEffect(() => {
+    if (restoredScroll.current || snapshot.isLoading) return;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (raw == null) return;
+      const y = Number(raw);
+      sessionStorage.removeItem(SCROLL_KEY);
+      if (!Number.isFinite(y) || y <= 0) return;
+      restoredScroll.current = true;
+      requestAnimationFrame(() => {
+        window.scrollTo(0, y);
+      });
+    } catch {
+      /* private mode */
+    }
+  }, [snapshot.isLoading, allRows.length]);
+
   const handleFilterChange = (next: Filter) => {
-    setFilter(next);
-    setGearCombat("all");
-    setGearSlot("all");
-    setGearTier("all");
-    setSkill("all");
+    patchSearch({
+      filter: next,
+      combat: "all",
+      slot: "all",
+      tier: "all",
+      skill: "all",
+    });
   };
 
   const showGearSub = filter === "gear";
   const showSkillSub = filter === "skilling";
-
-  // Key the grid by filter state so React never reuses a stuck card across filter changes
   const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${skill}:${sort}:${query}`;
 
   return (
@@ -273,12 +317,12 @@ function Home() {
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => patchSearch({ q: e.target.value })}
               placeholder="Search items…"
               className="pl-9"
             />
           </div>
-          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+          <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
             <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
               <SelectValue placeholder="Sort by…" />
             </SelectTrigger>
@@ -294,12 +338,16 @@ function Home() {
       {showGearSub && (
         <div className="mt-4 flex flex-col gap-3">
           <div className="flex flex-wrap gap-1.5">
-            <SubTab active={gearCombat === "all"} onClick={() => setGearCombat("all")} label="All combat" />
+            <SubTab
+              active={gearCombat === "all"}
+              onClick={() => patchSearch({ combat: "all" })}
+              label="All combat"
+            />
             {GEAR_COMBAT_FILTERS.map((f) => (
               <SubTab
                 key={f.key}
                 active={gearCombat === f.key}
-                onClick={() => setGearCombat(f.key)}
+                onClick={() => patchSearch({ combat: f.key })}
                 label={f.label}
                 icon={ICONS[f.icon]}
               />
@@ -307,7 +355,10 @@ function Home() {
           </div>
 
           <div className="flex flex-wrap items-start gap-3">
-            <EquipmentPaperDoll active={gearSlot} onSelect={setGearSlot} />
+            <EquipmentPaperDoll
+              active={gearSlot}
+              onSelect={(slot) => patchSearch({ slot })}
+            />
             <div className="flex flex-col gap-1.5">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 Progression
@@ -315,14 +366,14 @@ function Home() {
               <div className="flex flex-col gap-1">
                 <SubTab
                   active={gearTier === "all"}
-                  onClick={() => setGearTier("all")}
+                  onClick={() => patchSearch({ tier: "all" })}
                   label="All stages"
                 />
                 {GEAR_TIER_FILTERS.map((t) => (
                   <SubTab
                     key={t.key}
                     active={gearTier === t.key}
-                    onClick={() => setGearTier(gearTier === t.key ? "all" : t.key)}
+                    onClick={() => patchSearch({ tier: gearTier === t.key ? "all" : t.key })}
                     label={t.label}
                   />
                 ))}
@@ -334,12 +385,12 @@ function Home() {
 
       {showSkillSub && (
         <div className="mt-4 flex flex-wrap items-center gap-1.5">
-          <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All" />
+          <SubTab active={skill === "all"} onClick={() => patchSearch({ skill: "all" })} label="All" />
           {SKILLING_FILTERS.map((f) => (
             <WikiIconTab
               key={f.key}
               active={skill === f.key}
-              onClick={() => setSkill(f.key)}
+              onClick={() => patchSearch({ skill: f.key })}
               label={f.label}
               wikiIcon={f.wikiIcon}
             />
