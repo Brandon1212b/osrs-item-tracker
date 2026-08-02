@@ -5,7 +5,7 @@ export function Sparkline({
   series: { t: number; p: number }[];
   tone: "deal" | "fair" | "steep";
 }) {
-  if (series.length < 2) return <div className="h-14" />;
+  if (series.length < 2) return <div className="h-10 sm:h-14" />;
 
   const w = 240;
   const h = 56;
@@ -25,7 +25,7 @@ export function Sparkline({
   const id = `spark-${tone}`;
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-14 w-full" preserveAspectRatio="none" aria-hidden="true">
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-10 w-full sm:h-14" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={`var(--${tone})`} stopOpacity="0.35" />
