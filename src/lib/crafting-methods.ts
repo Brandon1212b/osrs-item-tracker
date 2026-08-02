@@ -145,6 +145,44 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Black dragon leather", qty: 3 }],
     output: { name: "Black d'hide body", qty: 1 },
   },
+  // Amethyst cutting — ~2750/h (wiki money-making / same chisel pace as gems)
+  // https://oldschool.runescape.wiki/w/Money_making_guide/Cutting_amethyst_bolt_tips
+  {
+    id: "amethyst-bolt-tips",
+    label: "Amethyst bolt tips",
+    level: 83,
+    xp: 60,
+    actionsPerHour: 2750,
+    inputs: [{ name: "Amethyst", qty: 1 }],
+    output: { name: "Amethyst bolt tips", qty: 15 },
+  },
+  {
+    id: "amethyst-arrowtips",
+    label: "Amethyst arrowtips",
+    level: 85,
+    xp: 60,
+    actionsPerHour: 2750,
+    inputs: [{ name: "Amethyst", qty: 1 }],
+    output: { name: "Amethyst arrowtips", qty: 15 },
+  },
+  {
+    id: "amethyst-javelin-tips",
+    label: "Amethyst javelin tips",
+    level: 87,
+    xp: 60,
+    actionsPerHour: 2750,
+    inputs: [{ name: "Amethyst", qty: 1 }],
+    output: { name: "Amethyst javelin tips", qty: 5 },
+  },
+  {
+    id: "amethyst-dart-tip",
+    label: "Amethyst dart tips",
+    level: 89,
+    xp: 60,
+    actionsPerHour: 2750,
+    inputs: [{ name: "Amethyst", qty: 1 }],
+    output: { name: "Amethyst dart tip", qty: 8 },
+  },
 ];
 
 /** All GE item names referenced by crafting methods (for price snapshot). */
