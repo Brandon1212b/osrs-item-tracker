@@ -5,7 +5,7 @@
  * - https://oldschool.runescape.wiki/w/Guide:Ranged_Gear_Progression
  * - https://oldschool.runescape.wiki/w/Guide:Magic_Gear_Progression
  *
- * Shared stage names (Level 20, Pre-RfD, 75+, …) are grouped into one entry
+ * Shared stage names (20+, Pre-RfD, 75+, …) are grouped into one entry
  * across combat styles. Combat-specific sets keep a `combat` tag.
  * Item-level combat filtering still applies via catalog tags.
  * Only tradeable GE items that exist in CATALOG (exact names).
@@ -23,7 +23,7 @@ export const GEAR_SETS: GearSetDef[] = [
   // ── Early ──────────────────────────────────────────────
   {
     key: "lvl20",
-    label: "Level 20",
+    label: "20+",
     tier: "early",
     items: [
       // Range
@@ -40,7 +40,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl30",
-    label: "Level 30",
+    label: "30+",
     tier: "early",
     combat: "melee",
     items: [
@@ -53,7 +53,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl40",
-    label: "Level 40+",
+    label: "40+",
     tier: "early",
     items: [
       // Melee
@@ -202,7 +202,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl60",
-    label: "Level 60",
+    label: "60+",
     tier: "mid",
     combat: "range",
     items: [
@@ -219,7 +219,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl65",
-    label: "Level 65+",
+    label: "65+",
     tier: "mid",
     combat: "melee",
     items: [
@@ -236,7 +236,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl70",
-    label: "Level 70+",
+    label: "70+",
     tier: "mid",
     items: [
       // Melee
@@ -295,7 +295,7 @@ export const GEAR_SETS: GearSetDef[] = [
   // ── Late ───────────────────────────────────────────────
   {
     key: "lvl70-void",
-    label: "Level 70 (Elite void)",
+    label: "70+ (Elite void)",
     tier: "late",
     combat: "range",
     items: [
@@ -310,7 +310,7 @@ export const GEAR_SETS: GearSetDef[] = [
   },
   {
     key: "lvl70-dhide",
-    label: "Level 70 (Dragonhide)",
+    label: "70+ (Dragonhide)",
     tier: "late",
     combat: "range",
     items: [
