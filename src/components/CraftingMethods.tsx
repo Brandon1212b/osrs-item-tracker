@@ -1,8 +1,16 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp } from "@/lib/format";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 const SCROLL_KEY = "ge-watch-home-scroll";
@@ -10,6 +18,16 @@ const SCROLL_KEY = "ge-watch-home-scroll";
 const G_MIN = 250_000;
 const G_MAX = 10_000_000;
 const G_STEP = 250_000;
+
+type CraftSort =
+  | "gp_desc"
+  | "gp_asc"
+  | "xp_desc"
+  | "xp_asc"
+  | "cost_desc"
+  | "cost_asc";
+
+const DEFAULT_SORT: CraftSort = "cost_asc";
 
 function buyPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
@@ -74,6 +92,13 @@ function netPctChange(current: number, baseline: number): number | null {
   return Math.round(((current - baseline) / denom) * 1000) / 10;
 }
 
+function nullsLast(a: number | null, b: number | null, dir: 1 | -1): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return (a - b) * dir;
+}
+
 type Ranked = {
   method: CraftingMethod;
   xpPerHour: number;
@@ -96,6 +121,7 @@ export function CraftingMethodsPanel({
   onMoneyPerHourChange: (n: number) => void;
 }) {
   const g = clampG(moneyPerHour);
+  const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
 
   const ranked = useMemo(() => {
     const list: Ranked[] = CRAFTING_METHODS.map((method) => {
@@ -152,24 +178,81 @@ export function CraftingMethodsPanel({
       };
     });
 
-    // Lower effective cost/xp is better; nulls last
     return list.sort((a, b) => {
-      if (a.costPerXp == null && b.costPerXp == null) return a.method.level - b.method.level;
-      if (a.costPerXp == null) return 1;
-      if (b.costPerXp == null) return -1;
-      return a.costPerXp - b.costPerXp || a.method.level - b.method.level;
+      let cmp = 0;
+      switch (sort) {
+        case "gp_desc":
+          cmp = nullsLast(a.gpPerHour, b.gpPerHour, -1);
+          break;
+        case "gp_asc":
+          cmp = nullsLast(a.gpPerHour, b.gpPerHour, 1);
+          break;
+        case "xp_desc":
+          cmp = b.xpPerHour - a.xpPerHour;
+          break;
+        case "xp_asc":
+          cmp = a.xpPerHour - b.xpPerHour;
+          break;
+        case "cost_desc":
+          cmp = nullsLast(a.costPerXp, b.costPerXp, -1);
+          break;
+        case "cost_asc":
+        default:
+          cmp = nullsLast(a.costPerXp, b.costPerXp, 1);
+          break;
+      }
+      return cmp || a.method.level - b.method.level;
     });
-  }, [rowsByName, trendsById, g]);
+  }, [rowsByName, trendsById, g, sort]);
 
   return (
     <div className="mt-4 space-y-3">
       <div className="panel flex flex-col gap-3 p-3 sm:p-4">
-        <div>
-          <h2 className="text-sm font-semibold">Crafting methods</h2>
-          <p className="text-xs text-muted-foreground">
-            Sorted by what each XP costs <em>you</em> — supplies plus the gold you could have made instead.
-            Lower cost is better.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold">Crafting methods</h2>
+            <p className="text-xs text-muted-foreground">
+              Sorted by what each XP costs <em>you</em> — supplies plus the gold you could have made
+              instead. Lower cost is better.
+            </p>
+          </div>
+          <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+            <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods">
+              <SelectValue placeholder="Sort by…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="gp_desc">
+                <span className="inline-flex items-center gap-1">
+                  GP/h <ArrowUp className="size-3" />
+                </span>
+              </SelectItem>
+              <SelectItem value="gp_asc">
+                <span className="inline-flex items-center gap-1">
+                  GP/h <ArrowDown className="size-3" />
+                </span>
+              </SelectItem>
+              <SelectItem value="xp_desc">
+                <span className="inline-flex items-center gap-1">
+                  XP/h <ArrowUp className="size-3" />
+                </span>
+              </SelectItem>
+              <SelectItem value="xp_asc">
+                <span className="inline-flex items-center gap-1">
+                  XP/h <ArrowDown className="size-3" />
+                </span>
+              </SelectItem>
+              <SelectItem value="cost_desc">
+                <span className="inline-flex items-center gap-1">
+                  Your cost <ArrowUp className="size-3" />
+                </span>
+              </SelectItem>
+              <SelectItem value="cost_asc">
+                <span className="inline-flex items-center gap-1">
+                  Your cost <ArrowDown className="size-3" />
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
