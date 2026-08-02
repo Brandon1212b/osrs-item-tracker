@@ -396,10 +396,6 @@ function PartChip({
   kind: "input" | "output";
 }) {
   const price = kind === "input" ? buyPrice(row) : sellPrice(row);
-  const color =
-    kind === "input"
-      ? "text-destructive"
-      : "text-[color:var(--deal)]";
 
   const inner = (
     <>
@@ -418,7 +414,7 @@ function PartChip({
           </span>
         )}
       </span>
-      <span className={`text-[11px] font-semibold tabular-nums ${color}`}>
+      <span className="text-[11px] font-semibold tabular-nums text-foreground">
         {price == null ? "—" : gp(price)}
       </span>
     </>
