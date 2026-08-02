@@ -23,16 +23,22 @@ export function PriceChart({
   }
 
   const w = 800;
-  const h = 260;
+  const h = 280;
   const padL = 8;
-  const padB = 22;
+  const padR = 8;
+  const padT = 28;
+  const padB = 28;
   const prices = series.map((s) => s.p);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
   const span = max - min || 1;
 
-  const x = (i: number) => padL + (i / (series.length - 1)) * (w - padL * 2);
-  const y = (p: number) => 10 + (1 - (p - min) / span) * (h - padB - 16);
+  // First occurrence of high / low in the series (for marker placement)
+  const highIdx = prices.indexOf(max);
+  const lowIdx = prices.indexOf(min);
+
+  const x = (i: number) => padL + (i / (series.length - 1)) * (w - padL - padR);
+  const y = (p: number) => padT + (1 - (p - min) / span) * (h - padT - padB);
 
   const line = series.map((s, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(s.p).toFixed(1)}`).join(" ");
   const area = `${line} L${x(series.length - 1)},${h - padB} L${padL},${h - padB} Z`;
@@ -43,17 +49,51 @@ export function PriceChart({
 
   const active = hover != null ? series[hover] : null;
 
+  // Callout placement: keep labels inside the chart
+  const callout = (i: number, value: number, label: string, kind: "high" | "low") => {
+    const cx = x(i);
+    const cy = y(value);
+    const preferRight = cx < w * 0.55;
+    const tx = preferRight ? cx + 10 : cx - 10;
+    const anchor = preferRight ? "start" : "end";
+    const ty = kind === "high" ? cy - 10 : cy + 16;
+    const color = kind === "high" ? "var(--steep)" : "var(--deal)";
+    return (
+      <g key={kind}>
+        <circle cx={cx} cy={cy} r="5" fill={color} stroke="var(--background)" strokeWidth="2" />
+        <circle cx={cx} cy={cy} r="2.5" fill="var(--background)" />
+        <text
+          x={tx}
+          y={ty}
+          textAnchor={anchor}
+          className="fill-current"
+          style={{ fill: color, fontSize: 12, fontWeight: 600 }}
+        >
+          {label} {gp(value)}
+        </text>
+        <text
+          x={tx}
+          y={ty + 13}
+          textAnchor={anchor}
+          style={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+        >
+          {fmtTime(series[i]!.t)}
+        </text>
+      </g>
+    );
+  };
+
   return (
     <div className="relative">
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="h-64 w-full touch-none"
+        className="h-72 w-full touch-none"
         preserveAspectRatio="none"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
           const rel = ((e.clientX - r.left) / r.width) * w;
-          const i = Math.round(((rel - padL) / (w - padL * 2)) * (series.length - 1));
+          const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
           setHover(Math.min(series.length - 1, Math.max(0, i)));
         }}
       >
@@ -67,9 +107,9 @@ export function PriceChart({
           <line
             key={f}
             x1={padL}
-            x2={w - padL}
-            y1={10 + f * (h - padB - 16)}
-            y2={10 + f * (h - padB - 16)}
+            x2={w - padR}
+            y1={padT + f * (h - padT - padB)}
+            y2={padT + f * (h - padT - padB)}
             stroke="var(--border)"
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
@@ -77,29 +117,38 @@ export function PriceChart({
         ))}
         <path d={area} fill={`url(#${gid})`} />
         <path d={line} fill="none" stroke={`var(--${tone})`} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+
+        {/* High / low markers on the actual series points */}
+        {callout(highIdx, max, "High", "high")}
+        {callout(lowIdx, min, "Low", "low")}
+
         {active && hover != null && (
           <>
             <line
               x1={x(hover)}
               x2={x(hover)}
-              y1={6}
+              y1={padT - 6}
               y2={h - padB}
               stroke="var(--muted-foreground)"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
+              strokeDasharray="4 3"
             />
             <circle cx={x(hover)} cy={y(active.p)} r="4" fill={`var(--${tone})`} vectorEffect="non-scaling-stroke" />
           </>
         )}
       </svg>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between px-1 text-[11px] text-muted-foreground tabular-nums">
-        <span>{gp(max)}</span>
-        <span>{active ? `${fmtTime(active.t)} · ${gp(active.p)} gp` : ""}</span>
+      <div className="pointer-events-none absolute inset-x-0 top-1 flex justify-center px-1 text-[11px] text-muted-foreground tabular-nums">
+        {active ? (
+          <span className="rounded bg-background/80 px-2 py-0.5 backdrop-blur">
+            {fmtTime(active.t)} · {gp(active.p)}
+          </span>
+        ) : null}
       </div>
+
       <div className="flex justify-between px-1 text-[11px] text-muted-foreground tabular-nums">
         <span>{fmtTime(series[0]!.t)}</span>
-        <span>low {gp(min)}</span>
         <span>{fmtTime(series[series.length - 1]!.t)}</span>
       </div>
     </div>

@@ -62,7 +62,6 @@ function ItemPage() {
   const price = row ? (row.high ?? row.low) : null;
 
   const goBack = () => {
-    // Prefer history back so URL search (filters) + browser scroll restoration apply
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.history.back();
     } else {
@@ -110,8 +109,13 @@ function ItemPage() {
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold tabular-nums gold-text">{gp(price)}</div>
+              {row.highalch != null && (
+                <div className="mt-0.5 text-xs tabular-nums text-muted-foreground">
+                  High alch {gp(row.highalch)}
+                </div>
+              )}
               <span
-                className="mt-1 inline-block rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide"
+                className="mt-1.5 inline-block rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: `var(--${signal.token})`, color: `var(--${signal.token}-foreground)` }}
               >
                 {signal.label}
@@ -119,15 +123,25 @@ function ItemPage() {
             </div>
           </header>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-4">
-            <Stat label="Buy price (high)" value={gp(row.high)} />
-            <Stat label="Sell price (low)" value={gp(row.low)} />
-            <Stat label="Traded / 24h" value={row.volume ? gp(row.volume) : "—"} />
-            <Stat label="High alch" value={row.highalch ? gp(row.highalch) : "—"} />
-          </div>
+          <section className="panel relative mt-4 p-5 sm:p-6">
+            {/* % change badge — top right of graph card */}
+            <div
+              className="absolute right-4 top-4 z-10 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums sm:right-5 sm:top-5"
+              style={{
+                background:
+                  d.change > 0
+                    ? "color-mix(in oklab, var(--steep) 20%, transparent)"
+                    : d.change < 0
+                      ? "color-mix(in oklab, var(--deal) 20%, transparent)"
+                      : "var(--secondary)",
+                color: d.change > 0 ? "var(--steep)" : d.change < 0 ? "var(--deal)" : "var(--muted-foreground)",
+              }}
+            >
+              {d.change > 0 ? "+" : ""}
+              {d.change}%
+            </div>
 
-          <section className="panel mt-4 p-5 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 pr-16">
               <h2 className="text-lg font-semibold">Price over {d.rangeLabel}</h2>
               <div className="flex flex-wrap gap-1.5">
                 {RANGES.map((r) => (
@@ -148,17 +162,6 @@ function ItemPage() {
 
             <div className="mt-4">
               <PriceChart series={d.series} tone={signal.token} intraday={range === "1d" || range === "1w"} />
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              <Stat label={`Low (${d.rangeLabel})`} value={gp(d.min)} />
-              <Stat label={`High (${d.rangeLabel})`} value={gp(d.max)} />
-              <Stat label="Average" value={gp(d.avg)} />
-              <Stat
-                label="Change"
-                value={`${d.change > 0 ? "+" : ""}${d.change}%`}
-                tone={d.change > 0 ? "steep" : d.change < 0 ? "deal" : undefined}
-              />
             </div>
 
             {d.trend && (
@@ -209,16 +212,5 @@ function ItemPage() {
         </>
       )}
     </main>
-  );
-}
-
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "deal" | "steep" | undefined }) {
-  return (
-    <div className="rounded-md bg-secondary/60 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-semibold tabular-nums" style={tone ? { color: `var(--${tone})` } : undefined}>
-        {value}
-      </div>
-    </div>
   );
 }
