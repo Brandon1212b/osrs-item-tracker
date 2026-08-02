@@ -68,6 +68,8 @@ export const Route = createFileRoute("/")({
 type Filter = "all" | "gear" | "skilling" | "deals";
 type SortKey = "drop" | "cheap" | "upgrade";
 
+const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
+
 /** Approximate equipment strength bonus used for "best upgrade" (str / gp). */
 const STR_BONUS: Record<string, number> = {
   "Abyssal whip": 82,
@@ -231,13 +233,11 @@ function Home() {
       if (sort === "upgrade") {
         const ua = upgradeScore(a);
         const ub = upgradeScore(b);
-        // Items with no str bonus sink to the bottom
         if (ua < 0 && ub < 0) return a.name.localeCompare(b.name);
         if (ua < 0) return 1;
         if (ub < 0) return -1;
         return ub - ua || a.name.localeCompare(b.name);
       }
-      // Default: largest drop from 180-day high
       const da = dropFraction(a, trendMap[a.id]);
       const db = dropFraction(b, trendMap[b.id]);
       return db - da || a.name.localeCompare(b.name);
@@ -302,15 +302,15 @@ function Home() {
           )}
 
           {filter === "skilling" && (
-            <div className="flex flex-wrap gap-1.5">
-              <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All skills" />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All" />
               {SKILLING_FILTERS.map((f) => (
-                <SubTab
+                <SkillIconTab
                   key={f.key}
                   active={skill === f.key}
                   onClick={() => setSkill(f.key)}
                   label={f.label}
-                  icon={ICONS[f.icon]}
+                  wikiIcon={f.wikiIcon}
                 />
               ))}
             </div>
@@ -422,6 +422,43 @@ function SubTab({
     >
       {Icon && <Icon className="size-3" />}
       {label}
+    </button>
+  );
+}
+
+/** Icon-only skill filter using official OSRS wiki skill icons. */
+function SkillIconTab({
+  active,
+  onClick,
+  label,
+  wikiIcon,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  wikiIcon: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      className={`inline-flex size-8 items-center justify-center rounded-full border transition-colors ${
+        active
+          ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
+          : "border-border/60 bg-secondary/30 hover:bg-secondary/50"
+      }`}
+    >
+      <img
+        src={`${WIKI_IMG}${encodeURIComponent(wikiIcon)}`}
+        alt=""
+        width={20}
+        height={20}
+        className="size-5 object-contain"
+        draggable={false}
+      />
     </button>
   );
 }

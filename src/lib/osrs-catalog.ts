@@ -284,16 +284,17 @@ export const GEAR_SLOT_FILTERS = [
   { key: "potion", label: "Potion", icon: "FlaskConical" },
 ] as const;
 
+/** Wiki skill icon filenames from https://oldschool.runescape.wiki/w/Category:Skill_icons */
 export const SKILLING_FILTERS = [
-  { key: "herblore", label: "Herblore", icon: "FlaskConical" },
-  { key: "construction", label: "Construction", icon: "Hammer" },
-  { key: "prayer", label: "Prayer", icon: "Sparkles" },
-  { key: "crafting", label: "Crafting", icon: "Scissors" },
-  { key: "smithing", label: "Smithing", icon: "Hammer" },
-  { key: "magic", label: "Magic", icon: "Sparkles" },
-  { key: "runecraft", label: "Runecraft", icon: "CircleDot" },
-  { key: "farming", label: "Farming", icon: "Sprout" },
-  { key: "fletching", label: "Fletching", icon: "Target" },
-  { key: "cooking", label: "Cooking", icon: "UtensilsCrossed" },
-  { key: "agility", label: "Agility", icon: "Footprints" },
+  { key: "herblore", label: "Herblore", wikiIcon: "Herblore_icon.png" },
+  { key: "construction", label: "Construction", wikiIcon: "Construction_icon.png" },
+  { key: "prayer", label: "Prayer", wikiIcon: "Prayer_icon.png" },
+  { key: "crafting", label: "Crafting", wikiIcon: "Crafting_icon.png" },
+  { key: "smithing", label: "Smithing", wikiIcon: "Smithing_icon.png" },
+  { key: "magic", label: "Magic", wikiIcon: "Magic_icon.png" },
+  { key: "runecraft", label: "Runecraft", wikiIcon: "Runecraft_icon.png" },
+  { key: "farming", label: "Farming", wikiIcon: "Farming_icon.png" },
+  { key: "fletching", label: "Fletching", wikiIcon: "Fletching_icon.png" },
+  { key: "cooking", label: "Cooking", wikiIcon: "Cooking_icon.png" },
+  { key: "agility", label: "Agility", wikiIcon: "Agility_icon.png" },
 ] as const;
