@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
-import type { PriceRow } from "@/lib/osrs.server";
+import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp } from "@/lib/format";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
@@ -56,21 +56,42 @@ function formatCost(v: number | null): string {
   return v.toFixed(1);
 }
 
+/** Baseline mid price from 30-day trend average. */
+function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend> | undefined): number | null {
+  if (!row) return null;
+  const t = trendsById?.[row.id];
+  if (t?.avg30 && t.avg30 > 0) return t.avg30;
+  return null;
+}
+
+/**
+ * % change of current net vs net at 30-day average component prices.
+ * Positive = net improved (more profit / less loss) vs recent average.
+ */
+function netPctChange(current: number, baseline: number): number | null {
+  const denom = Math.abs(baseline);
+  if (denom < 1) return null;
+  return Math.round(((current - baseline) / denom) * 1000) / 10;
+}
+
 type Ranked = {
   method: CraftingMethod;
   xpPerHour: number;
   gpPerHour: number | null;
   profitPerCraft: number | null;
+  netChangePct: number | null;
   costPerXp: number | null;
   missing: boolean;
 };
 
 export function CraftingMethodsPanel({
   rowsByName,
+  trendsById,
   moneyPerHour,
   onMoneyPerHourChange,
 }: {
   rowsByName: Map<string, PriceRow>;
+  trendsById?: Record<number, Trend>;
   moneyPerHour: number;
   onMoneyPerHourChange: (n: number) => void;
 }) {
@@ -80,26 +101,55 @@ export function CraftingMethodsPanel({
     const list: Ranked[] = CRAFTING_METHODS.map((method) => {
       const xpPerHour = method.xp * method.actionsPerHour;
       let inputCost = 0;
+      let baselineInput = 0;
       let missing = false;
+      let baselineMissing = false;
+
       for (const part of method.inputs) {
-        const p = buyPrice(rowsByName.get(part.name));
+        const row = rowsByName.get(part.name);
+        const p = buyPrice(row);
         if (p == null) {
           missing = true;
           break;
         }
         inputCost += p * part.qty;
+
+        const base = avg30Price(row, trendsById);
+        if (base == null) baselineMissing = true;
+        else baselineInput += base * part.qty;
       }
-      const out = sellPrice(rowsByName.get(method.output.name));
+
+      const outRow = rowsByName.get(method.output.name);
+      const out = sellPrice(outRow);
       if (out == null) missing = true;
 
+      const baselineOut = avg30Price(outRow, trendsById);
+      if (baselineOut == null) baselineMissing = true;
+
       const profitPerCraft = missing || out == null ? null : out - inputCost;
+      const baselineNet =
+        baselineMissing || baselineOut == null ? null : baselineOut - baselineInput;
+
+      const netChangePct =
+        profitPerCraft != null && baselineNet != null
+          ? netPctChange(profitPerCraft, baselineNet)
+          : null;
+
       const gpPerHour =
         profitPerCraft == null ? null : Math.round(profitPerCraft * method.actionsPerHour);
 
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, g);
 
-      return { method, xpPerHour, gpPerHour, profitPerCraft, costPerXp, missing };
+      return {
+        method,
+        xpPerHour,
+        gpPerHour,
+        profitPerCraft,
+        netChangePct,
+        costPerXp,
+        missing,
+      };
     });
 
     // Lower effective cost/xp is better; nulls last
@@ -109,7 +159,7 @@ export function CraftingMethodsPanel({
       if (b.costPerXp == null) return -1;
       return a.costPerXp - b.costPerXp || a.method.level - b.method.level;
     });
-  }, [rowsByName, g]);
+  }, [rowsByName, trendsById, g]);
 
   return (
     <div className="mt-4 space-y-3">
@@ -220,6 +270,7 @@ function MethodRow({
   xpPerHour,
   gpPerHour,
   profitPerCraft,
+  netChangePct,
   costPerXp,
   missing,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow> }) {
@@ -285,7 +336,7 @@ function MethodRow({
         {profitPerCraft != null && (
           <span
             className="ml-auto inline-flex shrink-0 items-center gap-1 tabular-nums"
-            title="Net profit or loss per single craft"
+            title="Net vs 30-day average component prices"
           >
             <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               Net
@@ -299,6 +350,29 @@ function MethodRow({
               {profitPerCraft > 0 ? "+" : ""}
               {gp(profitPerCraft)}
             </span>
+            {netChangePct != null && (
+              <span
+                className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
+                style={{
+                  background:
+                    netChangePct > 0
+                      ? "color-mix(in oklab, var(--deal) 22%, transparent)"
+                      : netChangePct < 0
+                        ? "color-mix(in oklab, var(--steep) 22%, transparent)"
+                        : "var(--secondary)",
+                  color:
+                    netChangePct > 0
+                      ? "var(--deal)"
+                      : netChangePct < 0
+                        ? "var(--steep)"
+                        : "var(--muted-foreground)",
+                }}
+                title="Change in net vs 30-day average prices"
+              >
+                {netChangePct > 0 ? "+" : ""}
+                {netChangePct}%
+              </span>
+            )}
           </span>
         )}
 
@@ -322,10 +396,6 @@ function PartChip({
   kind: "input" | "output";
 }) {
   const price = kind === "input" ? buyPrice(row) : sellPrice(row);
-  const color =
-    kind === "input"
-      ? "text-destructive"
-      : "text-[color:var(--deal)]";
 
   const inner = (
     <>
@@ -344,7 +414,7 @@ function PartChip({
           </span>
         )}
       </span>
-      <span className={`text-[11px] font-semibold tabular-nums ${color}`}>
+      <span className="text-[11px] font-semibold tabular-nums text-foreground">
         {price == null ? "—" : gp(price)}
       </span>
     </>

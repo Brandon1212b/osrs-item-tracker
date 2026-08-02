@@ -435,6 +435,7 @@ function Home() {
       {!snapshot.isLoading && showCraftingMethods && (
         <CraftingMethodsPanel
           rowsByName={rowsByName}
+          trendsById={trends.data}
           moneyPerHour={moneyPerHour}
           onMoneyPerHourChange={(n) => patchSearch({ g: n })}
         />
