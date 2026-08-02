@@ -16,12 +16,12 @@ import {
   CATALOG,
   GEAR_COMBAT_FILTERS,
   GEAR_SLOT_FILTERS,
+  GEAR_TIER_FILTERS,
   SKILLING_FILTERS,
   type CatalogItem,
 } from "@/lib/osrs-catalog";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
-import { signalOf } from "@/lib/format";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,7 +57,6 @@ type SortKey = "drop" | "cheap" | "upgrade";
 
 const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
 
-/** Approximate equipment strength bonus used for "best upgrade" (str / gp). */
 const STR_BONUS: Record<string, number> = {
   "Abyssal whip": 82,
   "Dragon scimitar": 67,
@@ -65,15 +64,21 @@ const STR_BONUS: Record<string, number> = {
   "Bandos tassets": 2,
   "Amulet of torture": 10,
   "Amulet of fury": 8,
+  "Amulet of strength": 10,
   "Primordial boots": 5,
   "Dragon claws": 56,
   "Ghrazi rapier": 94,
   "Scythe of vitur (uncharged)": 75,
   "Inquisitor's mace": 89,
   "Torva full helm": 8,
+  "Torva platebody": 6,
   "Torva platelegs": 4,
   "Toxic blowpipe (empty)": 40,
   "Dragon boots": 4,
+  "Ferocious gloves": 14,
+  "Berserker ring": 8,
+  "Ultor ring": 12,
+  "Amulet of rancour": 12,
 };
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -125,6 +130,7 @@ function Home() {
   const [query, setQuery] = useState("");
   const [gearCombat, setGearCombat] = useState<string>("all");
   const [gearSlot, setGearSlot] = useState<string>("all");
+  const [gearTier, setGearTier] = useState<string>("all");
   const [skill, setSkill] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("drop");
 
@@ -164,18 +170,19 @@ function Home() {
               if (isSuppliesItem(tags)) return false;
               if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
               if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
+              if (gearTier !== "all" && !tags.includes(gearTier)) return false;
             }
             if (filter === "skilling") {
               if (skill !== "all" && !tags.includes(skill)) return false;
             }
             if (filter === "supplies") {
-              return isSuppliesItem(tags) || tags.includes("feet") || tags.includes("neck");
+              return isSuppliesItem(tags) || tags.includes("neck");
             }
             return true;
           }),
       }))
       .filter((g) => g.rows.length > 0);
-  }, [filter, query, rowsByName, gearCombat, gearSlot, skill, itemByName]);
+  }, [filter, query, rowsByName, gearCombat, gearSlot, gearTier, skill, itemByName]);
 
   const allRows = useMemo(() => {
     const rows = groups.flatMap((g) => g.rows);
@@ -203,6 +210,7 @@ function Home() {
     setFilter(next);
     setGearCombat("all");
     setGearSlot("all");
+    setGearTier("all");
     setSkill("all");
   };
 
@@ -211,7 +219,6 @@ function Home() {
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      {/* Sticky header: primary tabs + search + sort only */}
       <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-start sm:px-6">
         <div className="flex flex-1 flex-wrap gap-2">
           <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
@@ -257,9 +264,8 @@ function Home() {
         </div>
       </div>
 
-      {/* Sub-filters scroll away with the page */}
       {showGearSub && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-col gap-3">
           <div className="flex flex-wrap gap-1.5">
             <SubTab active={gearCombat === "all"} onClick={() => setGearCombat("all")} label="All combat" />
             {GEAR_COMBAT_FILTERS.map((f) => (
@@ -273,7 +279,30 @@ function Home() {
             ))}
           </div>
 
-          <EquipmentPaperDoll active={gearSlot} onSelect={setGearSlot} />
+          {/* Paper doll stays compact; tiers sit beside it on wider screens */}
+          <div className="flex flex-wrap items-start gap-3">
+            <EquipmentPaperDoll active={gearSlot} onSelect={setGearSlot} />
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                Progression
+              </span>
+              <div className="flex flex-col gap-1">
+                <SubTab
+                  active={gearTier === "all"}
+                  onClick={() => setGearTier("all")}
+                  label="All stages"
+                />
+                {GEAR_TIER_FILTERS.map((t) => (
+                  <SubTab
+                    key={t.key}
+                    active={gearTier === t.key}
+                    onClick={() => setGearTier(gearTier === t.key ? "all" : t.key)}
+                    label={t.label}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -327,7 +356,7 @@ function Home() {
   );
 }
 
-/** OSRS worn-equipment style paper doll (3×5 grid). */
+/** Fixed-size OSRS worn-equipment paper doll — never stretches. */
 function EquipmentPaperDoll({
   active,
   onSelect,
@@ -336,7 +365,10 @@ function EquipmentPaperDoll({
   onSelect: (key: string) => void;
 }) {
   return (
-    <div className="inline-grid grid-cols-3 gap-1.5 rounded-lg border border-border/60 bg-secondary/20 p-2">
+    <div
+      className="inline-grid shrink-0 grid-cols-3 gap-1 rounded-lg border border-border/60 bg-secondary/20 p-1.5"
+      style={{ width: "fit-content" }}
+    >
       {GEAR_SLOT_FILTERS.map((slot) => (
         <button
           key={slot.key}
@@ -346,7 +378,7 @@ function EquipmentPaperDoll({
           aria-pressed={active === slot.key}
           onClick={() => onSelect(active === slot.key ? "all" : slot.key)}
           style={{ gridRow: slot.row, gridColumn: slot.col }}
-          className={`flex size-10 items-center justify-center rounded-md border transition-colors ${
+          className={`flex size-9 shrink-0 items-center justify-center rounded-md border transition-colors ${
             active === slot.key
               ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
               : "border-border/50 bg-background/60 hover:bg-secondary/60"
@@ -355,9 +387,9 @@ function EquipmentPaperDoll({
           <img
             src={`${WIKI_IMG}${encodeURIComponent(slot.wikiIcon)}`}
             alt=""
-            width={28}
-            height={28}
-            className="size-7 object-contain opacity-90"
+            width={24}
+            height={24}
+            className="size-6 object-contain opacity-90"
             draggable={false}
           />
         </button>
