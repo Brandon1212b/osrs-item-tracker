@@ -8,38 +8,76 @@ export type CatalogGroup = {
   id: string;
   label: string;
   kind: "gear" | "skilling";
-  /** For skilling: the wiki training method this item belongs to. */
   note: string;
   items: CatalogItem[];
 };
 
 /**
- * Curated catalog: gear people actually buy, and skilling supplies for the
- * popular / efficient methods from the OSRS Wiki training guides.
- * Items are referenced by exact wiki name and resolved to IDs at runtime.
+ * Curated catalog. Gear tiers (early/mid/late/end) follow
+ * https://oldschool.runescape.wiki/w/Guide:Melee_Gear_Progression
+ * (plus analogous ranged/magic milestones). Names must match the wiki GE API.
  */
 export const CATALOG: CatalogGroup[] = [
   {
     id: "melee",
     label: "Melee gear",
     kind: "gear",
-    note: "Core melee upgrades",
+    note: "Melee progression milestones",
     items: [
-      { name: "Abyssal whip", tags: ["melee", "weapon", "one-handed"] },
-      { name: "Kraken tentacle", tags: ["melee", "weapon", "one-handed"] },
-      { name: "Dragon scimitar", tags: ["melee", "weapon", "one-handed"] },
-      { name: "Bandos chestplate", tags: ["melee", "chest"] },
-      { name: "Bandos tassets", tags: ["melee", "legs"] },
-      { name: "Amulet of torture", tags: ["melee", "neck"] },
-      { name: "Amulet of fury", tags: ["melee", "neck"] },
-      { name: "Primordial boots", tags: ["melee", "feet"] },
-      { name: "Dragon claws", tags: ["melee", "weapon", "two-handed"] },
-      { name: "Ghrazi rapier", tags: ["melee", "weapon", "one-handed"] },
-      { name: "Scythe of vitur (uncharged)", tags: ["melee", "weapon", "two-handed"] },
-      { name: "Inquisitor's mace", tags: ["melee", "weapon", "one-handed"] },
-      { name: "Justiciar faceguard", tags: ["melee", "head"] },
-      { name: "Torva full helm", tags: ["melee", "head"] },
-      { name: "Torva platelegs", tags: ["melee", "legs"] },
+      // Early
+      { name: "Dragon scimitar", tags: ["melee", "weapon", "one-handed", "early"] },
+      { name: "Amulet of strength", tags: ["melee", "neck", "early"] },
+      { name: "Combat bracelet", tags: ["melee", "hands", "early"] },
+      { name: "Rune boots", tags: ["melee", "feet", "early"] },
+      { name: "Berserker helm", tags: ["melee", "head", "early"] },
+      { name: "Helm of neitiznot", tags: ["melee", "head", "early"] },
+      { name: "Dragon boots", tags: ["melee", "feet", "early", "mid"] },
+      // Mid
+      { name: "Abyssal whip", tags: ["melee", "weapon", "one-handed", "mid"] },
+      { name: "Kraken tentacle", tags: ["melee", "weapon", "one-handed", "mid", "late"] },
+      { name: "Amulet of fury", tags: ["melee", "neck", "mid"] },
+      { name: "Zamorakian hasta", tags: ["melee", "weapon", "one-handed", "mid"] },
+      { name: "Zombie axe", tags: ["melee", "weapon", "two-handed", "mid"] },
+      { name: "Obsidian platelegs", tags: ["melee", "legs", "mid"] },
+      { name: "Obsidian platebody", tags: ["melee", "chest", "mid"] },
+      { name: "Berserker necklace", tags: ["melee", "neck", "mid"] },
+      { name: "Toktz-xil-ak", tags: ["melee", "weapon", "one-handed", "mid"] },
+      { name: "Serpentine helm", tags: ["melee", "head", "mid", "late"] },
+      { name: "Blood moon helm", tags: ["melee", "head", "mid", "late"] },
+      { name: "Blood moon chestplate", tags: ["melee", "chest", "mid", "late"] },
+      { name: "Blood moon tassets", tags: ["melee", "legs", "mid", "late"] },
+      { name: "Berserker ring", tags: ["melee", "ring", "mid", "late"] },
+      // Late
+      { name: "Amulet of torture", tags: ["melee", "neck", "late"] },
+      { name: "Bandos chestplate", tags: ["melee", "chest", "late"] },
+      { name: "Bandos tassets", tags: ["melee", "legs", "late"] },
+      { name: "Primordial boots", tags: ["melee", "feet", "late", "end"] },
+      { name: "Ferocious gloves", tags: ["melee", "hands", "late"] },
+      { name: "Neitiznot faceguard", tags: ["melee", "head", "late"] },
+      { name: "Dragon claws", tags: ["melee", "weapon", "two-handed", "late"] },
+      { name: "Ghrazi rapier", tags: ["melee", "weapon", "one-handed", "late", "end"] },
+      { name: "Osmumten's fang", tags: ["melee", "weapon", "one-handed", "late"] },
+      { name: "Abyssal bludgeon", tags: ["melee", "weapon", "two-handed", "late"] },
+      { name: "Dragon warhammer", tags: ["melee", "weapon", "one-handed", "late"] },
+      { name: "Bandos godsword", tags: ["melee", "weapon", "two-handed", "late"] },
+      { name: "Dragon hunter lance", tags: ["melee", "weapon", "one-handed", "late"] },
+      { name: "Voidwaker", tags: ["melee", "weapon", "one-handed", "late"] },
+      { name: "Burning claws", tags: ["melee", "weapon", "two-handed", "late"] },
+      { name: "Noxious halberd", tags: ["melee", "weapon", "two-handed", "late"] },
+      { name: "Ursine chainmace", tags: ["melee", "weapon", "one-handed", "mid", "late"] },
+      // End
+      { name: "Scythe of vitur (uncharged)", tags: ["melee", "weapon", "two-handed", "end"] },
+      { name: "Inquisitor's mace", tags: ["melee", "weapon", "one-handed", "end"] },
+      { name: "Justiciar faceguard", tags: ["melee", "head", "end"] },
+      { name: "Justiciar chestguard", tags: ["melee", "chest", "end"] },
+      { name: "Justiciar legguards", tags: ["melee", "legs", "end"] },
+      { name: "Torva full helm", tags: ["melee", "head", "end"] },
+      { name: "Torva platebody", tags: ["melee", "chest", "end"] },
+      { name: "Torva platelegs", tags: ["melee", "legs", "end"] },
+      { name: "Blade of saeldor (inactive)", tags: ["melee", "weapon", "one-handed", "end"] },
+      { name: "Amulet of rancour", tags: ["melee", "neck", "end"] },
+      { name: "Ultor ring", tags: ["melee", "ring", "end"] },
+      { name: "Soulreaper axe", tags: ["melee", "weapon", "two-handed", "end"] },
     ],
   },
   {
@@ -48,23 +86,23 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Core ranged upgrades",
     items: [
-      { name: "Toxic blowpipe (empty)", tags: ["range", "weapon", "two-handed"] },
-      { name: "Armadyl crossbow", tags: ["range", "weapon", "one-handed"] },
-      { name: "Dragon crossbow", tags: ["range", "weapon", "one-handed"] },
-      { name: "Twisted bow", tags: ["range", "weapon", "two-handed"] },
-      { name: "Bow of faerdhinen (inactive)", tags: ["range", "weapon", "two-handed"] },
-      { name: "Armadyl chestplate", tags: ["range", "chest"] },
-      { name: "Armadyl chainskirt", tags: ["range", "legs"] },
-      { name: "Armadyl helmet", tags: ["range", "head"] },
-      { name: "Necklace of anguish", tags: ["range", "neck"] },
-      { name: "Pegasian boots", tags: ["range", "feet"] },
-      { name: "Zaryte vambraces", tags: ["range", "hands"] },
-      { name: "Masori body (f)", tags: ["range", "chest"] },
-      { name: "Masori chaps (f)", tags: ["range", "legs"] },
-      { name: "Dragon arrow", tags: ["range", "ammo"] },
-      { name: "Amethyst arrow", tags: ["range", "ammo"] },
-      { name: "Ruby dragon bolts (e)", tags: ["range", "ammo"] },
-      { name: "Diamond dragon bolts (e)", tags: ["range", "ammo"] },
+      { name: "Dragon crossbow", tags: ["range", "weapon", "one-handed", "early", "mid"] },
+      { name: "Toxic blowpipe (empty)", tags: ["range", "weapon", "two-handed", "mid"] },
+      { name: "Armadyl crossbow", tags: ["range", "weapon", "one-handed", "late"] },
+      { name: "Twisted bow", tags: ["range", "weapon", "two-handed", "end"] },
+      { name: "Bow of faerdhinen (inactive)", tags: ["range", "weapon", "two-handed", "late", "end"] },
+      { name: "Armadyl chestplate", tags: ["range", "chest", "late"] },
+      { name: "Armadyl chainskirt", tags: ["range", "legs", "late"] },
+      { name: "Armadyl helmet", tags: ["range", "head", "late"] },
+      { name: "Necklace of anguish", tags: ["range", "neck", "late", "end"] },
+      { name: "Pegasian boots", tags: ["range", "feet", "late", "end"] },
+      { name: "Zaryte vambraces", tags: ["range", "hands", "late", "end"] },
+      { name: "Masori body (f)", tags: ["range", "chest", "end"] },
+      { name: "Masori chaps (f)", tags: ["range", "legs", "end"] },
+      { name: "Dragon arrow", tags: ["range", "ammo", "late", "end"] },
+      { name: "Amethyst arrow", tags: ["range", "ammo", "mid", "late"] },
+      { name: "Ruby dragon bolts (e)", tags: ["range", "ammo", "late", "end"] },
+      { name: "Diamond dragon bolts (e)", tags: ["range", "ammo", "late", "end"] },
     ],
   },
   {
@@ -73,19 +111,19 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Core magic upgrades",
     items: [
-      { name: "Trident of the seas (full)", tags: ["magic", "weapon", "one-handed"] },
-      { name: "Uncharged toxic trident", tags: ["magic", "weapon", "one-handed"] },
-      { name: "Ancestral hat", tags: ["magic", "head"] },
-      { name: "Ancestral robe top", tags: ["magic", "chest"] },
-      { name: "Ancestral robe bottom", tags: ["magic", "legs"] },
-      { name: "Occult necklace", tags: ["magic", "neck"] },
-      { name: "Eternal boots", tags: ["magic", "feet"] },
-      { name: "Tormented bracelet", tags: ["magic", "hands"] },
-      { name: "Kodai wand", tags: ["magic", "weapon", "one-handed"] },
-      { name: "Ahrim's robetop", tags: ["magic", "chest"] },
-      { name: "Ahrim's robeskirt", tags: ["magic", "legs"] },
-      { name: "Mystic robe top (dark)", tags: ["magic", "chest"] },
-      { name: "Tumeken's shadow (uncharged)", tags: ["magic", "weapon", "two-handed"] },
+      { name: "Mystic robe top (dark)", tags: ["magic", "chest", "early"] },
+      { name: "Ahrim's robetop", tags: ["magic", "chest", "mid"] },
+      { name: "Ahrim's robeskirt", tags: ["magic", "legs", "mid"] },
+      { name: "Trident of the seas (full)", tags: ["magic", "weapon", "one-handed", "mid"] },
+      { name: "Uncharged toxic trident", tags: ["magic", "weapon", "one-handed", "mid", "late"] },
+      { name: "Occult necklace", tags: ["magic", "neck", "mid", "late"] },
+      { name: "Eternal boots", tags: ["magic", "feet", "late"] },
+      { name: "Tormented bracelet", tags: ["magic", "hands", "late"] },
+      { name: "Ancestral hat", tags: ["magic", "head", "late", "end"] },
+      { name: "Ancestral robe top", tags: ["magic", "chest", "late", "end"] },
+      { name: "Ancestral robe bottom", tags: ["magic", "legs", "late", "end"] },
+      { name: "Kodai wand", tags: ["magic", "weapon", "one-handed", "late", "end"] },
+      { name: "Tumeken's shadow (uncharged)", tags: ["magic", "weapon", "two-handed", "end"] },
     ],
   },
   {
@@ -105,7 +143,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Shark", tags: ["supplies", "food"] },
       { name: "Manta ray", tags: ["supplies", "food"] },
       { name: "Blighted karambwan", tags: ["supplies", "food"] },
-      { name: "Dragon boots", tags: ["supplies", "feet"] },
       { name: "Amulet of glory(6)", tags: ["supplies", "neck"] },
     ],
   },
@@ -267,6 +304,13 @@ export const GEAR_COMBAT_FILTERS = [
   { key: "magic", label: "Magic", icon: "Sparkles" },
 ] as const;
 
+export const GEAR_TIER_FILTERS = [
+  { key: "early", label: "Early" },
+  { key: "mid", label: "Mid" },
+  { key: "late", label: "Late" },
+  { key: "end", label: "End" },
+] as const;
+
 /** Worn Equipment slots — arranged like the in-game paper doll. */
 export const GEAR_SLOT_FILTERS = [
   { key: "head", label: "Head", wikiIcon: "Head_slot.png", row: 1, col: 2 },
@@ -282,7 +326,6 @@ export const GEAR_SLOT_FILTERS = [
   { key: "ring", label: "Ring", wikiIcon: "Ring_slot.png", row: 5, col: 3 },
 ] as const;
 
-/** Wiki skill icon filenames from https://oldschool.runescape.wiki/w/Category:Skill_icons */
 export const SKILLING_FILTERS = [
   { key: "herblore", label: "Herblore", wikiIcon: "Herblore_icon.png" },
   { key: "construction", label: "Construction", wikiIcon: "Construction_icon.png" },
