@@ -10,19 +10,6 @@ import {
   Target,
   Sparkles,
   Package,
-  HardHat,
-  Shirt,
-  Circle,
-  Hand,
-  Grip,
-  CircleDot,
-  Footprints,
-  Gem,
-  UtensilsCrossed,
-  FlaskConical,
-  Hammer,
-  Scissors,
-  Sprout,
 } from "lucide-react";
 
 import {
@@ -65,7 +52,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type Filter = "all" | "gear" | "skilling" | "deals";
+type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "drop" | "cheap" | "upgrade";
 
 const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
@@ -73,7 +60,6 @@ const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
 /** Approximate equipment strength bonus used for "best upgrade" (str / gp). */
 const STR_BONUS: Record<string, number> = {
   "Abyssal whip": 82,
-  "Kraken tentacle": 0,
   "Dragon scimitar": 67,
   "Bandos chestplate": 4,
   "Bandos tassets": 2,
@@ -84,35 +70,9 @@ const STR_BONUS: Record<string, number> = {
   "Ghrazi rapier": 94,
   "Scythe of vitur (uncharged)": 75,
   "Inquisitor's mace": 89,
-  "Justiciar faceguard": 0,
   "Torva full helm": 8,
   "Torva platelegs": 4,
   "Toxic blowpipe (empty)": 40,
-  "Armadyl crossbow": 0,
-  "Dragon crossbow": 0,
-  "Twisted bow": 0,
-  "Bow of faerdhinen (inactive)": 0,
-  "Armadyl chestplate": 0,
-  "Armadyl chainskirt": 0,
-  "Armadyl helmet": 0,
-  "Necklace of anguish": 0,
-  "Pegasian boots": 0,
-  "Zaryte vambraces": 0,
-  "Masori body (f)": 0,
-  "Masori chaps (f)": 0,
-  "Trident of the seas (full)": 0,
-  "Uncharged toxic trident": 0,
-  "Ancestral hat": 0,
-  "Ancestral robe top": 0,
-  "Ancestral robe bottom": 0,
-  "Occult necklace": 0,
-  "Eternal boots": 0,
-  "Tormented bracelet": 0,
-  "Kodai wand": 0,
-  "Ahrim's robetop": 0,
-  "Ahrim's robeskirt": 0,
-  "Mystic robe top (dark)": 0,
-  "Tumeken's shadow (uncharged)": 0,
   "Dragon boots": 4,
 };
 
@@ -121,27 +81,12 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Target,
   Sparkles,
   Package,
-  HardHat,
-  Shirt,
-  Circle,
-  Hand,
-  Grip,
-  CircleDot,
-  Footprints,
-  Gem,
-  Shield,
-  UtensilsCrossed,
-  FlaskConical,
-  Hammer,
-  Scissors,
-  Sprout,
 };
 
 function priceOf(row: PriceRow): number {
   return row.high ?? row.low ?? 0;
 }
 
-/** Fraction below the 180-day high (0–1). Higher = larger drop. */
 function dropFraction(row: PriceRow, trend?: Trend): number {
   if (!trend?.high180) return 0;
   const p = priceOf(row);
@@ -149,13 +94,16 @@ function dropFraction(row: PriceRow, trend?: Trend): number {
   return Math.max(0, (trend.high180 - p) / trend.high180);
 }
 
-/** Strength points per million GP (higher = better upgrade value). */
 function upgradeScore(row: PriceRow): number {
   const str = STR_BONUS[row.name];
   if (str == null || str <= 0) return -1;
   const p = priceOf(row);
   if (p <= 0) return -1;
   return (str / p) * 1_000_000;
+}
+
+function isSuppliesItem(tags: string[]) {
+  return tags.includes("supplies") || tags.includes("food") || tags.includes("potion");
 }
 
 function Home() {
@@ -197,7 +145,13 @@ function Home() {
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return CATALOG.filter((g) => filter === "all" || filter === "deals" || g.kind === filter)
+    return CATALOG.filter((g) => {
+      if (filter === "all") return true;
+      if (filter === "skilling") return g.kind === "skilling";
+      if (filter === "gear") return g.kind === "gear" && g.id !== "utility";
+      if (filter === "supplies") return g.id === "utility";
+      return true;
+    })
       .map((g) => ({
         ...g,
         rows: g.items
@@ -205,22 +159,23 @@ function Home() {
           .filter((r): r is NonNullable<typeof r> => !!r)
           .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
           .filter((r) => {
-            if (filter !== "gear") return true;
             const tags = itemByName.get(r.name)?.tags ?? [];
-            if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
-            if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
+            if (filter === "gear") {
+              if (isSuppliesItem(tags)) return false;
+              if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
+              if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
+            }
+            if (filter === "skilling") {
+              if (skill !== "all" && !tags.includes(skill)) return false;
+            }
+            if (filter === "supplies") {
+              return isSuppliesItem(tags) || tags.includes("feet") || tags.includes("neck");
+            }
             return true;
-          })
-          .filter((r) => {
-            if (filter !== "skilling") return true;
-            const tags = itemByName.get(r.name)?.tags ?? [];
-            if (skill !== "all" && !tags.includes(skill)) return false;
-            return true;
-          })
-          .filter((r) => (filter === "deals" ? signalOf(trends.data?.[r.id]).rank <= 1 : true)),
+          }),
       }))
       .filter((g) => g.rows.length > 0);
-  }, [filter, query, rowsByName, trends.data, gearCombat, gearSlot, skill, itemByName]);
+  }, [filter, query, rowsByName, gearCombat, gearSlot, skill, itemByName]);
 
   const allRows = useMemo(() => {
     const rows = groups.flatMap((g) => g.rows);
@@ -251,70 +206,33 @@ function Home() {
     setSkill("all");
   };
 
+  const showGearSub = filter === "gear";
+  const showSkillSub = filter === "skilling";
+
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
+      {/* Sticky header: primary tabs + search + sort only */}
       <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:items-start sm:px-6">
-        <div className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
-            <Tab
-              active={filter === "gear"}
-              onClick={() => handleFilterChange("gear")}
-              label="Gear"
-              icon={<Shield className="size-3.5" />}
-            />
-            <Tab
-              active={filter === "skilling"}
-              onClick={() => handleFilterChange("skilling")}
-              label="Skilling"
-              icon={<Pickaxe className="size-3.5" />}
-            />
-            <Tab active={filter === "deals"} onClick={() => handleFilterChange("deals")} label="Cheap now" />
-          </div>
-
-          {filter === "gear" && (
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-1.5">
-                <SubTab active={gearCombat === "all"} onClick={() => setGearCombat("all")} label="All combat" />
-                {GEAR_COMBAT_FILTERS.map((f) => (
-                  <SubTab
-                    key={f.key}
-                    active={gearCombat === f.key}
-                    onClick={() => setGearCombat(f.key)}
-                    label={f.label}
-                    icon={ICONS[f.icon]}
-                  />
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                <SubTab active={gearSlot === "all"} onClick={() => setGearSlot("all")} label="All items" />
-                {GEAR_SLOT_FILTERS.map((f) => (
-                  <SubTab
-                    key={f.key}
-                    active={gearSlot === f.key}
-                    onClick={() => setGearSlot(f.key)}
-                    label={f.label}
-                    icon={ICONS[f.icon]}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {filter === "skilling" && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All" />
-              {SKILLING_FILTERS.map((f) => (
-                <SkillIconTab
-                  key={f.key}
-                  active={skill === f.key}
-                  onClick={() => setSkill(f.key)}
-                  label={f.label}
-                  wikiIcon={f.wikiIcon}
-                />
-              ))}
-            </div>
-          )}
+        <div className="flex flex-1 flex-wrap gap-2">
+          <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
+          <Tab
+            active={filter === "gear"}
+            onClick={() => handleFilterChange("gear")}
+            label="Gear"
+            icon={<Shield className="size-3.5" />}
+          />
+          <Tab
+            active={filter === "skilling"}
+            onClick={() => handleFilterChange("skilling")}
+            label="Skilling"
+            icon={<Pickaxe className="size-3.5" />}
+          />
+          <Tab
+            active={filter === "supplies"}
+            onClick={() => handleFilterChange("supplies")}
+            label="Supplies"
+            icon={<Package className="size-3.5" />}
+          />
         </div>
         <div className="flex flex-col gap-2 sm:w-72">
           <div className="relative">
@@ -338,6 +256,41 @@ function Home() {
           </Select>
         </div>
       </div>
+
+      {/* Sub-filters scroll away with the page */}
+      {showGearSub && (
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="flex flex-wrap gap-1.5">
+            <SubTab active={gearCombat === "all"} onClick={() => setGearCombat("all")} label="All combat" />
+            {GEAR_COMBAT_FILTERS.map((f) => (
+              <SubTab
+                key={f.key}
+                active={gearCombat === f.key}
+                onClick={() => setGearCombat(f.key)}
+                label={f.label}
+                icon={ICONS[f.icon]}
+              />
+            ))}
+          </div>
+
+          <EquipmentPaperDoll active={gearSlot} onSelect={setGearSlot} />
+        </div>
+      )}
+
+      {showSkillSub && (
+        <div className="mt-4 flex flex-wrap items-center gap-1.5">
+          <SubTab active={skill === "all"} onClick={() => setSkill("all")} label="All" />
+          {SKILLING_FILTERS.map((f) => (
+            <WikiIconTab
+              key={f.key}
+              active={skill === f.key}
+              onClick={() => setSkill(f.key)}
+              label={f.label}
+              wikiIcon={f.wikiIcon}
+            />
+          ))}
+        </div>
+      )}
 
       {snapshot.isLoading && (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -371,6 +324,45 @@ function Home() {
         Price data from the OSRS Wiki real-time Grand Exchange API. Not affiliated with Jagex.
       </footer>
     </main>
+  );
+}
+
+/** OSRS worn-equipment style paper doll (3×5 grid). */
+function EquipmentPaperDoll({
+  active,
+  onSelect,
+}: {
+  active: string;
+  onSelect: (key: string) => void;
+}) {
+  return (
+    <div className="inline-grid grid-cols-3 gap-1.5 rounded-lg border border-border/60 bg-secondary/20 p-2">
+      {GEAR_SLOT_FILTERS.map((slot) => (
+        <button
+          key={slot.key}
+          type="button"
+          title={slot.label}
+          aria-label={slot.label}
+          aria-pressed={active === slot.key}
+          onClick={() => onSelect(active === slot.key ? "all" : slot.key)}
+          style={{ gridRow: slot.row, gridColumn: slot.col }}
+          className={`flex size-10 items-center justify-center rounded-md border transition-colors ${
+            active === slot.key
+              ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
+              : "border-border/50 bg-background/60 hover:bg-secondary/60"
+          }`}
+        >
+          <img
+            src={`${WIKI_IMG}${encodeURIComponent(slot.wikiIcon)}`}
+            alt=""
+            width={28}
+            height={28}
+            className="size-7 object-contain opacity-90"
+            draggable={false}
+          />
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -426,8 +418,7 @@ function SubTab({
   );
 }
 
-/** Icon-only skill filter using official OSRS wiki skill icons. */
-function SkillIconTab({
+function WikiIconTab({
   active,
   onClick,
   label,
