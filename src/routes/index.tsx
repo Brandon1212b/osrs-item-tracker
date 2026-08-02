@@ -148,6 +148,11 @@ function Home() {
       .filter((g) => g.rows.length > 0);
   }, [filter, query, rowsByName, trends.data, gearCombat, gearSlot, skill, itemByName]);
 
+  const allRows = useMemo(
+    () => groups.flatMap((g) => g.rows),
+    [groups],
+  );
+
   const handleFilterChange = (next: Filter) => {
     setFilter(next);
     setGearCombat("all");
@@ -245,21 +250,15 @@ function Home() {
         </p>
       )}
 
-      {groups.map((group) => (
-        <section key={group.id} className="mt-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border/70 pb-2">
-            <h2 className="text-xl font-semibold">{group.label}</h2>
-            <p className="text-xs text-muted-foreground">{group.note}</p>
-          </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {group.rows.map((row) => (
-              <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
-            ))}
-          </div>
-        </section>
-      ))}
+      {!snapshot.isLoading && allRows.length > 0 && (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {allRows.map((row) => (
+            <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
+          ))}
+        </div>
+      )}
 
-      {!snapshot.isLoading && groups.length === 0 && (
+      {!snapshot.isLoading && allRows.length === 0 && (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nothing matches that filter right now.
         </p>
