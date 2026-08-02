@@ -35,7 +35,15 @@ import {
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { signalOf } from "@/lib/format";
+import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,6 +66,53 @@ export const Route = createFileRoute("/")({
 });
 
 type Filter = "all" | "gear" | "skilling" | "deals";
+type SortKey = "drop" | "cheap" | "upgrade";
+
+/** Approximate equipment strength bonus used for "best upgrade" (str / gp). */
+const STR_BONUS: Record<string, number> = {
+  "Abyssal whip": 82,
+  "Kraken tentacle": 0,
+  "Dragon scimitar": 67,
+  "Bandos chestplate": 4,
+  "Bandos tassets": 2,
+  "Amulet of torture": 10,
+  "Amulet of fury": 8,
+  "Primordial boots": 5,
+  "Dragon claws": 56,
+  "Ghrazi rapier": 94,
+  "Scythe of vitur (uncharged)": 75,
+  "Inquisitor's mace": 89,
+  "Justiciar faceguard": 0,
+  "Torva full helm": 8,
+  "Torva platelegs": 4,
+  "Toxic blowpipe (empty)": 40,
+  "Armadyl crossbow": 0,
+  "Dragon crossbow": 0,
+  "Twisted bow": 0,
+  "Bow of faerdhinen (inactive)": 0,
+  "Armadyl chestplate": 0,
+  "Armadyl chainskirt": 0,
+  "Armadyl helmet": 0,
+  "Necklace of anguish": 0,
+  "Pegasian boots": 0,
+  "Zaryte vambraces": 0,
+  "Masori body (f)": 0,
+  "Masori chaps (f)": 0,
+  "Trident of the seas (full)": 0,
+  "Uncharged toxic trident": 0,
+  "Ancestral hat": 0,
+  "Ancestral robe top": 0,
+  "Ancestral robe bottom": 0,
+  "Occult necklace": 0,
+  "Eternal boots": 0,
+  "Tormented bracelet": 0,
+  "Kodai wand": 0,
+  "Ahrim's robetop": 0,
+  "Ahrim's robeskirt": 0,
+  "Mystic robe top (dark)": 0,
+  "Tumeken's shadow (uncharged)": 0,
+  "Dragon boots": 4,
+};
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sword,
@@ -80,6 +135,27 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sprout,
 };
 
+function priceOf(row: PriceRow): number {
+  return row.high ?? row.low ?? 0;
+}
+
+/** Fraction below the 180-day high (0–1). Higher = larger drop. */
+function dropFraction(row: PriceRow, trend?: Trend): number {
+  if (!trend?.high180) return 0;
+  const p = priceOf(row);
+  if (p <= 0) return 0;
+  return Math.max(0, (trend.high180 - p) / trend.high180);
+}
+
+/** Strength points per million GP (higher = better upgrade value). */
+function upgradeScore(row: PriceRow): number {
+  const str = STR_BONUS[row.name];
+  if (str == null || str <= 0) return -1;
+  const p = priceOf(row);
+  if (p <= 0) return -1;
+  return (str / p) * 1_000_000;
+}
+
 function Home() {
   const snapshotFn = useServerFn(fetchSnapshot);
   const trendsFn = useServerFn(fetchTrends);
@@ -100,6 +176,7 @@ function Home() {
   const [gearCombat, setGearCombat] = useState<string>("all");
   const [gearSlot, setGearSlot] = useState<string>("all");
   const [skill, setSkill] = useState<string>("all");
+  const [sort, setSort] = useState<SortKey>("drop");
 
   const rowsByName = useMemo(
     () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
@@ -138,20 +215,34 @@ function Home() {
             if (skill !== "all" && !tags.includes(skill)) return false;
             return true;
           })
-          .filter((r) => (filter === "deals" ? signalOf(trends.data?.[r.id]).rank <= 1 : true))
-          .sort(
-            (a, b) =>
-              signalOf(trends.data?.[a.id]).rank - signalOf(trends.data?.[b.id]).rank ||
-              a.name.localeCompare(b.name),
-          ),
+          .filter((r) => (filter === "deals" ? signalOf(trends.data?.[r.id]).rank <= 1 : true)),
       }))
       .filter((g) => g.rows.length > 0);
   }, [filter, query, rowsByName, trends.data, gearCombat, gearSlot, skill, itemByName]);
 
-  const allRows = useMemo(
-    () => groups.flatMap((g) => g.rows),
-    [groups],
-  );
+  const allRows = useMemo(() => {
+    const rows = groups.flatMap((g) => g.rows);
+    const trendMap = trends.data ?? {};
+
+    return [...rows].sort((a, b) => {
+      if (sort === "cheap") {
+        return priceOf(a) - priceOf(b) || a.name.localeCompare(b.name);
+      }
+      if (sort === "upgrade") {
+        const ua = upgradeScore(a);
+        const ub = upgradeScore(b);
+        // Items with no str bonus sink to the bottom
+        if (ua < 0 && ub < 0) return a.name.localeCompare(b.name);
+        if (ua < 0) return 1;
+        if (ub < 0) return -1;
+        return ub - ua || a.name.localeCompare(b.name);
+      }
+      // Default: largest drop from 180-day high
+      const da = dropFraction(a, trendMap[a.id]);
+      const db = dropFraction(b, trendMap[b.id]);
+      return db - da || a.name.localeCompare(b.name);
+    });
+  }, [groups, trends.data, sort]);
 
   const handleFilterChange = (next: Filter) => {
     setFilter(next);
@@ -225,14 +316,26 @@ function Home() {
             </div>
           )}
         </div>
-        <div className="relative sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search items…"
-            className="pl-9"
-          />
+        <div className="flex flex-col gap-2 sm:w-72">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search items…"
+              className="pl-9"
+            />
+          </div>
+          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+            <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
+              <SelectValue placeholder="Sort by…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="drop">Largest drop</SelectItem>
+              <SelectItem value="cheap">Cheapest</SelectItem>
+              <SelectItem value="upgrade">Best upgrade</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
