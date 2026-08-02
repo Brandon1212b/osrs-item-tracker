@@ -265,23 +265,21 @@ export const GEAR_COMBAT_FILTERS = [
   { key: "melee", label: "Melee", icon: "Sword" },
   { key: "range", label: "Range", icon: "Target" },
   { key: "magic", label: "Magic", icon: "Sparkles" },
-  { key: "supplies", label: "Supplies", icon: "Package" },
 ] as const;
 
+/** Worn Equipment slots — arranged like the in-game paper doll. */
 export const GEAR_SLOT_FILTERS = [
-  { key: "head", label: "Head", icon: "HardHat" },
-  { key: "chest", label: "Chest", icon: "Shirt" },
-  { key: "legs", label: "Legs", icon: "Circle" },
-  { key: "one-handed", label: "One-handed", icon: "Hand" },
-  { key: "two-handed", label: "Two-handed", icon: "Grip" },
-  { key: "ammo", label: "Ammo", icon: "CircleDot" },
-  { key: "feet", label: "Feet", icon: "Footprints" },
-  { key: "neck", label: "Neck", icon: "Gem" },
-  { key: "hands", label: "Hands", icon: "Hand" },
-  { key: "weapon", label: "Weapon", icon: "Sword" },
-  { key: "shield", label: "Shield", icon: "Shield" },
-  { key: "food", label: "Food", icon: "UtensilsCrossed" },
-  { key: "potion", label: "Potion", icon: "FlaskConical" },
+  { key: "head", label: "Head", wikiIcon: "Head_slot.png", row: 1, col: 2 },
+  { key: "cape", label: "Cape", wikiIcon: "Cape_slot.png", row: 2, col: 1 },
+  { key: "neck", label: "Neck", wikiIcon: "Neck_slot.png", row: 2, col: 2 },
+  { key: "ammo", label: "Ammo", wikiIcon: "Ammo_slot.png", row: 2, col: 3 },
+  { key: "weapon", label: "Weapon", wikiIcon: "Weapon_slot.png", row: 3, col: 1 },
+  { key: "chest", label: "Body", wikiIcon: "Body_slot.png", row: 3, col: 2 },
+  { key: "shield", label: "Shield", wikiIcon: "Shield_slot.png", row: 3, col: 3 },
+  { key: "legs", label: "Legs", wikiIcon: "Legs_slot.png", row: 4, col: 2 },
+  { key: "hands", label: "Hands", wikiIcon: "Hands_slot.png", row: 5, col: 1 },
+  { key: "feet", label: "Feet", wikiIcon: "Feet_slot.png", row: 5, col: 2 },
+  { key: "ring", label: "Ring", wikiIcon: "Ring_slot.png", row: 5, col: 3 },
 ] as const;
 
 /** Wiki skill icon filenames from https://oldschool.runescape.wiki/w/Category:Skill_icons */
