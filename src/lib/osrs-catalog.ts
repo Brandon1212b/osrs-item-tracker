@@ -18,6 +18,10 @@ export type CatalogGroup = {
  * - https://oldschool.runescape.wiki/w/Guide:Ranged_Gear_Progression
  * - https://oldschool.runescape.wiki/w/Guide:Magic_Gear_Progression
  * Only tradeable GE items (exact wiki names). Untradeables omitted.
+ *
+ * Consumable ammo (arrows, bolts, darts, chinchompas, cannonballs) and
+ * charge materials (Zulrah's scales, revenant ether) live under utility
+ * with the "supplies" tag — not under ranged/melee gear progression.
  */
 export const CATALOG: CatalogGroup[] = [
   {
@@ -116,39 +120,22 @@ export const CATALOG: CatalogGroup[] = [
     kind: "gear",
     note: "Ranged progression milestones",
     items: [
-      // Early
+      // Early — bows / crossbows only (ammo lives under Supplies)
       { name: "Maple shortbow", tags: ["range", "weapon", "two-handed", "early"] },
-      { name: "Adamant arrow", tags: ["range", "ammo", "early"] },
       { name: "Magic shortbow", tags: ["range", "weapon", "two-handed", "early", "mid"] },
-      { name: "Rune arrow", tags: ["range", "ammo", "early", "mid"] },
       { name: "Rune crossbow", tags: ["range", "weapon", "one-handed", "early", "mid"] },
-      { name: "Broad bolts", tags: ["range", "ammo", "early", "mid"] },
-      { name: "Diamond bolts (e)", tags: ["range", "ammo", "mid"] },
-      { name: "Ruby bolts (e)", tags: ["range", "ammo", "mid"] },
       { name: "Dorgeshuun crossbow", tags: ["range", "weapon", "one-handed", "early"] },
-      { name: "Bone bolts", tags: ["range", "ammo", "early"] },
-      { name: "Amethyst arrow", tags: ["range", "ammo", "mid"] },
       // Mid
       { name: "Dragon crossbow", tags: ["range", "weapon", "one-handed", "mid", "late"] },
       { name: "Toxic blowpipe (empty)", tags: ["range", "weapon", "two-handed", "mid", "late"] },
-      { name: "Adamant dart", tags: ["range", "ammo", "mid"] },
-      { name: "Rune dart", tags: ["range", "ammo", "mid", "late"] },
-      { name: "Amethyst dart", tags: ["range", "ammo", "mid", "late"] },
-      { name: "Dragon dart", tags: ["range", "ammo", "late", "end"] },
-      { name: "Red chinchompa", tags: ["range", "weapon", "mid"] },
-      { name: "Black chinchompa", tags: ["range", "weapon", "mid", "late"] },
       { name: "Twisted buckler", tags: ["range", "shield", "late"] },
       { name: "Odium ward", tags: ["range", "shield", "mid", "late"] },
       { name: "Antler guard", tags: ["range", "shield", "mid"] },
       { name: "Eclipse atlatl", tags: ["range", "weapon", "one-handed", "mid", "late"] },
-      { name: "Atlatl dart", tags: ["range", "ammo", "mid", "late"] },
       { name: "Eclipse moon helm", tags: ["range", "head", "mid", "late"] },
       { name: "Eclipse moon chestplate", tags: ["range", "chest", "mid", "late"] },
       { name: "Eclipse moon tassets", tags: ["range", "legs", "mid", "late"] },
       { name: "Hunters' sunlight crossbow", tags: ["range", "weapon", "one-handed", "mid"] },
-      { name: "Sunlight antler bolts", tags: ["range", "ammo", "mid"] },
-      { name: "Moonlight antler bolts", tags: ["range", "ammo", "mid"] },
-      { name: "Steel cannonball", tags: ["range", "ammo", "mid"] },
       // Late
       { name: "Armadyl crossbow", tags: ["range", "weapon", "one-handed", "late"] },
       { name: "Armadyl helmet", tags: ["range", "head", "late"] },
@@ -160,9 +147,6 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Dragonfire ward", tags: ["range", "shield", "late"] },
       { name: "Webweaver bow (u)", tags: ["range", "weapon", "two-handed", "late"] },
       { name: "Scorching bow", tags: ["range", "weapon", "two-handed", "late"] },
-      { name: "Dragon arrow", tags: ["range", "ammo", "late", "end"] },
-      { name: "Ruby dragon bolts (e)", tags: ["range", "ammo", "late", "end"] },
-      { name: "Diamond dragon bolts (e)", tags: ["range", "ammo", "late", "end"] },
       { name: "Bow of faerdhinen (inactive)", tags: ["range", "weapon", "two-handed", "late", "end"] },
       { name: "Crystal helm", tags: ["range", "head", "late"] },
       { name: "Crystal body", tags: ["range", "chest", "late"] },
@@ -256,8 +240,9 @@ export const CATALOG: CatalogGroup[] = [
     id: "utility",
     label: "Utility & supplies",
     kind: "gear",
-    note: "Consumables and everyday kit",
+    note: "Consumables, ammo, and everyday kit",
     items: [
+      // Potions
       { name: "Saradomin brew(4)", tags: ["supplies", "potion"] },
       { name: "Super restore(4)", tags: ["supplies", "potion"] },
       { name: "Prayer potion(4)", tags: ["supplies", "potion"] },
@@ -265,13 +250,39 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Super combat potion(4)", tags: ["supplies", "potion"] },
       { name: "Divine super combat potion(4)", tags: ["supplies", "potion"] },
       { name: "Stamina potion(4)", tags: ["supplies", "potion"] },
+      // Food
       { name: "Anglerfish", tags: ["supplies", "food"] },
       { name: "Shark", tags: ["supplies", "food"] },
       { name: "Manta ray", tags: ["supplies", "food"] },
       { name: "Blighted karambwan", tags: ["supplies", "food"] },
+      // Utility
       { name: "Amulet of glory(6)", tags: ["supplies", "neck"] },
       { name: "Zulrah's scales", tags: ["supplies"] },
       { name: "Revenant ether", tags: ["supplies"] },
+      // Ammo — arrows
+      { name: "Adamant arrow", tags: ["supplies", "ammo"] },
+      { name: "Rune arrow", tags: ["supplies", "ammo"] },
+      { name: "Amethyst arrow", tags: ["supplies", "ammo"] },
+      { name: "Dragon arrow", tags: ["supplies", "ammo"] },
+      // Ammo — bolts
+      { name: "Bone bolts", tags: ["supplies", "ammo"] },
+      { name: "Broad bolts", tags: ["supplies", "ammo"] },
+      { name: "Diamond bolts (e)", tags: ["supplies", "ammo"] },
+      { name: "Ruby bolts (e)", tags: ["supplies", "ammo"] },
+      { name: "Sunlight antler bolts", tags: ["supplies", "ammo"] },
+      { name: "Moonlight antler bolts", tags: ["supplies", "ammo"] },
+      { name: "Ruby dragon bolts (e)", tags: ["supplies", "ammo"] },
+      { name: "Diamond dragon bolts (e)", tags: ["supplies", "ammo"] },
+      // Ammo — darts
+      { name: "Adamant dart", tags: ["supplies", "ammo"] },
+      { name: "Rune dart", tags: ["supplies", "ammo"] },
+      { name: "Amethyst dart", tags: ["supplies", "ammo"] },
+      { name: "Dragon dart", tags: ["supplies", "ammo"] },
+      { name: "Atlatl dart", tags: ["supplies", "ammo"] },
+      // Ammo — throwables / cannon
+      { name: "Red chinchompa", tags: ["supplies", "ammo"] },
+      { name: "Black chinchompa", tags: ["supplies", "ammo"] },
+      { name: "Steel cannonball", tags: ["supplies", "ammo"] },
     ],
   },
   {
@@ -465,4 +476,11 @@ export const SKILLING_FILTERS = [
   { key: "fletching", label: "Fletching", wikiIcon: "Fletching_icon.png" },
   { key: "cooking", label: "Cooking", wikiIcon: "Cooking_icon.png" },
   { key: "agility", label: "Agility", wikiIcon: "Agility_icon.png" },
+] as const;
+
+/** Sub-filters on the Supplies tab. Keys match catalog tags. */
+export const SUPPLIES_FILTERS = [
+  { key: "ammo", label: "Ammunition", wikiIcon: "Ammo_slot.png" },
+  { key: "food", label: "Food", wikiIcon: "Shark.png" },
+  { key: "potion", label: "Potions", wikiIcon: "Prayer_potion(4).png" },
 ] as const;
