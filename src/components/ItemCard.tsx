@@ -12,13 +12,30 @@ function pctFromHigh(price: number | null | undefined, trend?: Trend): number | 
   return Math.round(((price - trend.high180) / trend.high180) * 1000) / 10;
 }
 
-export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefined }) {
+export function ItemCard({
+  row,
+  trend,
+  locked,
+  lockReason,
+}: {
+  row: PriceRow;
+  trend?: Trend | undefined;
+  /** Player does not meet equip requirements */
+  locked?: boolean;
+  /** e.g. "Attack 70" */
+  lockReason?: string | null;
+}) {
   const price = row.high ?? row.low;
   const signal = signalOf(trend);
   const pct = pctFromHigh(price, trend);
 
   return (
-    <article className="panel group relative flex flex-col gap-1.5 p-2 sm:gap-2 sm:p-3 transition-transform duration-200 hover:-translate-y-0.5">
+    <article
+      className={`panel group relative flex flex-col gap-1.5 p-2 sm:gap-2 sm:p-3 transition-transform duration-200 hover:-translate-y-0.5 ${
+        locked ? "opacity-45" : ""
+      }`}
+      title={locked && lockReason ? `Requires ${lockReason}` : undefined}
+    >
       <Link
         to="/item/$id"
         params={{ id: String(row.id) }}
@@ -32,6 +49,11 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
           }
         }}
       />
+      {locked && lockReason && (
+        <div className="absolute bottom-1.5 left-1.5 z-20 rounded bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground ring-1 ring-border/50 sm:bottom-2 sm:left-2 sm:text-[10px]">
+          {lockReason}
+        </div>
+      )}
       {trend ? (
         <div className="absolute top-1.5 right-1.5 z-20 flex flex-col gap-0.5 text-[9px] tabular-nums leading-none text-right sm:top-2 sm:right-2 sm:text-[10px] sm:gap-1">
           <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>
@@ -44,7 +66,7 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
           alt={row.name}
           width={28}
           height={28}
-          className="mt-0.5 size-7 shrink-0 drop-shadow sm:size-8"
+          className={`mt-0.5 size-7 shrink-0 drop-shadow sm:size-8 ${locked ? "grayscale" : ""}`}
         />
         <div className="min-w-0 flex-1 pr-8 sm:pr-10">
           <h3 className="truncate font-sans text-xs font-semibold text-foreground sm:text-sm" title={row.name}>

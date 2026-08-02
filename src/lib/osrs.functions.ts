@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { CATALOG } from "./osrs-catalog";
 import { craftingMethodItemNames } from "./crafting-methods";
-import type { ItemDetail, PriceRow, RangeKey, Trend } from "./osrs.server";
+import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
   const fromCatalog = CATALOG.flatMap((g) => g.items.map((i) => i.name));
@@ -26,3 +26,17 @@ export const fetchItemDetail = createServerFn({ method: "GET" })
     const { getItemDetail } = await import("./osrs.server");
     return getItemDetail(allNames(), data.id, data.range);
   });
+
+export const fetchPlayerStats = createServerFn({ method: "GET" })
+  .inputValidator((d: { rsn: string }) => d)
+  .handler(async ({ data }): Promise<PlayerStatsResult> => {
+    const { getPlayerStats } = await import("./osrs.server");
+    return getPlayerStats(data.rsn);
+  });
+
+export const fetchItemRequirements = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Record<number, Record<string, number>>> => {
+    const { getItemRequirementsMap } = await import("./osrs.server");
+    return getItemRequirementsMap(allNames());
+  },
+);
