@@ -24,7 +24,7 @@ import {
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
-import type { PriceRow, Trend } from "@/lib/osrs.server";
+import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,13 +35,24 @@ import {
 } from "@/components/ui/select";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
-type SortKey = "drop" | "cheap" | "upgrade";
+type SortKey = "gainers" | "losers" | "expensive" | "cheap";
 
 const DEFAULT_G = 2_000_000;
+const DEFAULT_RANGE: RangeKey = "6m";
+
+const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
+  { key: "1d", label: "24h" },
+  { key: "1w", label: "1w" },
+  { key: "1m", label: "1m" },
+  { key: "3m", label: "3m" },
+  { key: "6m", label: "6m" },
+  { key: "1y", label: "1y" },
+];
 
 const homeSearchSchema = z.object({
   filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
-  sort: z.enum(["drop", "cheap", "upgrade"]).catch("drop"),
+  sort: z.enum(["gainers", "losers", "expensive", "cheap"]).catch("gainers"),
+  range: z.enum(["1d", "1w", "1m", "3m", "6m", "1y"]).catch(DEFAULT_RANGE),
   q: z.string().catch(""),
   combat: z.string().catch("all"),
   slot: z.string().catch("all"),
@@ -62,13 +73,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Live OSRS Grand Exchange prices for gear and skilling supplies, with 180-day buy signals so you know when an item is actually cheap.",
+          "Live OSRS Grand Exchange prices for gear and skilling supplies, with range-based buy signals so you know when an item is actually cheap.",
       },
       { property: "og:title", content: "GE Watch — OSRS Gear & Skilling Price Tracker" },
       {
         property: "og:description",
         content:
-          "Live OSRS prices for gear upgrades and wiki-recommended skilling supplies, scored against their 180-day range.",
+          "Live OSRS prices for gear upgrades and wiki-recommended skilling supplies, scored against their selected range.",
       },
     ],
   }),
@@ -76,30 +87,6 @@ export const Route = createFileRoute("/")({
 });
 
 const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
-
-const STR_BONUS: Record<string, number> = {
-  "Abyssal whip": 82,
-  "Dragon scimitar": 67,
-  "Bandos chestplate": 4,
-  "Bandos tassets": 2,
-  "Amulet of torture": 10,
-  "Amulet of fury": 8,
-  "Amulet of strength": 10,
-  "Primordial boots": 5,
-  "Dragon claws": 56,
-  "Ghrazi rapier": 94,
-  "Scythe of vitur (uncharged)": 75,
-  "Inquisitor's mace": 89,
-  "Torva full helm": 8,
-  "Torva platebody": 6,
-  "Torva platelegs": 4,
-  "Toxic blowpipe (empty)": 40,
-  "Dragon boots": 4,
-  "Ferocious gloves": 14,
-  "Berserker ring": 8,
-  "Ultor ring": 12,
-  "Amulet of rancour": 12,
-};
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sword,
@@ -112,19 +99,8 @@ function priceOf(row: PriceRow): number {
   return row.high ?? row.low ?? 0;
 }
 
-function dropFraction(row: PriceRow, trend?: Trend): number {
-  if (!trend?.high180) return 0;
-  const p = priceOf(row);
-  if (p <= 0) return 0;
-  return Math.max(0, (trend.high180 - p) / trend.high180);
-}
-
-function upgradeScore(row: PriceRow): number {
-  const str = STR_BONUS[row.name];
-  if (str == null || str <= 0) return -1;
-  const p = priceOf(row);
-  if (p <= 0) return -1;
-  return (str / p) * 1_000_000;
+function rangeChange(trend?: Trend): number {
+  return trend?.change30 ?? 0;
 }
 
 function isSuppliesItem(tags: string[]) {
@@ -145,7 +121,17 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
 function Home() {
   const navigate = useNavigate({ from: "/" });
   const search = Route.useSearch();
-  const { filter, sort, q: query, combat: gearCombat, slot: gearSlot, tier: gearTier, skill, g } = search;
+  const {
+    filter,
+    sort,
+    range,
+    q: query,
+    combat: gearCombat,
+    slot: gearSlot,
+    tier: gearTier,
+    skill,
+    g,
+  } = search;
   const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
 
   const patchSearch = (patch: Partial<HomeSearch>) => {
@@ -154,7 +140,8 @@ function Home() {
         const next = { ...prev, ...patch };
         const cleaned: Record<string, string | number> = {};
         if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
-        if (next.sort && next.sort !== "drop") cleaned.sort = next.sort;
+        if (next.sort && next.sort !== "gainers") cleaned.sort = next.sort;
+        if (next.range && next.range !== DEFAULT_RANGE) cleaned.range = next.range;
         if (next.q) cleaned.q = next.q;
         if (next.combat && next.combat !== "all") cleaned.combat = next.combat;
         if (next.slot && next.slot !== "all") cleaned.slot = next.slot;
@@ -176,9 +163,9 @@ function Home() {
     refetchInterval: 120_000,
   });
   const trends = useQuery({
-    queryKey: ["osrs-trends"],
-    queryFn: () => trendsFn(),
-    staleTime: 30 * 60_000,
+    queryKey: ["osrs-trends", range],
+    queryFn: () => trendsFn({ data: { range } }),
+    staleTime: range === "1d" || range === "1w" ? 5 * 60_000 : 30 * 60_000,
   });
 
   const rowsByName = useMemo(
@@ -260,17 +247,18 @@ function Home() {
       if (sort === "cheap") {
         return priceOf(a) - priceOf(b) || a.name.localeCompare(b.name);
       }
-      if (sort === "upgrade") {
-        const ua = upgradeScore(a);
-        const ub = upgradeScore(b);
-        if (ua < 0 && ub < 0) return a.name.localeCompare(b.name);
-        if (ua < 0) return 1;
-        if (ub < 0) return -1;
-        return ub - ua || a.name.localeCompare(b.name);
+      if (sort === "expensive") {
+        return priceOf(b) - priceOf(a) || a.name.localeCompare(b.name);
       }
-      const da = dropFraction(a, trendMap[a.id]);
-      const db = dropFraction(b, trendMap[b.id]);
-      return db - da || a.name.localeCompare(b.name);
+      if (sort === "gainers") {
+        const ca = rangeChange(trendMap[a.id]);
+        const cb = rangeChange(trendMap[b.id]);
+        return cb - ca || a.name.localeCompare(b.name);
+      }
+      // losers
+      const ca = rangeChange(trendMap[a.id]);
+      const cb = rangeChange(trendMap[b.id]);
+      return ca - cb || a.name.localeCompare(b.name);
     });
   }, [groups, trends.data, sort]);
 
@@ -304,7 +292,7 @@ function Home() {
 
   const showGearSub = filter === "gear";
   const showSkillSub = filter === "skilling";
-  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${skill}:${sort}:${query}`;
+  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${skill}:${sort}:${range}:${query}`;
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
@@ -331,7 +319,7 @@ function Home() {
           />
         </div>
         {!showCraftingMethods && (
-          <div className="flex flex-col gap-2 sm:w-72">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-md">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -341,16 +329,35 @@ function Home() {
                 className="pl-9"
               />
             </div>
-            <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
-              <SelectTrigger className="h-9 w-full text-xs" aria-label="Sort items">
-                <SelectValue placeholder="Sort by…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="drop">Largest drop</SelectItem>
-                <SelectItem value="cheap">Cheapest</SelectItem>
-                <SelectItem value="upgrade">Best upgrade</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
+                <SelectTrigger className="h-9 w-[7.5rem] shrink-0 text-xs" aria-label="Sort items">
+                  <SelectValue placeholder="Sort by…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gainers">Gainers</SelectItem>
+                  <SelectItem value="losers">Losers</SelectItem>
+                  <SelectItem value="expensive">Expensive</SelectItem>
+                  <SelectItem value="cheap">Cheap</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex min-w-0 flex-1 flex-wrap gap-1">
+                {RANGE_OPTIONS.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => patchSearch({ range: r.key })}
+                    className={`rounded-md px-1.5 py-1 text-[10px] font-semibold tabular-nums transition-colors sm:px-2 sm:text-xs ${
+                      range === r.key
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
