@@ -384,19 +384,43 @@ function Home() {
   const showSupplySub = filter === "supplies";
   const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${supplyType}:${sort}:${range}:${query}`;
 
-  const combatSkillsSummary = useMemo(() => {
-    if (!playerSkills) return null;
-    const keys = ["attack", "strength", "defence", "ranged", "magic", "prayer", "hitpoints"] as const;
-    return keys
-      .map((k) => {
-        const lvl = playerSkills[k];
-        if (lvl == null) return null;
-        const short = k === "hitpoints" ? "HP" : k.slice(0, 3).toUpperCase();
-        return `${short} ${lvl}`;
+  // Always show combat skills; when a skilling filter is active, append that skill at the end.
+  const skillBarEntries = useMemo(() => {
+    if (!playerSkills) return [];
+    const combat: { key: string; icon: string; label: string; level: number }[] = [
+      { key: "attack", icon: "Attack_icon.png", label: "Attack" },
+      { key: "strength", icon: "Strength_icon.png", label: "Strength" },
+      { key: "defence", icon: "Defence_icon.png", label: "Defence" },
+      { key: "ranged", icon: "Ranged_icon.png", label: "Ranged" },
+      { key: "magic", icon: "Magic_icon.png", label: "Magic" },
+      { key: "prayer", icon: "Prayer_icon.png", label: "Prayer" },
+      { key: "hitpoints", icon: "Hitpoints_icon.png", label: "Hitpoints" },
+    ]
+      .map((s) => {
+        const level = playerSkills[s.key];
+        if (level == null) return null;
+        return { ...s, level };
       })
-      .filter(Boolean)
-      .join(" · ");
-  }, [playerSkills]);
+      .filter((s): s is NonNullable<typeof s> => s != null);
+
+    // Dynamic trailing skill when a specific skilling method is selected
+    if (filter === "skilling" && skill !== "all") {
+      const already = combat.some((s) => s.key === skill);
+      if (!already) {
+        const fromFilters = SKILLING_FILTERS.find((f) => f.key === skill);
+        const level = playerSkills[skill];
+        if (level != null) {
+          combat.push({
+            key: skill,
+            icon: fromFilters?.wikiIcon ?? `${skill.charAt(0).toUpperCase()}${skill.slice(1)}_icon.png`,
+            label: fromFilters?.label ?? skill.charAt(0).toUpperCase() + skill.slice(1),
+            level,
+          });
+        }
+      }
+    }
+    return combat;
+  }, [playerSkills, filter, skill]);
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
@@ -481,13 +505,35 @@ function Home() {
               {(playerQuery.error as Error)?.message ?? "Lookup failed"}
             </p>
           )}
-          {playerSkills && combatSkillsSummary && (
-            <p
-              className="truncate text-[11px] tabular-nums text-muted-foreground"
-              title={combatSkillsSummary}
-            >
-              {playerQuery.data?.name ?? activeRsn}: {combatSkillsSummary}
-            </p>
+          {playerSkills && skillBarEntries.length > 0 && (
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <p className="truncate text-[10px] font-medium text-muted-foreground">
+                {playerQuery.data?.name ?? activeRsn}
+              </p>
+              <div
+                className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"
+                title={skillBarEntries.map((s) => `${s.label} ${s.level}`).join(" · ")}
+              >
+                {skillBarEntries.map((s) => (
+                  <span
+                    key={s.key}
+                    className="inline-flex items-center gap-0.5 tabular-nums text-[11px] text-muted-foreground"
+                    title={`${s.label} ${s.level}`}
+                  >
+                    <WikiImage
+                      icon={s.icon}
+                      alt=""
+                      width={14}
+                      height={14}
+                      lazy={false}
+                      className="size-3.5 shrink-0"
+                      draggable={false}
+                    />
+                    <span className="font-semibold text-foreground/90">{s.level}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
