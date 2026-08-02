@@ -143,15 +143,24 @@ export function CraftingMethodsPanel({
       }
 
       const outRow = rowsByName.get(method.output.name);
-      const out = sellPrice(outRow);
-      if (out == null) missing = true;
+      const outUnit = sellPrice(outRow);
+      if (outUnit == null) missing = true;
 
-      const baselineOut = avg30Price(outRow, trendsById);
-      if (baselineOut == null) baselineMissing = true;
+      const baselineOutUnit = avg30Price(outRow, trendsById);
+      if (baselineOutUnit == null) baselineMissing = true;
 
-      const profitPerCraft = missing || out == null ? null : out - inputCost;
+      // Output qty must be applied (e.g. 8 dart tips, 15 bolt tips per action)
+      const outQty = method.output.qty;
+      const outValue = outUnit == null ? null : outUnit * outQty;
+      const baselineOutValue =
+        baselineOutUnit == null ? null : baselineOutUnit * outQty;
+
+      const profitPerCraft =
+        missing || outValue == null ? null : outValue - inputCost;
       const baselineNet =
-        baselineMissing || baselineOut == null ? null : baselineOut - baselineInput;
+        baselineMissing || baselineOutValue == null
+          ? null
+          : baselineOutValue - baselineInput;
 
       const netChangePct =
         profitPerCraft != null && baselineNet != null
@@ -493,7 +502,9 @@ function PartChip({
   row: PriceRow | undefined;
   kind: "input" | "output";
 }) {
-  const price = kind === "input" ? buyPrice(row) : sellPrice(row);
+  const unit = kind === "input" ? buyPrice(row) : sellPrice(row);
+  // Show total value for the qty used/produced in this action
+  const price = unit == null ? null : unit * qty;
 
   const inner = (
     <>
@@ -526,7 +537,7 @@ function PartChip({
         to="/item/$id"
         params={{ id: String(row.id) }}
         className={className}
-        title={name}
+        title={qty > 1 && unit != null ? `${name} × ${qty} @ ${gp(unit)} each` : name}
         aria-label={`View ${name} price history`}
         onClick={saveScroll}
       >
