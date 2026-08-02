@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Shield,
@@ -10,6 +10,9 @@ import {
   Target,
   Sparkles,
   Package,
+  User,
+  X,
+  Loader2,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -24,7 +27,13 @@ import {
 } from "@/lib/osrs-catalog";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
 import { costPerBonus } from "@/lib/item-bonuses";
-import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
+import { fetchSnapshot, fetchTrends, fetchPlayerStats, fetchItemRequirements } from "@/lib/osrs.functions";
+import {
+  PLAYER_STORAGE_KEY,
+  meetsRequirements,
+  firstMissingRequirement,
+  type PlayerSkills,
+} from "@/lib/player-stats";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
 import { WikiImage } from "@/components/WikiImage";
@@ -153,6 +162,19 @@ function Home() {
   } = search;
   const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
 
+  const [rsnDraft, setRsnDraft] = useState("");
+  const [activeRsn, setActiveRsn] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(PLAYER_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (activeRsn) setRsnDraft(activeRsn);
+  }, [activeRsn]);
+
   const patchSearch = (patch: Partial<HomeSearch>) => {
     void navigate({
       search: (prev) => {
@@ -188,6 +210,28 @@ function Home() {
     queryFn: () => trendsFn({ data: { range } }),
     staleTime: range === "1d" || range === "1w" ? 5 * 60_000 : 30 * 60_000,
   });
+
+  const playerStatsFn = useServerFn(fetchPlayerStats);
+  const itemReqsFn = useServerFn(fetchItemRequirements);
+
+  const playerQuery = useQuery({
+    queryKey: ["osrs-player", activeRsn],
+    queryFn: () => playerStatsFn({ data: { rsn: activeRsn! } }),
+    enabled: !!activeRsn,
+    staleTime: 10 * 60_000,
+    retry: 1,
+  });
+
+  const playerSkills: PlayerSkills | null = playerQuery.data?.skills ?? null;
+
+  const itemReqsQuery = useQuery({
+    queryKey: ["osrs-item-reqs"],
+    queryFn: () => itemReqsFn(),
+    enabled: !!playerSkills,
+    staleTime: 24 * 60 * 60_000,
+  });
+
+  const itemReqs = itemReqsQuery.data ?? {};
 
   const rowsByName = useMemo(
     () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
@@ -288,14 +332,12 @@ function Home() {
         return cb - ca || a.name.localeCompare(b.name);
       }
       if (sort === "value") {
-        // Cost per offensive bonus (Str / Ranged Str / Magic dmg %). Lower = better.
         const tagsA = itemByName.get(a.name)?.tags ?? [];
         const tagsB = itemByName.get(b.name)?.tags ?? [];
         const va = costPerBonus(priceOf(a), a.name, tagsA, gearCombat);
         const vb = costPerBonus(priceOf(b), b.name, tagsB, gearCombat);
         return va - vb || a.name.localeCompare(b.name);
       }
-      // losers
       const ca = rangeChange(trendMap[a.id]);
       const cb = rangeChange(trendMap[b.id]);
       return ca - cb || a.name.localeCompare(b.name);
@@ -342,6 +384,20 @@ function Home() {
   const showSupplySub = filter === "supplies";
   const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${supplyType}:${sort}:${range}:${query}`;
 
+  const combatSkillsSummary = useMemo(() => {
+    if (!playerSkills) return null;
+    const keys = ["attack", "strength", "defence", "ranged", "magic", "prayer", "hitpoints"] as const;
+    return keys
+      .map((k) => {
+        const lvl = playerSkills[k];
+        if (lvl == null) return null;
+        const short = k === "hitpoints" ? "HP" : k.slice(0, 3).toUpperCase();
+        return `${short} ${lvl}`;
+      })
+      .filter(Boolean)
+      .join(" · ");
+  }, [playerSkills]);
+
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
       <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:flex-row sm:items-start sm:px-6 pointer-events-auto isolate">
@@ -366,6 +422,75 @@ function Home() {
             icon={<Package className="size-3.5" />}
           />
         </div>
+
+        {/* Player RSN lookup */}
+        <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
+          <form
+            className="flex items-center gap-1.5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const next = rsnDraft.trim();
+              if (!next) return;
+              try {
+                localStorage.setItem(PLAYER_STORAGE_KEY, next);
+              } catch {
+                /* private mode */
+              }
+              setActiveRsn(next);
+            }}
+          >
+            <div className="relative min-w-0 flex-1">
+              <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={rsnDraft}
+                onChange={(e) => setRsnDraft(e.target.value)}
+                placeholder="RSN…"
+                className="h-9 pl-8 pr-8 text-xs"
+                aria-label="Old School RuneScape username"
+                autoComplete="username"
+              />
+              {activeRsn && (
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear player"
+                  onClick={() => {
+                    try {
+                      localStorage.removeItem(PLAYER_STORAGE_KEY);
+                    } catch {
+                      /* */
+                    }
+                    setActiveRsn(null);
+                    setRsnDraft("");
+                  }}
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={!rsnDraft.trim() || playerQuery.isFetching}
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/60 px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+            >
+              {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
+            </button>
+          </form>
+          {playerQuery.isError && (
+            <p className="text-[11px] text-destructive">
+              {(playerQuery.error as Error)?.message ?? "Lookup failed"}
+            </p>
+          )}
+          {playerSkills && combatSkillsSummary && (
+            <p
+              className="truncate text-[11px] tabular-nums text-muted-foreground"
+              title={combatSkillsSummary}
+            >
+              {playerQuery.data?.name ?? activeRsn}: {combatSkillsSummary}
+            </p>
+          )}
+        </div>
+
         {!showCraftingMethods && (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-md">
             <div className="relative">
@@ -507,7 +632,7 @@ function Home() {
             <WikiIconTab
               key={f.key}
               active={skill === f.key}
-              onClick={() => patchSearch({ skill: f.key })}
+              onClick={() => patchSearch({ skill: skill === f.key ? "all" : f.key })}
               label={f.label}
               wikiIcon={f.wikiIcon}
             />
@@ -556,6 +681,7 @@ function Home() {
           trendsById={trends.data}
           moneyPerHour={moneyPerHour}
           onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
         />
       )}
 
@@ -574,9 +700,20 @@ function Home() {
             key={gridKey}
             className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
           >
-            {allRows.map((row) => (
-              <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
-            ))}
+            {allRows.map((row) => {
+              const reqs = itemReqs[row.id];
+              const locked = playerSkills != null && !meetsRequirements(playerSkills, reqs);
+              const lockReason = locked ? firstMissingRequirement(playerSkills, reqs) : null;
+              return (
+                <ItemCard
+                  key={row.id}
+                  row={row}
+                  trend={trends.data?.[row.id]}
+                  locked={locked}
+                  lockReason={lockReason}
+                />
+              );
+            })}
           </div>
         </>
       )}
