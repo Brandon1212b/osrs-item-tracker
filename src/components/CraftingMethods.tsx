@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow } from "@/lib/osrs.server";
 import { gp } from "@/lib/format";
 
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
+const SCROLL_KEY = "ge-watch-home-scroll";
 
 function buyPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
@@ -20,6 +22,14 @@ function iconUrl(row: PriceRow | undefined, name: string) {
     return `${ICON_BASE}${encodeURIComponent(row.icon.replace(/ /g, "_"))}`;
   }
   return `${ICON_BASE}${encodeURIComponent(name.replace(/ /g, "_")) + ".png"}`;
+}
+
+function saveScroll() {
+  try {
+    sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+  } catch {
+    /* private mode */
+  }
 }
 
 type Ranked = {
@@ -190,8 +200,8 @@ function PartChip({
       ? "text-destructive"
       : "text-[color:var(--deal)]";
 
-  return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/30 px-1.5 py-1">
+  const inner = (
+    <>
       <img
         src={iconUrl(row, name)}
         alt=""
@@ -207,8 +217,27 @@ function PartChip({
       <span className={`font-semibold tabular-nums ${color}`}>
         {price == null ? "—" : gp(price)}
       </span>
-    </span>
+    </>
   );
+
+  const className =
+    "inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/30 px-1.5 py-1 transition-colors hover:border-primary/50 hover:bg-primary/10";
+
+  if (row?.id != null) {
+    return (
+      <Link
+        to="/item/$id"
+        params={{ id: String(row.id) }}
+        className={className}
+        aria-label={`View ${name} price history`}
+        onClick={saveScroll}
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return <span className={className}>{inner}</span>;
 }
 
 function Stat({
