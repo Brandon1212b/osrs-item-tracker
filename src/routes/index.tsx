@@ -111,6 +111,18 @@ function isSuppliesItem(tags: string[]) {
   return tags.includes("supplies") || tags.includes("food") || tags.includes("potion");
 }
 
+/** Deduplicate rows by GE item id (same item can appear in multiple catalog groups). */
+function uniqueById(rows: PriceRow[]): PriceRow[] {
+  const seen = new Set<number>();
+  const out: PriceRow[] = [];
+  for (const row of rows) {
+    if (seen.has(row.id)) continue;
+    seen.add(row.id);
+    out.push(row);
+  }
+  return out;
+}
+
 function Home() {
   const snapshotFn = useServerFn(fetchSnapshot);
   const trendsFn = useServerFn(fetchTrends);
@@ -139,11 +151,20 @@ function Home() {
     [snapshot.data],
   );
 
+  // Merge tags when the same item appears in multiple catalog groups
   const itemByName = useMemo(() => {
     const map = new Map<string, CatalogItem>();
     for (const g of CATALOG) {
       for (const i of g.items) {
-        map.set(i.name, i);
+        const existing = map.get(i.name);
+        if (existing) {
+          map.set(i.name, {
+            name: i.name,
+            tags: [...new Set([...existing.tags, ...i.tags])],
+          });
+        } else {
+          map.set(i.name, i);
+        }
       }
     }
     return map;
@@ -185,7 +206,10 @@ function Home() {
   }, [filter, query, rowsByName, gearCombat, gearSlot, gearTier, skill, itemByName]);
 
   const allRows = useMemo(() => {
-    const rows = groups.flatMap((g) => g.rows);
+    // Deduplicate first — same GE id can come from multiple catalog groups
+    // (e.g. Avernic treads, Steel bar, Ahrim's hood). Duplicate React keys
+    // caused cards to stick/repeat when filters changed.
+    const rows = uniqueById(groups.flatMap((g) => g.rows));
     const trendMap = trends.data ?? {};
 
     return [...rows].sort((a, b) => {
@@ -216,6 +240,9 @@ function Home() {
 
   const showGearSub = filter === "gear";
   const showSkillSub = filter === "skilling";
+
+  // Key the grid by filter state so React never reuses a stuck card across filter changes
+  const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${skill}:${sort}:${query}`;
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
@@ -279,7 +306,6 @@ function Home() {
             ))}
           </div>
 
-          {/* Paper doll stays compact; tiers sit beside it on wider screens */}
           <div className="flex flex-wrap items-start gap-3">
             <EquipmentPaperDoll active={gearSlot} onSelect={setGearSlot} />
             <div className="flex flex-col gap-1.5">
@@ -336,7 +362,10 @@ function Home() {
       )}
 
       {!snapshot.isLoading && allRows.length > 0 && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          key={gridKey}
+          className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {allRows.map((row) => (
             <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
           ))}
@@ -356,7 +385,6 @@ function Home() {
   );
 }
 
-/** Fixed-size OSRS worn-equipment paper doll — never stretches. */
 function EquipmentPaperDoll({
   active,
   onSelect,
