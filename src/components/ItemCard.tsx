@@ -6,7 +6,7 @@ import { gp, signalOf } from "@/lib/format";
 const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 const SCROLL_KEY = "ge-watch-home-scroll";
 
-/** % vs 180-day high: negative = cheaper than the peak. */
+/** % vs range high: negative = cheaper than the peak in the selected window. */
 function pctFromHigh(price: number | null | undefined, trend?: Trend): number | null {
   if (price == null || !trend?.high180 || trend.high180 <= 0) return null;
   return Math.round(((price - trend.high180) / trend.high180) * 1000) / 10;
@@ -65,7 +65,7 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
                         : "var(--secondary)",
                   color: pct < 0 ? "var(--deal)" : pct > 0 ? "var(--steep)" : "var(--muted-foreground)",
                 }}
-                title="vs 180-day high"
+                title="vs range high"
               >
                 {pct > 0 ? "+" : ""}
                 {pct}%
