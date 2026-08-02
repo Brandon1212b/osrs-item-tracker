@@ -36,6 +36,7 @@ import {
 } from "@/lib/player-stats";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
+import { ConstructionMethodsPanel } from "@/components/ConstructionMethods";
 import { WikiImage } from "@/components/WikiImage";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
@@ -264,9 +265,11 @@ function Home() {
   );
 
   const showCraftingMethods = filter === "skilling" && skill === "crafting";
+  const showConstructionMethods = filter === "skilling" && skill === "construction";
+  const showSkillingMethods = showCraftingMethods || showConstructionMethods;
 
   const groups = useMemo(() => {
-    if (showCraftingMethods) return [];
+    if (showSkillingMethods) return [];
     const q = query.trim().toLowerCase();
     return CATALOG.filter((g) => {
       if (filter === "all") return true;
@@ -302,7 +305,7 @@ function Home() {
       }))
       .filter((g) => g.rows.length > 0);
   }, [
-    showCraftingMethods,
+    showSkillingMethods,
     filter,
     query,
     rowsByName,
@@ -384,7 +387,6 @@ function Home() {
   const showSupplySub = filter === "supplies";
   const gridKey = `${filter}:${gearCombat}:${gearSlot}:${gearTier}:${gearSet}:${skill}:${supplyType}:${sort}:${range}:${query}`;
 
-  // Always show combat skills; when a skilling filter is active, append that skill at the end.
   const skillBarEntries = useMemo(() => {
     if (!playerSkills) return [];
     const combat: { key: string; icon: string; label: string; level: number }[] = [
@@ -403,7 +405,6 @@ function Home() {
       })
       .filter((s): s is NonNullable<typeof s> => s != null);
 
-    // Dynamic trailing skill when a specific skilling method is selected
     if (filter === "skilling" && skill !== "all") {
       const already = combat.some((s) => s.key === skill);
       if (!already) {
@@ -447,7 +448,6 @@ function Home() {
           />
         </div>
 
-        {/* Player RSN lookup */}
         <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
           <form
             className="flex items-center gap-1.5"
@@ -537,7 +537,7 @@ function Home() {
           )}
         </div>
 
-        {!showCraftingMethods && (
+        {!showSkillingMethods && (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-md">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -584,7 +584,6 @@ function Home() {
 
       {showGearSub && (
         <div className="mt-4 flex flex-col gap-2.5">
-          {/* Primary filter: combat style */}
           <div className="flex flex-wrap gap-1.5">
             <SubTab
               active={gearCombat === "all"}
@@ -607,14 +606,12 @@ function Home() {
             ))}
           </div>
 
-          {/* Secondary filters: slot + progression + wiki stage (sub of progression) */}
           <div className="flex flex-wrap items-start gap-3 rounded-lg border border-border/50 bg-secondary/15 p-2.5">
             <EquipmentPaperDoll
               active={gearSlot}
               onSelect={(slot) => patchSearch({ slot })}
             />
 
-            {/* Progression + Wiki stage sit side-by-side (including mobile) */}
             <div className="flex min-w-0 flex-1 items-start gap-3">
               <div className="flex shrink-0 flex-col gap-1.5">
                 <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -731,7 +728,17 @@ function Home() {
         />
       )}
 
-      {!snapshot.isLoading && !showCraftingMethods && allRows.length > 0 && (
+      {!snapshot.isLoading && showConstructionMethods && (
+        <ConstructionMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && !showSkillingMethods && allRows.length > 0 && (
         <>
           {showGearSub && totalCost > 0 && (
             <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm">
@@ -764,7 +771,7 @@ function Home() {
         </>
       )}
 
-      {!snapshot.isLoading && !showCraftingMethods && allRows.length === 0 && (
+      {!snapshot.isLoading && !showSkillingMethods && allRows.length === 0 && (
         <p className="mt-10 text-center text-sm text-muted-foreground">
           Nothing matches that filter right now.
         </p>
