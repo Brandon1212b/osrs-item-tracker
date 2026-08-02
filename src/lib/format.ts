@@ -14,7 +14,7 @@ export type Signal = {
   rank: number;
 };
 
-/** Turns the 180-day percentile into a plain buying recommendation. */
+/** Turns the range percentile into a plain buying recommendation. */
 export function signalOf(trend?: Trend): Signal {
   if (!trend) return { label: "No data", token: "fair", rank: 2 };
   const p = trend.percentile;
