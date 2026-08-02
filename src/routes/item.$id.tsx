@@ -7,6 +7,7 @@ import { fetchItemDetail } from "@/lib/osrs.functions";
 import type { EquipmentStats, RangeKey } from "@/lib/osrs.server";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { PriceChart } from "@/components/PriceChart";
+import { WikiImage } from "@/components/WikiImage";
 import { gp, signalOf, timeAgo } from "@/lib/format";
 
 const RANGES: { key: RangeKey; label: string }[] = [
@@ -17,8 +18,6 @@ const RANGES: { key: RangeKey; label: string }[] = [
   { key: "6m", label: "6M" },
   { key: "1y", label: "1Y" },
 ];
-
-const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
 
 /** Same icons as Template:Infobox Bonuses on the OSRS Wiki. */
 const BONUS_ICONS = {
@@ -112,12 +111,13 @@ function ItemPage() {
       {row && d && (
         <>
           <header className="panel mt-4 flex flex-wrap items-start gap-4 p-5 sm:p-6">
-            <img
-              src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(row.icon.replace(/ /g, "_"))}`}
+            <WikiImage
+              icon={row.icon}
               alt={row.name}
               width={48}
               height={48}
-              className="size-12 object-contain drop-shadow"
+              lazy={false}
+              className="size-12 drop-shadow"
             />
             <div className="min-w-0 flex-1">
               <h1 className="font-sans text-2xl font-bold leading-tight sm:text-3xl">{row.name}</h1>
@@ -321,12 +321,13 @@ function BonusRow({
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto">
       <div className="flex w-16 shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        <img
-          src={`${WIKI_IMG}${encodeURIComponent(headerIcon)}`}
+        <WikiImage
+          icon={headerIcon}
           alt=""
           width={14}
           height={14}
-          className="size-3.5 object-contain"
+          lazy={false}
+          className="size-3.5"
           draggable={false}
         />
         {headerLabel}
@@ -338,12 +339,13 @@ function BonusRow({
             title={c.alt}
             className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5"
           >
-            <img
-              src={`${WIKI_IMG}${encodeURIComponent(c.icon)}`}
+            <WikiImage
+              icon={c.icon}
               alt={c.alt}
               width={16}
               height={16}
-              className="size-4 object-contain"
+              lazy={false}
+              className="size-4"
               draggable={false}
             />
             <span
