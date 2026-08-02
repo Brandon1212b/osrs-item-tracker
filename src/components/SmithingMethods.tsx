@@ -64,11 +64,19 @@ function effectiveGpPerXp(xpPerHour: number, gpPerHour: number, moneyPerHour: nu
   return Math.round((effectiveCostPerHour / xpPerHour) * 10) / 10;
 }
 
+/** Compact number: 140000 → 140k, 1.2e6 → 1.20m. Always shows the real value (no Free+). */
+function compactNum(n: number): string {
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
+  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
+  if (abs >= 100) return `${sign}${Math.round(abs)}`;
+  return `${sign}${abs.toFixed(1)}`;
+}
+
 function formatCost(v: number | null): string {
   if (v == null) return "—";
-  if (v <= 0) return "Free+";
-  if (Math.abs(v) >= 100) return Math.round(v).toLocaleString();
-  return v.toFixed(1);
+  return compactNum(v);
 }
 
 function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend> | undefined): number | null {
@@ -390,7 +398,7 @@ function MethodRow({
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
-          <Stat label="XP/h" value={Math.round(xpPerHour).toLocaleString()} />
+          <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
           <Stat
             label="GP/h"
             value={gpPerHour == null ? "—" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
