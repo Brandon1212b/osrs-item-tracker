@@ -13,10 +13,12 @@ export const fetchSnapshot = createServerFn({ method: "GET" }).handler(async ():
   return getSnapshot(allNames());
 });
 
-export const fetchTrends = createServerFn({ method: "GET" }).handler(async (): Promise<Record<number, Trend>> => {
-  const { getTrends } = await import("./osrs.server");
-  return getTrends(allNames());
-});
+export const fetchTrends = createServerFn({ method: "GET" })
+  .inputValidator((d: { range?: RangeKey } | undefined) => d ?? {})
+  .handler(async ({ data }): Promise<Record<number, Trend>> => {
+    const { getTrends } = await import("./osrs.server");
+    return getTrends(allNames(), data.range ?? "6m");
+  });
 
 export const fetchItemDetail = createServerFn({ method: "GET" })
   .inputValidator((d: { id: number; range: RangeKey }) => d)
