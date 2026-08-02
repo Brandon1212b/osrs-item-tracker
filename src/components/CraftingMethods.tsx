@@ -186,7 +186,8 @@ function MoneyMakingSlider({
             className="inline-flex h-7 items-center rounded-full border border-border/60 bg-secondary/40 px-2.5 text-sm font-bold tabular-nums transition-colors hover:border-primary/50 hover:bg-primary/10"
             title="Tap to type a value"
           >
-            {gp(value)}<span className="ml-1 text-[10px] font-medium text-muted-foreground">gp/h</span>
+            {gp(value)}
+            <span className="ml-1 text-[10px] font-medium text-muted-foreground">gp/h</span>
           </button>
         )}
       </div>
