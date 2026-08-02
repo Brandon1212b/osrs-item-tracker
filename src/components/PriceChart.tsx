@@ -33,12 +33,15 @@ export function PriceChart({
   const max = Math.max(...prices);
   const span = max - min || 1;
 
-  // First occurrence of high / low in the series (for marker placement)
   const highIdx = prices.indexOf(max);
   const lowIdx = prices.indexOf(min);
 
   const x = (i: number) => padL + (i / (series.length - 1)) * (w - padL - padR);
   const y = (p: number) => padT + (1 - (p - min) / span) * (h - padT - padB);
+
+  // Percent positions for HTML overlays (match SVG viewBox)
+  const pctX = (i: number) => `${(x(i) / w) * 100}%`;
+  const pctY = (p: number) => `${(y(p) / h) * 100}%`;
 
   const line = series.map((s, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(s.p).toFixed(1)}`).join(" ");
   const area = `${line} L${x(series.length - 1)},${h - padB} L${padL},${h - padB} Z`;
@@ -49,81 +52,43 @@ export function PriceChart({
 
   const active = hover != null ? series[hover] : null;
 
-  // Callout placement: keep labels inside the chart
-  const callout = (i: number, value: number, label: string, kind: "high" | "low") => {
-    const cx = x(i);
-    const cy = y(value);
-    const preferRight = cx < w * 0.55;
-    const tx = preferRight ? cx + 10 : cx - 10;
-    const anchor = preferRight ? "start" : "end";
-    const ty = kind === "high" ? cy - 10 : cy + 16;
-    const color = kind === "high" ? "var(--steep)" : "var(--deal)";
-    return (
-      <g key={kind}>
-        <circle cx={cx} cy={cy} r="5" fill={color} stroke="var(--background)" strokeWidth="2" />
-        <circle cx={cx} cy={cy} r="2.5" fill="var(--background)" />
-        <text
-          x={tx}
-          y={ty}
-          textAnchor={anchor}
-          className="fill-current"
-          style={{ fill: color, fontSize: 12, fontWeight: 600 }}
-        >
-          {label} {gp(value)}
-        </text>
-        <text
-          x={tx}
-          y={ty + 13}
-          textAnchor={anchor}
-          style={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-        >
-          {fmtTime(series[i]!.t)}
-        </text>
-      </g>
-    );
-  };
-
   return (
     <div className="relative">
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        className="h-72 w-full touch-none"
-        preserveAspectRatio="none"
-        onMouseLeave={() => setHover(null)}
-        onMouseMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          const rel = ((e.clientX - r.left) / r.width) * w;
-          const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
-          setHover(Math.min(series.length - 1, Math.max(0, i)));
-        }}
-      >
-        <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={`var(--${tone})`} stopOpacity="0.35" />
-            <stop offset="100%" stopColor={`var(--${tone})`} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0, 0.25, 0.5, 0.75, 1].map((f) => (
-          <line
-            key={f}
-            x1={padL}
-            x2={w - padR}
-            y1={padT + f * (h - padT - padB)}
-            y2={padT + f * (h - padT - padB)}
-            stroke="var(--border)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
-        <path d={area} fill={`url(#${gid})`} />
-        <path d={line} fill="none" stroke={`var(--${tone})`} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <div className="relative h-72 w-full">
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          className="absolute inset-0 h-full w-full touch-none"
+          preserveAspectRatio="none"
+          onMouseLeave={() => setHover(null)}
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const rel = ((e.clientX - r.left) / r.width) * w;
+            const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
+            setHover(Math.min(series.length - 1, Math.max(0, i)));
+          }}
+        >
+          <defs>
+            <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={`var(--${tone})`} stopOpacity="0.35" />
+              <stop offset="100%" stopColor={`var(--${tone})`} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+            <line
+              key={f}
+              x1={padL}
+              x2={w - padR}
+              y1={padT + f * (h - padT - padB)}
+              y2={padT + f * (h - padT - padB)}
+              stroke="var(--border)"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          <path d={area} fill={`url(#${gid})`} />
+          <path d={line} fill="none" stroke={`var(--${tone})`} strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
-        {/* High / low markers on the actual series points */}
-        {callout(highIdx, max, "High", "high")}
-        {callout(lowIdx, min, "Low", "low")}
-
-        {active && hover != null && (
-          <>
+          {active && hover != null && (
             <line
               x1={x(hover)}
               x2={x(hover)}
@@ -134,22 +99,87 @@ export function PriceChart({
               vectorEffect="non-scaling-stroke"
               strokeDasharray="4 3"
             />
-            <circle cx={x(hover)} cy={y(active.p)} r="4" fill={`var(--${tone})`} vectorEffect="non-scaling-stroke" />
-          </>
-        )}
-      </svg>
+          )}
+        </svg>
 
-      <div className="pointer-events-none absolute inset-x-0 top-1 flex justify-center px-1 text-[11px] text-muted-foreground tabular-nums">
-        {active ? (
-          <span className="rounded bg-background/80 px-2 py-0.5 backdrop-blur">
-            {fmtTime(active.t)} · {gp(active.p)}
-          </span>
-        ) : null}
+        {/* HTML overlays — not stretched by preserveAspectRatio=none */}
+        <Marker
+          left={pctX(highIdx)}
+          top={pctY(max)}
+          kind="high"
+          label={`High ${gp(max)}`}
+          sub={fmtTime(series[highIdx]!.t)}
+          preferRight={highIdx / (series.length - 1) < 0.55}
+        />
+        <Marker
+          left={pctX(lowIdx)}
+          top={pctY(min)}
+          kind="low"
+          label={`Low ${gp(min)}`}
+          sub={fmtTime(series[lowIdx]!.t)}
+          preferRight={lowIdx / (series.length - 1) < 0.55}
+        />
+
+        {active && hover != null && (
+          <div
+            className="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background"
+            style={{
+              left: pctX(hover),
+              top: pctY(active.p),
+              background: `var(--${tone})`,
+            }}
+          />
+        )}
+
+        <div className="pointer-events-none absolute inset-x-0 top-1 flex justify-center px-1 text-xs text-muted-foreground tabular-nums">
+          {active ? (
+            <span className="rounded-md bg-background/90 px-2.5 py-1 font-medium shadow-sm backdrop-blur">
+              {fmtTime(active.t)} · {gp(active.p)}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="flex justify-between px-1 text-[11px] text-muted-foreground tabular-nums">
+      <div className="flex justify-between px-1 text-xs text-muted-foreground tabular-nums">
         <span>{fmtTime(series[0]!.t)}</span>
         <span>{fmtTime(series[series.length - 1]!.t)}</span>
+      </div>
+    </div>
+  );
+}
+
+function Marker({
+  left,
+  top,
+  kind,
+  label,
+  sub,
+  preferRight,
+}: {
+  left: string;
+  top: string;
+  kind: "high" | "low";
+  label: string;
+  sub: string;
+  preferRight: boolean;
+}) {
+  const color = kind === "high" ? "var(--steep)" : "var(--deal)";
+  return (
+    <div
+      className="pointer-events-none absolute z-[1] -translate-x-1/2 -translate-y-1/2"
+      style={{ left, top }}
+    >
+      <div
+        className="size-3 rounded-full border-2 border-background shadow-sm"
+        style={{ background: color }}
+      />
+      <div
+        className={`absolute top-1/2 whitespace-nowrap ${preferRight ? "left-full ml-2" : "right-full mr-2"} -translate-y-1/2`}
+      >
+        <div className="text-xs font-semibold tabular-nums leading-tight" style={{ color }}>
+          {label}
+        </div>
+        <div className="text-[11px] tabular-nums leading-tight text-muted-foreground">{sub}</div>
       </div>
     </div>
   );
