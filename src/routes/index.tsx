@@ -255,7 +255,6 @@ function Home() {
     });
   }, [groups, trends.data, sort]);
 
-  // Restore scroll after data is ready (returning from item detail)
   const restoredScroll = useRef(false);
   useEffect(() => {
     if (restoredScroll.current || snapshot.isLoading) return;
@@ -399,9 +398,9 @@ function Home() {
       )}
 
       {snapshot.isLoading && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="panel h-56 animate-pulse opacity-60" />
+            <div key={i} className="panel h-36 animate-pulse opacity-60 sm:h-56" />
           ))}
         </div>
       )}
@@ -415,7 +414,7 @@ function Home() {
       {!snapshot.isLoading && allRows.length > 0 && (
         <div
           key={gridKey}
-          className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
         >
           {allRows.map((row) => (
             <ItemCard key={row.id} row={row} trend={trends.data?.[row.id]} />
