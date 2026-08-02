@@ -92,7 +92,7 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Dragon hunter lance", tags: ["melee", "weapon", "one-handed", "late"] },
       { name: "Voidwaker", tags: ["melee", "weapon", "one-handed", "late"] },
       { name: "Dragon claws", tags: ["melee", "weapon", "two-handed", "late"] },
-      { name: "Noxious halberd", tags: ["melee", "weapon", "one-handed", "late"] },
+      { name: "Noxious halberd", tags: ["melee", "weapon", "two-handed", "late"] },
       { name: "Ghrazi rapier", tags: ["melee", "weapon", "one-handed", "late", "end"] },
       // End
       { name: "Justiciar faceguard", tags: ["melee", "head", "end"] },
