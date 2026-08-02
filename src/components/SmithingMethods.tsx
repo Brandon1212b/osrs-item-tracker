@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { SMITHING_METHODS, type SmithingMethod } from "@/lib/smithing-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
-import { gp } from "@/lib/format";
+import { gp, compactNum, formatCost } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import {
   Select,
@@ -62,21 +62,6 @@ function effectiveGpPerXp(xpPerHour: number, gpPerHour: number, moneyPerHour: nu
   if (xpPerHour <= 0 || moneyPerHour <= 0) return null;
   const effectiveCostPerHour = moneyPerHour - gpPerHour;
   return Math.round((effectiveCostPerHour / xpPerHour) * 10) / 10;
-}
-
-/** Compact number: 140000 → 140k, 1.2e6 → 1.20m. Always shows the real value (no Free+). */
-function compactNum(n: number): string {
-  const abs = Math.abs(n);
-  const sign = n < 0 ? "-" : "";
-  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
-  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
-  if (abs >= 100) return `${sign}${Math.round(abs)}`;
-  return `${sign}${abs.toFixed(1)}`;
-}
-
-function formatCost(v: number | null): string {
-  if (v == null) return "—";
-  return compactNum(v);
 }
 
 function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend> | undefined): number | null {

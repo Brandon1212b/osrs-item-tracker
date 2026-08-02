@@ -1,11 +1,30 @@
 import type { Trend } from "./osrs.server";
 
+/** Compact gold amounts: 140000 → 140k, negatives supported. */
 export function gp(n: number | null | undefined): string {
   if (n == null) return "—";
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}b`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 1 : 2)}m`;
-  if (n >= 100_000) return `${Math.round(n / 1000)}k`;
-  return n.toLocaleString();
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1_000_000_000) return `${sign}${(abs / 1_000_000_000).toFixed(2)}b`;
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
+  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
+  return `${sign}${Math.round(abs).toLocaleString()}`;
+}
+
+/** Compact number for XP rates / costs. 140000 → 140k. Always numeric (no Free+). */
+export function compactNum(n: number): string {
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
+  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
+  if (abs >= 100) return `${sign}${Math.round(abs)}`;
+  return `${sign}${abs.toFixed(1)}`;
+}
+
+/** Your-cost display: always the real number (including negatives / zero). */
+export function formatCost(v: number | null): string {
+  if (v == null) return "—";
+  return compactNum(v);
 }
 
 export type Signal = {

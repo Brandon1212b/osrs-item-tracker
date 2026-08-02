@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
-import { gp } from "@/lib/format";
+import { gp, compactNum, formatCost } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import {
   Select,
@@ -63,13 +63,6 @@ function effectiveGpPerXp(xpPerHour: number, gpPerHour: number, moneyPerHour: nu
   if (xpPerHour <= 0 || moneyPerHour <= 0) return null;
   const effectiveCostPerHour = moneyPerHour - gpPerHour;
   return Math.round((effectiveCostPerHour / xpPerHour) * 10) / 10;
-}
-
-function formatCost(v: number | null): string {
-  if (v == null) return "—";
-  if (v <= 0) return "Free+";
-  if (Math.abs(v) >= 100) return Math.round(v).toLocaleString();
-  return v.toFixed(1);
 }
 
 function avg30Price(row: PriceRow | undefined, trendsById: Record<number, Trend> | undefined): number | null {
@@ -394,7 +387,7 @@ function MethodRow({
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
-          <Stat label="XP/h" value={Math.round(xpPerHour).toLocaleString()} />
+          <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
           <Stat
             label="GP/h"
             value={gpPerHour == null ? "—" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
