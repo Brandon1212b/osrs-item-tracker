@@ -37,6 +37,7 @@ import {
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
 import { ConstructionMethodsPanel } from "@/components/ConstructionMethods";
+import { PrayerMethodsPanel } from "@/components/PrayerMethods";
 import { WikiImage } from "@/components/WikiImage";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
@@ -266,7 +267,8 @@ function Home() {
 
   const showCraftingMethods = filter === "skilling" && skill === "crafting";
   const showConstructionMethods = filter === "skilling" && skill === "construction";
-  const showSkillingMethods = showCraftingMethods || showConstructionMethods;
+  const showPrayerMethods = filter === "skilling" && skill === "prayer";
+  const showSkillingMethods = showCraftingMethods || showConstructionMethods || showPrayerMethods;
 
   const groups = useMemo(() => {
     if (showSkillingMethods) return [];
@@ -730,6 +732,16 @@ function Home() {
 
       {!snapshot.isLoading && showConstructionMethods && (
         <ConstructionMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showPrayerMethods && (
+        <PrayerMethodsPanel
           rowsByName={rowsByName}
           trendsById={trends.data}
           moneyPerHour={moneyPerHour}
