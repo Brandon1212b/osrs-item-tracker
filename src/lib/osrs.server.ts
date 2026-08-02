@@ -37,11 +37,13 @@ export type PriceRow = {
 
 export type Trend = {
   id: number;
-  /** 0-100: where today's price sits within the last 180 days. */
+  /** 0-100: where today's price sits within the selected range. */
   percentile: number;
+  /** High / low of the selected range (field names kept for compatibility). */
   low180: number;
   high180: number;
   avg30: number;
+  /** % change over the selected range (first → last). */
   change30: number;
   change90: number;
   series: { t: number; p: number }[];
@@ -72,8 +74,8 @@ type Cache<T> = { at: number; value: T };
 
 let mappingCache: Cache<MappingEntry[]> | null = null;
 let snapshotCache: Cache<PriceRow[]> | null = null;
-let trendCache: Cache<Record<number, Trend>> | null = null;
-let trendInFlight: Promise<Record<number, Trend>> | null = null;
+const trendCaches = new Map<string, Cache<Record<number, Trend>>>();
+const trendInFlights = new Map<string, Promise<Record<number, Trend>>>();
 const equipmentCache = new Map<number, Cache<EquipmentStats | null>>();
 
 const MIN = 60_000;
@@ -125,7 +127,11 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   return rows;
 }
 
-function summarise(id: number, points: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[]): Trend | null {
+function summarise(
+  id: number,
+  points: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[],
+  windowPoints = 180,
+): Trend | null {
   const series = points
     .map((p) => {
       const hi = p.avgHighPrice;
@@ -135,19 +141,29 @@ function summarise(id: number, points: { timestamp: number; avgHighPrice: number
     })
     .filter((x): x is { t: number; p: number } => x !== null);
 
-  if (series.length < 20) return null;
+  if (series.length < 5) return null;
 
-  const window = series.slice(-180);
+  const window = series.slice(-windowPoints);
   const prices = window.map((s) => s.p);
   const current = prices[prices.length - 1]!;
   const sorted = [...prices].sort((a, b) => a - b);
   const below = sorted.filter((p) => p < current).length;
   const percentile = Math.round((below / sorted.length) * 100);
 
-  const last30 = prices.slice(-30);
-  const avg30 = Math.round(last30.reduce((a, b) => a + b, 0) / last30.length);
+  // ~30 "points" of the window for a rolling avg when possible
+  const avgSlice = Math.max(1, Math.min(30, Math.floor(prices.length / 3)));
+  const lastAvg = prices.slice(-avgSlice);
+  const avg30 = Math.round(lastAvg.reduce((a, b) => a + b, 0) / lastAvg.length);
+
+  const first = prices[0]!;
+  const rangeChange = first ? Math.round(((current - first) / first) * 1000) / 10 : 0;
+
   const at = (back: number) => prices[Math.max(0, prices.length - 1 - back)]!;
   const pct = (from: number) => (from ? ((current - from) / from) * 100 : 0);
+
+  // Downsample series for sparklines when very dense
+  const step = window.length > 120 ? 2 : 1;
+  const spark = window.filter((_, i) => i % step === 0);
 
   return {
     id,
@@ -155,9 +171,9 @@ function summarise(id: number, points: { timestamp: number; avgHighPrice: number
     low180: sorted[0]!,
     high180: sorted[sorted.length - 1]!,
     avg30,
-    change30: Math.round(pct(at(30)) * 10) / 10,
-    change90: Math.round(pct(at(90)) * 10) / 10,
-    series: window.filter((_, i) => i % 2 === 0),
+    change30: rangeChange,
+    change90: Math.round(pct(at(Math.min(90, prices.length - 1))) * 10) / 10,
+    series: spark,
   };
 }
 
@@ -175,35 +191,9 @@ async function pool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>)
   return out;
 }
 
-export async function getTrends(names: string[]): Promise<Record<number, Trend>> {
-  if (trendCache && Date.now() - trendCache.at < 60 * MIN) return trendCache.value;
-  if (trendInFlight) return trendInFlight;
-
-  trendInFlight = (async () => {
-    const rows = await getSnapshot(names);
-    const result: Record<number, Trend> = {};
-    await pool(rows, 10, async (row) => {
-      try {
-        const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
-          `/timeseries?timestep=24h&id=${row.id}`,
-        );
-        const t = summarise(row.id, res.data ?? []);
-        if (t) result[row.id] = t;
-      } catch {
-        /* skip individual failures */
-      }
-    });
-    trendCache = { at: Date.now(), value: result };
-    trendInFlight = null;
-    return result;
-  })();
-
-  return trendInFlight;
-}
-
 export type RangeKey = "1d" | "1w" | "1m" | "3m" | "6m" | "1y";
 
-const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points: number; label: string }> = {
+export const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points: number; label: string }> = {
   "1d": { step: "5m", points: 288, label: "24 hours" },
   "1w": { step: "1h", points: 168, label: "7 days" },
   "1m": { step: "6h", points: 120, label: "30 days" },
@@ -211,6 +201,38 @@ const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points: numbe
   "6m": { step: "24h", points: 180, label: "6 months" },
   "1y": { step: "24h", points: 365, label: "1 year" },
 };
+
+export async function getTrends(names: string[], range: RangeKey = "6m"): Promise<Record<number, Trend>> {
+  const cached = trendCaches.get(range);
+  const ttl = range === "1d" || range === "1w" ? 5 * MIN : 60 * MIN;
+  if (cached && Date.now() - cached.at < ttl) return cached.value;
+
+  const inFlight = trendInFlights.get(range);
+  if (inFlight) return inFlight;
+
+  const promise = (async () => {
+    const rows = await getSnapshot(names);
+    const cfg = RANGES[range];
+    const result: Record<number, Trend> = {};
+    await pool(rows, 10, async (row) => {
+      try {
+        const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+          `/timeseries?timestep=${cfg.step}&id=${row.id}`,
+        );
+        const t = summarise(row.id, res.data ?? [], cfg.points);
+        if (t) result[row.id] = t;
+      } catch {
+        /* skip individual failures */
+      }
+    });
+    trendCaches.set(range, { at: Date.now(), value: result });
+    trendInFlights.delete(range);
+    return result;
+  })();
+
+  trendInFlights.set(range, promise);
+  return promise;
+}
 
 export type ItemDetail = {
   row: PriceRow;
@@ -315,7 +337,10 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   ]);
   const series = (res.data ?? [])
     .map((p) => {
-      const mid = p.avgHighPrice != null && p.avgLowPrice != null ? (p.avgHighPrice + p.avgLowPrice) / 2 : (p.avgHighPrice ?? p.avgLowPrice);
+      const mid =
+        p.avgHighPrice != null && p.avgLowPrice != null
+          ? (p.avgHighPrice + p.avgLowPrice) / 2
+          : (p.avgHighPrice ?? p.avgLowPrice);
       return mid != null ? { t: p.timestamp * 1000, p: Math.round(mid) } : null;
     })
     .filter((x): x is { t: number; p: number } => x !== null)
@@ -324,7 +349,8 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   const prices = series.map((s) => s.p);
   const first = prices[0] ?? 0;
   const last = prices[prices.length - 1] ?? 0;
-  const trend = summarise(id, res.data ?? []);
+  // Keep a longer style trend for the percentile bar on the detail page
+  const trend = summarise(id, res.data ?? [], Math.max(cfg.points, 180));
 
   const value: ItemDetail = {
     row,
