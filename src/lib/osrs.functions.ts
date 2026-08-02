@@ -4,6 +4,13 @@ import { craftingMethodItemNames } from "./crafting-methods";
 import { constructionMethodItemNames } from "./construction-methods";
 import { prayerMethodItemNames } from "./prayer-methods";
 import { smithingMethodItemNames } from "./smithing-methods";
+import { magicMethodItemNames } from "./magic-methods";
+import { runecraftMethodItemNames } from "./runecraft-methods";
+import { farmingMethodItemNames } from "./farming-methods";
+import { fletchingMethodItemNames } from "./fletching-methods";
+import { cookingMethodItemNames } from "./cooking-methods";
+import { agilityMethodItemNames } from "./agility-methods";
+import { herbloreMethodItemNames } from "./herblore-methods";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -15,6 +22,13 @@ const allNames = () => {
       ...constructionMethodItemNames(),
       ...prayerMethodItemNames(),
       ...smithingMethodItemNames(),
+      ...magicMethodItemNames(),
+      ...runecraftMethodItemNames(),
+      ...farmingMethodItemNames(),
+      ...fletchingMethodItemNames(),
+      ...cookingMethodItemNames(),
+      ...agilityMethodItemNames(),
+      ...herbloreMethodItemNames(),
     ]),
   ];
 };

@@ -39,6 +39,13 @@ import { CraftingMethodsPanel } from "@/components/CraftingMethods";
 import { ConstructionMethodsPanel } from "@/components/ConstructionMethods";
 import { PrayerMethodsPanel } from "@/components/PrayerMethods";
 import { SmithingMethodsPanel } from "@/components/SmithingMethods";
+import { MagicMethodsPanel } from "@/components/MagicMethods";
+import { RunecraftMethodsPanel } from "@/components/RunecraftMethods";
+import { FarmingMethodsPanel } from "@/components/FarmingMethods";
+import { FletchingMethodsPanel } from "@/components/FletchingMethods";
+import { CookingMethodsPanel } from "@/components/CookingMethods";
+import { AgilityMethodsPanel } from "@/components/AgilityMethods";
+import { HerbloreMethodsPanel } from "@/components/HerbloreMethods";
 import { WikiImage } from "@/components/WikiImage";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
@@ -270,8 +277,25 @@ function Home() {
   const showConstructionMethods = filter === "skilling" && skill === "construction";
   const showPrayerMethods = filter === "skilling" && skill === "prayer";
   const showSmithingMethods = filter === "skilling" && skill === "smithing";
+  const showMagicMethods = filter === "skilling" && skill === "magic";
+  const showRunecraftMethods = filter === "skilling" && skill === "runecraft";
+  const showFarmingMethods = filter === "skilling" && skill === "farming";
+  const showFletchingMethods = filter === "skilling" && skill === "fletching";
+  const showCookingMethods = filter === "skilling" && skill === "cooking";
+  const showAgilityMethods = filter === "skilling" && skill === "agility";
+  const showHerbloreMethods = filter === "skilling" && skill === "herblore";
   const showSkillingMethods =
-    showCraftingMethods || showConstructionMethods || showPrayerMethods || showSmithingMethods;
+    showCraftingMethods ||
+    showConstructionMethods ||
+    showPrayerMethods ||
+    showSmithingMethods ||
+    showMagicMethods ||
+    showRunecraftMethods ||
+    showFarmingMethods ||
+    showFletchingMethods ||
+    showCookingMethods ||
+    showAgilityMethods ||
+    showHerbloreMethods;
 
   const groups = useMemo(() => {
     if (showSkillingMethods) return [];
@@ -755,6 +779,76 @@ function Home() {
 
       {!snapshot.isLoading && showSmithingMethods && (
         <SmithingMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showMagicMethods && (
+        <MagicMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showRunecraftMethods && (
+        <RunecraftMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showFarmingMethods && (
+        <FarmingMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showFletchingMethods && (
+        <FletchingMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showCookingMethods && (
+        <CookingMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showAgilityMethods && (
+        <AgilityMethodsPanel
+          rowsByName={rowsByName}
+          trendsById={trends.data}
+          moneyPerHour={moneyPerHour}
+          onMoneyPerHourChange={(n) => patchSearch({ g: n })}
+          playerSkills={playerSkills}
+        />
+      )}
+
+      {!snapshot.isLoading && showHerbloreMethods && (
+        <HerbloreMethodsPanel
           rowsByName={rowsByName}
           trendsById={trends.data}
           moneyPerHour={moneyPerHour}

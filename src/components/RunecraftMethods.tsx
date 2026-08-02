@@ -1,0 +1,33 @@
+import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
+import { RUNECRAFT_METHODS } from "@/lib/runecraft-methods";
+import type { PriceRow, Trend } from "@/lib/osrs.server";
+import type { PlayerSkills } from "@/lib/player-stats";
+
+export function RunecraftMethodsPanel({
+  rowsByName,
+  trendsById,
+  moneyPerHour,
+  onMoneyPerHourChange,
+  playerSkills,
+}: {
+  rowsByName: Map<string, PriceRow>;
+  trendsById?: Record<number, Trend>;
+  moneyPerHour: number;
+  onMoneyPerHourChange: (n: number) => void;
+  playerSkills?: PlayerSkills | null;
+}) {
+  return (
+    <SkillingMethodsPanel
+      title="Runecraft methods"
+      skillKey="runecraft"
+      skillLabel="Runecraft"
+      description="Abyss combination runes, True Blood/Soul altar and Wrath rates from wiki training pages."
+      methods={RUNECRAFT_METHODS}
+      rowsByName={rowsByName}
+      trendsById={trendsById}
+      moneyPerHour={moneyPerHour}
+      onMoneyPerHourChange={onMoneyPerHourChange}
+      playerSkills={playerSkills}
+    />
+  );
+}
