@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { CRAFTING_METHODS, type CraftingMethod } from "@/lib/crafting-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp } from "@/lib/format";
+import { WikiImage } from "@/components/WikiImage";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 const SCROLL_KEY = "ge-watch-home-scroll";
 
 const G_MIN = 250_000;
@@ -39,11 +39,9 @@ function sellPrice(row: PriceRow | undefined): number | null {
   return row.low ?? row.high ?? null;
 }
 
-function iconUrl(row: PriceRow | undefined, name: string) {
-  if (row?.icon) {
-    return `${ICON_BASE}${encodeURIComponent(row.icon.replace(/ /g, "_"))}`;
-  }
-  return `${ICON_BASE}${encodeURIComponent(name.replace(/ /g, "_")) + ".png"}`;
+function chipIcon(row: PriceRow | undefined, name: string): string {
+  if (row?.icon) return row.icon;
+  return `${name.replace(/ /g, "_")}.png`;
 }
 
 function saveScroll() {
@@ -483,13 +481,12 @@ function PartChip({
   const inner = (
     <>
       <span className="relative inline-flex">
-        <img
-          src={iconUrl(row, name)}
+        <WikiImage
+          icon={chipIcon(row, name)}
           alt={name}
           width={24}
           height={24}
-          className="size-6 object-contain"
-          loading="lazy"
+          className="size-6"
         />
         {qty > 1 && (
           <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">

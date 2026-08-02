@@ -26,6 +26,7 @@ import { costPerBonus } from "@/lib/item-bonuses";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
+import { WikiImage } from "@/components/WikiImage";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { Input } from "@/components/ui/input";
 import {
@@ -89,8 +90,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
-
-const WIKI_IMG = "https://oldschool.runescape.wiki/images/";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sword,
@@ -588,12 +587,13 @@ function EquipmentPaperDoll({
               : "border-border/50 bg-background/60 hover:bg-secondary/60"
           }`}
         >
-          <img
-            src={`${WIKI_IMG}${encodeURIComponent(slot.wikiIcon)}`}
+          <WikiImage
+            icon={slot.wikiIcon}
             alt=""
             width={24}
             height={24}
-            className="size-6 object-contain opacity-90"
+            lazy={false}
+            className="size-6 opacity-90"
             draggable={false}
           />
         </button>
@@ -678,12 +678,13 @@ function WikiIconTab({
           : "border-border/60 bg-secondary/30 hover:bg-secondary/50"
       }`}
     >
-      <img
-        src={`${WIKI_IMG}${encodeURIComponent(wikiIcon)}`}
+      <WikiImage
+        icon={wikiIcon}
         alt=""
         width={20}
         height={20}
-        className="size-5 object-contain"
+        lazy={false}
+        className="size-5"
         draggable={false}
       />
     </button>

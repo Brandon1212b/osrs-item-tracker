@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkline } from "@/components/Sparkline";
+import { WikiImage } from "@/components/WikiImage";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp, signalOf } from "@/lib/format";
 
-const ICON_BASE = "https://oldschool.runescape.wiki/images/";
 const SCROLL_KEY = "ge-watch-home-scroll";
 
 /** % vs range high: negative = cheaper than the peak in the selected window. */
@@ -39,13 +39,12 @@ export function ItemCard({ row, trend }: { row: PriceRow; trend?: Trend | undefi
         </div>
       ) : null}
       <div className="flex items-start gap-2 sm:gap-3">
-        <img
-          src={`${ICON_BASE}${encodeURIComponent(row.icon.replace(/ /g, "_"))}`}
+        <WikiImage
+          icon={row.icon}
           alt={row.name}
-          loading="lazy"
           width={28}
           height={28}
-          className="mt-0.5 size-7 shrink-0 object-contain drop-shadow sm:size-8"
+          className="mt-0.5 size-7 shrink-0 drop-shadow sm:size-8"
         />
         <div className="min-w-0 flex-1 pr-8 sm:pr-10">
           <h3 className="truncate font-sans text-xs font-semibold text-foreground sm:text-sm" title={row.name}>
