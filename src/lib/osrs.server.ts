@@ -1,5 +1,8 @@
 const BASE = "https://prices.runescape.wiki/api/v1/osrs";
 const UA = "OSRS Gear & Skilling Price Tracker - lovable.app";
+/** Per-item equipment stats (osrsreboxed / osrsbox-compatible schema). */
+const ITEM_META_URL = (id: number) =>
+  `https://raw.githubusercontent.com/0xNeffarion/osrsreboxed-db/master/docs/items-json/${id}.json`;
 
 type MappingEntry = {
   id: number;
@@ -44,12 +47,34 @@ export type Trend = {
   series: { t: number; p: number }[];
 };
 
+export type EquipmentStats = {
+  attack_stab: number;
+  attack_slash: number;
+  attack_crush: number;
+  attack_magic: number;
+  attack_ranged: number;
+  defence_stab: number;
+  defence_slash: number;
+  defence_crush: number;
+  defence_magic: number;
+  defence_ranged: number;
+  melee_strength: number;
+  ranged_strength: number;
+  magic_damage: number;
+  prayer: number;
+  slot: string;
+  requirements: Record<string, number> | null;
+  attack_speed: number | null;
+  weapon_type: string | null;
+};
+
 type Cache<T> = { at: number; value: T };
 
 let mappingCache: Cache<MappingEntry[]> | null = null;
 let snapshotCache: Cache<PriceRow[]> | null = null;
 let trendCache: Cache<Record<number, Trend>> | null = null;
 let trendInFlight: Promise<Record<number, Trend>> | null = null;
+const equipmentCache = new Map<number, Cache<EquipmentStats | null>>();
 
 const MIN = 60_000;
 
@@ -197,9 +222,79 @@ export type ItemDetail = {
   avg: number;
   change: number;
   trend: Trend | null;
+  equipment: EquipmentStats | null;
 };
 
 const detailCache = new Map<string, Cache<ItemDetail>>();
+
+async function getEquipmentStats(id: number): Promise<EquipmentStats | null> {
+  const cached = equipmentCache.get(id);
+  if (cached && Date.now() - cached.at < 24 * 60 * MIN) return cached.value;
+
+  try {
+    const res = await fetch(ITEM_META_URL(id), {
+      headers: { "User-Agent": UA, Accept: "application/json" },
+    });
+    if (!res.ok) {
+      equipmentCache.set(id, { at: Date.now(), value: null });
+      return null;
+    }
+    const data = (await res.json()) as {
+      equipable_by_player?: boolean;
+      equipment?: {
+        attack_stab: number;
+        attack_slash: number;
+        attack_crush: number;
+        attack_magic: number;
+        attack_ranged: number;
+        defence_stab: number;
+        defence_slash: number;
+        defence_crush: number;
+        defence_magic: number;
+        defence_ranged: number;
+        melee_strength: number;
+        ranged_strength: number;
+        magic_damage: number;
+        prayer: number;
+        slot: string;
+        requirements?: Record<string, number> | null;
+      };
+      weapon?: { attack_speed?: number; weapon_type?: string };
+    };
+
+    if (!data.equipable_by_player || !data.equipment) {
+      equipmentCache.set(id, { at: Date.now(), value: null });
+      return null;
+    }
+
+    const e = data.equipment;
+    const value: EquipmentStats = {
+      attack_stab: e.attack_stab ?? 0,
+      attack_slash: e.attack_slash ?? 0,
+      attack_crush: e.attack_crush ?? 0,
+      attack_magic: e.attack_magic ?? 0,
+      attack_ranged: e.attack_ranged ?? 0,
+      defence_stab: e.defence_stab ?? 0,
+      defence_slash: e.defence_slash ?? 0,
+      defence_crush: e.defence_crush ?? 0,
+      defence_magic: e.defence_magic ?? 0,
+      defence_ranged: e.defence_ranged ?? 0,
+      melee_strength: e.melee_strength ?? 0,
+      ranged_strength: e.ranged_strength ?? 0,
+      magic_damage: e.magic_damage ?? 0,
+      prayer: e.prayer ?? 0,
+      slot: e.slot ?? "",
+      requirements: e.requirements ?? null,
+      attack_speed: data.weapon?.attack_speed ?? null,
+      weapon_type: data.weapon?.weapon_type ?? null,
+    };
+    equipmentCache.set(id, { at: Date.now(), value });
+    return value;
+  } catch {
+    equipmentCache.set(id, { at: Date.now(), value: null });
+    return null;
+  }
+}
 
 export async function getItemDetail(names: string[], id: number, range: RangeKey): Promise<ItemDetail> {
   const key = `${id}:${range}`;
@@ -212,9 +307,12 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   if (!row) throw new Error("Unknown item");
 
   const cfg = RANGES[range];
-  const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
-    `/timeseries?timestep=${cfg.step}&id=${id}`,
-  );
+  const [res, equipment] = await Promise.all([
+    api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+      `/timeseries?timestep=${cfg.step}&id=${id}`,
+    ),
+    getEquipmentStats(id),
+  ]);
   const series = (res.data ?? [])
     .map((p) => {
       const mid = p.avgHighPrice != null && p.avgLowPrice != null ? (p.avgHighPrice + p.avgLowPrice) / 2 : (p.avgHighPrice ?? p.avgLowPrice);
@@ -237,7 +335,8 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
     max: prices.length ? Math.max(...prices) : 0,
     avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
     change: first ? Math.round(((last - first) / first) * 1000) / 10 : 0,
-    trend: range === "6m" ? trend : trend,
+    trend,
+    equipment,
   };
   detailCache.set(key, { at: Date.now(), value });
   return value;
