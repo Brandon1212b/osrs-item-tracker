@@ -1,8 +1,12 @@
 /**
  * Smithing training methods (P2P guide rates).
- * https://oldschool.runescape.wiki/w/Pay-to-play_Smithing_training
  *
- * XP/h from wiki focused rates; GP/h is computed live from GE prices.
+ * Blast Furnace bars/h from:
+ *   https://oldschool.runescape.wiki/w/Money_making_guide/Blast_Furnace
+ *   (coal bag + ice gloves + stamina; 200 trips/h model)
+ *
+ * Anvil / cannonball rates from wiki calculators & money-making pages.
+ * XP/h = xp * actionsPerHour. GP/h is computed live from GE prices (not hardcoded).
  * Blast Furnace coal is already halved vs normal furnace.
  */
 export type MethodPart = {
@@ -16,22 +20,33 @@ export type SmithingMethod = {
   level: number;
   /** XP per action */
   xp: number;
-  /** Actions per hour (wiki / focused rate) */
+  /** Actions (bars) per hour — wiki focused / MMG rate */
   actionsPerHour: number;
   inputs: MethodPart[];
   output: MethodPart;
 };
 
-// ── Throughput assumptions ──────────────────────────────────────────────
-const BF_GOLD_APH = 6760; // ~380k xp/h @ 56.2 with goldsmith gauntlets
-const BF_BAR_APH = 4000; // steel/mithril focused BF
-const BF_HEAVY_APH = 2800; // adamant / rune ore runs
-const DART_BAR_APH = 1300; // bars/h with Smiths' Uniform → 13k tips
+// ── Throughput (wiki MMG / calculator) ──────────────────────────────────
+// BF single-bar: Money_making_guide/Blast_Furnace table
+const BF_IRON_APH = 6000; // 75,000 xp/h
+const BF_STEEL_APH = 5400; // 94,500 xp/h
+const BF_MITHRIL_APH = 3600; // 108,000 xp/h
+const BF_ADAMANT_APH = 2700; // 101,250 xp/h
+const BF_RUNITE_APH = 2160; // 108,000 xp/h (wiki lists 107,500)
+// Gold + goldsmith gauntlets: strategies mid of 5600–6600 → ~380k xp/h
+const BF_GOLD_APH = 6200; // ~348k xp/h @ 56.2
+
+// Dart tips / nails: continuous anvil, stackable product, noted bars
+const DART_BAR_APH = 1300;
 const NAIL_BAR_APH = 1300;
-const CANNON_BAR_APH = 600; // regular mould 2400 balls
-const CANNON_DOUBLE_BAR_APH = 1200; // double ammo mould
-const PLATE_APH = 1000; // platebodies / 5-bar items
-const RUNE3_APH = 1200; // 3-bar rune items at anvil
+
+// Cannonballs — Money_making_guide/Smithing_steel_cannonballs
+const CANNON_BAR_APH = 600; // 2,400 balls/h regular mould
+const CANNON_DOUBLE_BAR_APH = 1200; // 4,800 balls/h double mould
+
+// Anvil platebodies / 3-bar: Calculator:Smithing/Bars (3s action + bank)
+const PLATE_APH = 750; // 5-bar items → rune plate ~281k xp/h
+const RUNE3_APH = 900; // 3-bar items → ~202k xp/h
 
 export const SMITHING_METHODS: SmithingMethod[] = [
   // ── Blast Furnace bars ────────────────────────────────────────────────
@@ -40,7 +55,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     label: "Iron bars (Blast Furnace)",
     level: 15,
     xp: 12.5,
-    actionsPerHour: BF_BAR_APH,
+    actionsPerHour: BF_IRON_APH,
     inputs: [{ name: "Iron ore", qty: 1 }],
     output: { name: "Iron bar", qty: 1 },
   },
@@ -49,7 +64,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     label: "Steel bars (Blast Furnace)",
     level: 30,
     xp: 17.5,
-    actionsPerHour: BF_BAR_APH,
+    actionsPerHour: BF_STEEL_APH,
     inputs: [
       { name: "Iron ore", qty: 1 },
       { name: "Coal", qty: 1 }, // BF halves coal
@@ -70,7 +85,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     label: "Mithril bars (Blast Furnace)",
     level: 50,
     xp: 30,
-    actionsPerHour: BF_BAR_APH,
+    actionsPerHour: BF_MITHRIL_APH,
     inputs: [
       { name: "Mithril ore", qty: 1 },
       { name: "Coal", qty: 2 },
@@ -82,7 +97,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     label: "Adamantite bars (Blast Furnace)",
     level: 70,
     xp: 37.5,
-    actionsPerHour: BF_HEAVY_APH,
+    actionsPerHour: BF_ADAMANT_APH,
     inputs: [
       { name: "Adamantite ore", qty: 1 },
       { name: "Coal", qty: 3 },
@@ -94,7 +109,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     label: "Runite bars (Blast Furnace)",
     level: 85,
     xp: 50,
-    actionsPerHour: BF_HEAVY_APH,
+    actionsPerHour: BF_RUNITE_APH,
     inputs: [
       { name: "Runite ore", qty: 1 },
       { name: "Coal", qty: 4 },
