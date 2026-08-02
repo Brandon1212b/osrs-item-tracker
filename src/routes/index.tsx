@@ -390,7 +390,8 @@ function Home() {
       </div>
 
       {showGearSub && (
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-2.5">
+          {/* Primary filter: combat style */}
           <div className="flex flex-wrap gap-1.5">
             <SubTab
               active={gearCombat === "all"}
@@ -413,61 +414,66 @@ function Home() {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-start gap-3">
+          {/* Secondary filters: slot + progression + wiki stage (sub of progression) */}
+          <div className="flex flex-wrap items-start gap-3 rounded-lg border border-border/50 bg-secondary/15 p-2.5">
             <EquipmentPaperDoll
               active={gearSlot}
               onSelect={(slot) => patchSearch({ slot })}
             />
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Progression
-              </span>
-              <div className="flex flex-col gap-1">
-                <SubTab
-                  active={gearTier === "all"}
-                  onClick={() => patchSearch({ tier: "all", set: "all" })}
-                  label="All stages"
-                />
-                {GEAR_TIER_FILTERS.map((t) => (
-                  <SubTab
-                    key={t.key}
-                    active={gearTier === t.key}
-                    onClick={() =>
-                      patchSearch({
-                        tier: gearTier === t.key ? "all" : t.key,
-                        set: "all",
-                      })
-                    }
-                    label={t.label}
-                  />
-                ))}
-              </div>
-            </div>
 
-            {availableSets.length > 0 && (
-              <div className="flex flex-col gap-1.5">
+            {/* Progression + Wiki stage sit side-by-side (including mobile) */}
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <div className="flex shrink-0 flex-col gap-1.5">
                 <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Gear set
+                  Progression
                 </span>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-col gap-1">
                   <SubTab
-                    active={gearSet === "all"}
-                    onClick={() => patchSearch({ set: "all" })}
-                    label="All sets"
+                    active={gearTier === "all"}
+                    onClick={() => patchSearch({ tier: "all", set: "all" })}
+                    label="All stages"
                   />
-                  {availableSets.map((s) => (
+                  {GEAR_TIER_FILTERS.map((t) => (
                     <SubTab
-                      key={s.key}
-                      active={gearSet === s.key}
+                      key={t.key}
+                      active={gearTier === t.key}
                       onClick={() =>
-                        patchSearch({ set: gearSet === s.key ? "all" : s.key })
+                        patchSearch({
+                          tier: gearTier === t.key ? "all" : t.key,
+                          set: "all",
+                        })
                       }
-                      label={s.label}
+                      label={t.label}
                     />
                   ))}
                 </div>
               </div>
-            )}
+
+              {availableSets.length > 0 && (
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5 border-l border-border/60 pl-3">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Wiki stage
+                  </span>
+                  <div className="flex max-h-[11.5rem] flex-col gap-1 overflow-y-auto overscroll-contain pr-0.5">
+                    <SubTab
+                      active={gearSet === "all"}
+                      onClick={() => patchSearch({ set: "all" })}
+                      label="All stages"
+                    />
+                    {availableSets.map((s) => (
+                      <SubTab
+                        key={s.key}
+                        active={gearSet === s.key}
+                        onClick={() =>
+                          patchSearch({ set: gearSet === s.key ? "all" : s.key })
+                        }
+                        label={s.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
