@@ -4,6 +4,8 @@ const UA = "OSRS Gear & Skilling Price Tracker - lovable.app";
 const ITEM_META_URL = (id: number) =>
   `https://raw.githubusercontent.com/0xNeffarion/osrsreboxed-db/master/docs/items-json/${id}.json`;
 
+const HISCORES_URL = "https://secure.runescape.com/m=hiscore_oldschool/index_lite.json";
+
 type MappingEntry = {
   id: number;
   name: string;
@@ -77,6 +79,7 @@ let snapshotCache: Cache<PriceRow[]> | null = null;
 const trendCaches = new Map<string, Cache<Record<number, Trend>>>();
 const trendInFlights = new Map<string, Promise<Record<number, Trend>>>();
 const equipmentCache = new Map<number, Cache<EquipmentStats | null>>();
+let requirementsMapCache: Cache<Record<number, Record<string, number>>> | null = null;
 
 const MIN = 60_000;
 
@@ -150,7 +153,6 @@ function summarise(
   const below = sorted.filter((p) => p < current).length;
   const percentile = Math.round((below / sorted.length) * 100);
 
-  // ~30 "points" of the window for a rolling avg when possible
   const avgSlice = Math.max(1, Math.min(30, Math.floor(prices.length / 3)));
   const lastAvg = prices.slice(-avgSlice);
   const avg30 = Math.round(lastAvg.reduce((a, b) => a + b, 0) / lastAvg.length);
@@ -161,7 +163,6 @@ function summarise(
   const at = (back: number) => prices[Math.max(0, prices.length - 1 - back)]!;
   const pct = (from: number) => (from ? ((current - from) / from) * 100 : 0);
 
-  // Downsample series for sparklines when very dense
   const step = window.length > 120 ? 2 : 1;
   const spark = window.filter((_, i) => i % step === 0);
 
@@ -349,7 +350,6 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   const prices = series.map((s) => s.p);
   const first = prices[0] ?? 0;
   const last = prices[prices.length - 1] ?? 0;
-  // Keep a longer style trend for the percentile bar on the detail page
   const trend = summarise(id, res.data ?? [], Math.max(cfg.points, 180));
 
   const value: ItemDetail = {
@@ -366,4 +366,70 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   };
   detailCache.set(key, { at: Date.now(), value });
   return value;
+}
+
+export type PlayerStatsResult = {
+  name: string;
+  skills: Record<string, number>;
+};
+
+/** Fetch skill levels from the official OSRS Hiscores JSON endpoint. */
+export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
+  const trimmed = rsn.trim();
+  if (!trimmed) throw new Error("Enter a username");
+
+  const url = `${HISCORES_URL}?player=${encodeURIComponent(trimmed)}`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": UA, Accept: "application/json" },
+  });
+  if (res.status === 404) throw new Error("Player not found on the hiscores");
+  if (!res.ok) throw new Error(`Hiscores error ${res.status}`);
+
+  const data = (await res.json()) as {
+    name?: string;
+    skills?: { id: number; name: string; rank: number; level: number; xp: number }[];
+  };
+
+  if (!data.skills?.length) throw new Error("Player not found on the hiscores");
+
+  const skills: Record<string, number> = {};
+  for (const s of data.skills) {
+    if (s.id === 0) continue; // Overall
+    const key = s.name.toLowerCase();
+    // rank -1 means unranked / level 1 with 0 xp on some endpoints
+    skills[key] = Math.max(1, s.level || 1);
+  }
+
+  return {
+    name: data.name ?? trimmed,
+    skills,
+  };
+}
+
+/**
+ * Map of item id → equipment skill requirements for all equipable catalog items.
+ * Cached 24h; used to grey out gear the player can't equip.
+ */
+export async function getItemRequirementsMap(names: string[]): Promise<Record<number, Record<string, number>>> {
+  if (requirementsMapCache && Date.now() - requirementsMapCache.at < 24 * 60 * MIN) {
+    return requirementsMapCache.value;
+  }
+
+  const rows = await getSnapshot(names);
+  const result: Record<number, Record<string, number>> = {};
+
+  await pool(rows, 8, async (row) => {
+    const eq = await getEquipmentStats(row.id);
+    if (eq?.requirements && Object.keys(eq.requirements).length > 0) {
+      // Normalise keys to lowercase
+      const norm: Record<string, number> = {};
+      for (const [k, v] of Object.entries(eq.requirements)) {
+        norm[k.toLowerCase()] = v;
+      }
+      result[row.id] = norm;
+    }
+  });
+
+  requirementsMapCache = { at: Date.now(), value: result };
+  return result;
 }
