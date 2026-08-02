@@ -1,8 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { CATALOG } from "./osrs-catalog";
+import { craftingMethodItemNames } from "./crafting-methods";
 import type { ItemDetail, PriceRow, RangeKey, Trend } from "./osrs.server";
 
-const allNames = () => CATALOG.flatMap((g) => g.items.map((i) => i.name));
+const allNames = () => {
+  const fromCatalog = CATALOG.flatMap((g) => g.items.map((i) => i.name));
+  return [...new Set([...fromCatalog, ...craftingMethodItemNames()])];
+};
 
 export const fetchSnapshot = createServerFn({ method: "GET" }).handler(async (): Promise<PriceRow[]> => {
   const { getSnapshot } = await import("./osrs.server");
