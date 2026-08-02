@@ -481,6 +481,6 @@ export const SKILLING_FILTERS = [
 /** Sub-filters on the Supplies tab. Keys match catalog tags. */
 export const SUPPLIES_FILTERS = [
   { key: "ammo", label: "Ammunition", wikiIcon: "Ammo_slot.png" },
-  { key: "food", label: "Food", wikiIcon: "Cooked_meat.png" },
-  { key: "potion", label: "Potions", wikiIcon: "Potion.png" },
+  { key: "food", label: "Food", wikiIcon: "Shark.png" },
+  { key: "potion", label: "Potions", wikiIcon: "Prayer_potion(4).png" },
 ] as const;
