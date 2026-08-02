@@ -22,6 +22,7 @@ import {
   type CatalogItem,
 } from "@/lib/osrs-catalog";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
+import { costPerBonus } from "@/lib/item-bonuses";
 import { fetchSnapshot, fetchTrends } from "@/lib/osrs.functions";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/select";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
-type SortKey = "gainers" | "losers" | "expensive" | "cheap";
+type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
 
 const DEFAULT_G = 2_000_000;
 const DEFAULT_RANGE: RangeKey = "6m";
@@ -53,7 +54,7 @@ const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
 
 const homeSearchSchema = z.object({
   filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
-  sort: z.enum(["gainers", "losers", "expensive", "cheap"]).catch(DEFAULT_SORT),
+  sort: z.enum(["gainers", "losers", "expensive", "cheap", "value"]).catch(DEFAULT_SORT),
   range: z.enum(["1d", "1w", "1m", "3m", "6m", "1y"]).catch(DEFAULT_RANGE),
   q: z.string().catch(""),
   combat: z.string().catch("all"),
@@ -276,12 +277,20 @@ function Home() {
         const cb = rangeChange(trendMap[b.id]);
         return cb - ca || a.name.localeCompare(b.name);
       }
+      if (sort === "value") {
+        // Cost per offensive bonus (Str / Ranged Str / Magic dmg %). Lower = better.
+        const tagsA = itemByName.get(a.name)?.tags ?? [];
+        const tagsB = itemByName.get(b.name)?.tags ?? [];
+        const va = costPerBonus(priceOf(a), a.name, tagsA, gearCombat);
+        const vb = costPerBonus(priceOf(b), b.name, tagsB, gearCombat);
+        return va - vb || a.name.localeCompare(b.name);
+      }
       // losers
       const ca = rangeChange(trendMap[a.id]);
       const cb = rangeChange(trendMap[b.id]);
       return ca - cb || a.name.localeCompare(b.name);
     });
-  }, [groups, trends.data, sort]);
+  }, [groups, trends.data, sort, itemByName, gearCombat]);
 
   const totalCost = useMemo(() => {
     if (filter !== "gear") return 0;
@@ -358,7 +367,7 @@ function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
-                <SelectTrigger className="h-9 w-[7.5rem] shrink-0 text-xs" aria-label="Sort items">
+                <SelectTrigger className="h-9 w-[8.5rem] shrink-0 text-xs" aria-label="Sort items">
                   <SelectValue placeholder="Sort by…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -366,6 +375,7 @@ function Home() {
                   <SelectItem value="losers">Losers</SelectItem>
                   <SelectItem value="expensive">Expensive</SelectItem>
                   <SelectItem value="cheap">Cheap</SelectItem>
+                  <SelectItem value="value">Best value</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1">
