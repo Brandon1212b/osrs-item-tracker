@@ -1,1 +1,1 @@
-LOAD_FROM_/tmp/catalog-final.ts
+PLACEHOLDER_WILL_REPLACE
