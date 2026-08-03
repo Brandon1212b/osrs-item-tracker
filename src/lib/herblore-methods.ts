@@ -75,7 +75,7 @@ function manualCleanMethods(): HerbloreMethod[] {
 
 /**
  * Degrime (Arceuus): half the normal clean XP per herb.
- * 4 law + 2 earth per cast; ~600 casts/h × 27 herbs.
+ * 4 law runes per cast (earth runes free via staff of earth); ~600 casts/h × 27 herbs.
  * https://oldschool.runescape.wiki/w/Degrime
  */
 function degrimeMethods(): HerbloreMethod[] {
@@ -88,7 +88,6 @@ function degrimeMethods(): HerbloreMethod[] {
     inputs: [
       { name: grimy, qty: DEGRIME_HERBS },
       { name: "Law rune", qty: 4 },
-      { name: "Earth rune", qty: 2 },
     ],
     output: { name: clean, qty: DEGRIME_HERBS },
   }));
