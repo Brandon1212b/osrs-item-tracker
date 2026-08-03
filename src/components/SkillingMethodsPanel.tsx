@@ -485,21 +485,21 @@ function MethodRow({
       title={locked ? `Requires ${skillLabel} ${method.level}` : undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="flex size-6 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-muted-foreground">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-muted-foreground">
             {rank}
           </span>
           {titleIcon && (
             <WikiImage
               icon={titleIcon}
               alt={titlePart?.name ?? ""}
-              width={28}
-              height={28}
-              className="size-7 shrink-0"
+              width={40}
+              height={40}
+              className="size-10 shrink-0 drop-shadow-sm"
               lazy={false}
             />
           )}
-          <div>
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold leading-tight">{method.label}</h3>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
               Lvl {method.level}
