@@ -1,1 +1,1 @@
-SEE_ARTIFACTS
+LOAD_FROM_/tmp/catalog-final.ts
