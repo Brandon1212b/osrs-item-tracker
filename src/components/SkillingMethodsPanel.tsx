@@ -68,6 +68,7 @@ function sellPrice(row: PriceRow | undefined): number | null {
   return row.low ?? row.high ?? null;
 }
 
+/** Prefer live GE mapping icon; otherwise derive a wiki filename from the item name. */
 function chipIcon(row: PriceRow | undefined, name: string): string {
   if (row?.icon) return row.icon;
   return `${name.replace(/ /g, "_")}.png`;
@@ -473,6 +474,11 @@ function MethodRow({
   missing,
   locked,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow>; skillLabel: string }) {
+  // Prefer the product (e.g. cleaned herb) for the title icon; fall back to first input.
+  const titlePart = method.output ?? method.inputs[0];
+  const titleRow = titlePart ? rowsByName.get(titlePart.name) : undefined;
+  const titleIcon = titlePart ? chipIcon(titleRow, titlePart.name) : null;
+
   return (
     <article
       className={`panel flex flex-col gap-2 p-3 sm:p-3.5 ${locked ? "opacity-45" : ""}`}
@@ -483,6 +489,16 @@ function MethodRow({
           <span className="flex size-6 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-muted-foreground">
             {rank}
           </span>
+          {titleIcon && (
+            <WikiImage
+              icon={titleIcon}
+              alt={titlePart?.name ?? ""}
+              width={28}
+              height={28}
+              className="size-7 shrink-0"
+              lazy={false}
+            />
+          )}
           <div>
             <h3 className="text-sm font-semibold leading-tight">{method.label}</h3>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
