@@ -1,24 +1,66 @@
 import type { Trend } from "./osrs.server";
 
-/** Compact gold amounts: 140000 → 140k, negatives supported. */
-export function gp(n: number | null | undefined): string {
-  if (n == null) return "—";
-  const abs = Math.abs(n);
+/**
+ * Compact number formatting targeting ~4 significant digits.
+ *
+ * Rules:
+ * - Below 10,000: exact integer with comma thousands separator
+ * - 10,000–99,999: k, 2 decimals
+ * - 100,000–999,999: k, 1 decimal
+ * - 1,000,000–9,999,999: m, 3 decimals
+ * - 10,000,000–99,999,999: m, 2 decimals
+ * - 100,000,000–999,999,999: m, 1 decimal
+ * - 1,000,000,000+: same pattern with b (3/2/1 decimals as integer digits grow)
+ * - Negatives: leading "-"
+ * - Trailing ".0" / ".00" / ".000" trimmed when all decimal digits are zero
+ */
+export function formatCompact(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+
   const sign = n < 0 ? "-" : "";
-  if (abs >= 1_000_000_000) return `${sign}${(abs / 1_000_000_000).toFixed(2)}b`;
-  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
-  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
-  return `${sign}${Math.round(abs).toLocaleString()}`;
+  const abs = Math.abs(n);
+
+  if (abs < 10_000) {
+    return `${sign}${Math.round(abs).toLocaleString("en-US")}`;
+  }
+
+  let divisor: number;
+  let suffix: string;
+
+  if (abs >= 1_000_000_000) {
+    divisor = 1_000_000_000;
+    suffix = "b";
+  } else if (abs >= 1_000_000) {
+    divisor = 1_000_000;
+    suffix = "m";
+  } else {
+    divisor = 1_000;
+    suffix = "k";
+  }
+
+  const scaled = abs / divisor;
+  // Integer digits in the scaled value (before decimal)
+  const intDigits = scaled >= 100 ? 3 : scaled >= 10 ? 2 : 1;
+  // Target 4 significant digits total → decimals = 4 - intDigits, clamped 0–3
+  const decimals = Math.max(0, Math.min(3, 4 - intDigits));
+
+  let body = scaled.toFixed(decimals);
+  // Trim trailing zeros only when the entire decimal portion is zero
+  if (decimals > 0 && /\.0+$/.test(body)) {
+    body = body.replace(/\.0+$/, "");
+  }
+
+  return `${sign}${body}${suffix}`;
 }
 
-/** Compact number for XP rates / costs. 140000 → 140k. Always numeric (no Free+). */
+/** Compact gold amounts. Null/undefined → "—". */
+export function gp(n: number | null | undefined): string {
+  return formatCompact(n);
+}
+
+/** Compact number for XP rates / costs. Always numeric (no Free+). */
 export function compactNum(n: number): string {
-  const abs = Math.abs(n);
-  const sign = n < 0 ? "-" : "";
-  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}m`;
-  if (abs >= 1_000) return `${sign}${Math.round(abs / 1000)}k`;
-  if (abs >= 100) return `${sign}${Math.round(abs)}`;
-  return `${sign}${abs.toFixed(1)}`;
+  return formatCompact(n);
 }
 
 /** Your-cost display: always the real number (including negatives / zero). */

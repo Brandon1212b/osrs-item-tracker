@@ -34,6 +34,7 @@ import {
   firstMissingRequirement,
   type PlayerSkills,
 } from "@/lib/player-stats";
+import { formatCompact } from "@/lib/format";
 import { ItemCard } from "@/components/ItemCard";
 import { CraftingMethodsPanel } from "@/components/CraftingMethods";
 import { ConstructionMethodsPanel } from "@/components/ConstructionMethods";
@@ -145,13 +146,6 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
     out.push(row);
   }
   return out;
-}
-
-function formatGp(n: number): string {
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
 }
 
 function Home() {
@@ -862,7 +856,7 @@ function Home() {
           {showGearSub && totalCost > 0 && (
             <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Total cost of shown items: </span>
-              <span className="font-semibold tabular-nums text-foreground">{formatGp(totalCost)} gp</span>
+              <span className="font-semibold tabular-nums text-foreground">{formatCompact(totalCost)} gp</span>
               <span className="ml-1.5 text-xs text-muted-foreground">
                 ({allRows.length} item{allRows.length === 1 ? "" : "s"})
               </span>

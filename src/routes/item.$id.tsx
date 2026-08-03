@@ -8,7 +8,7 @@ import type { EquipmentStats, RangeKey } from "@/lib/osrs.server";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { PriceChart } from "@/components/PriceChart";
 import { WikiImage } from "@/components/WikiImage";
-import { gp, signalOf, timeAgo } from "@/lib/format";
+import { gp, formatCompact, signalOf, timeAgo } from "@/lib/format";
 
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: "1d", label: "24h" },
@@ -127,7 +127,7 @@ function ItemPage() {
                   <RefreshCw className={`size-3.5 ${detail.isFetching ? "animate-spin" : ""}`} />
                   Updated {timeAgo(row.updated)}
                 </span>
-                <span>{row.limit ? `Buy limit ${row.limit.toLocaleString()}` : "No buy limit"}</span>
+                <span>{row.limit ? `Buy limit ${formatCompact(row.limit)}` : "No buy limit"}</span>
                 <span>{row.members ? "Members" : "Free to play"}</span>
                 {eq?.slot && (
                   <span className="capitalize">Slot: {eq.slot.replace(/_/g, " ")}</span>
