@@ -1,7 +1,14 @@
 /**
  * Herblore training methods (P2P).
- * https://oldschool.runescape.wiki/w/Herblore_training
- * ~2,500 finished potions/h with clean banking.
+ * Rates from https://oldschool.runescape.wiki/w/Herblore_training
+ *
+ * Actions/hour assumptions (wiki):
+ * - 2,500 standard 14×14 potions
+ * - 2,750 for 27×1 (stamina potions)
+ * - 2,166 for super combat potions
+ * - ~1,400 for Guthix rest (3-dose cups)
+ * - 10,000 for manual herb cleaning (auto-clean ≈ 3,000 / 30% of that)
+ * - ~600 Degrime casts/h (full inventory of grimy herbs per cast)
  */
 export type MethodPart = {
   name: string;
@@ -20,9 +27,89 @@ export type HerbloreMethod = {
   output: MethodPart;
 };
 
+/** Wiki: 2,500 standard 14×14 potions/h */
 const POTION_APH = 2500;
+/** Wiki: 2,750 for 27×1 (stamina) */
+const STAMINA_APH = 2750;
+/** Wiki: 2,166 for super combat */
+const SUPER_COMBAT_APH = 2166;
+/** Wiki: ~1,400 Guthix rest (3)/h */
+const GUTHIX_APH = 1400;
+/** Wiki XP table assumes 10,000 herbs cleaned/h (manual / fast clicking) */
+const CLEAN_APH = 10_000;
+/** Full inventory of grimy herbs per Degrime cast (runes stack). */
+const DEGRIME_HERBS = 27;
+/** Wiki: ~600 Degrime casts/h */
+const DEGRIME_CASTS_PER_HOUR = 600;
+
+/** Standard tradeable herbs: [grimy name, clean name, level, clean XP]. */
+const HERBS: [string, string, number, number][] = [
+  ["Grimy guam leaf", "Guam leaf", 3, 2.5],
+  ["Grimy marrentill", "Marrentill", 5, 3.8],
+  ["Grimy tarromin", "Tarromin", 11, 5],
+  ["Grimy harralander", "Harralander", 20, 6.3],
+  ["Grimy ranarr weed", "Ranarr weed", 25, 7.5],
+  ["Grimy toadflax", "Toadflax", 30, 8],
+  ["Grimy irit leaf", "Irit leaf", 40, 8.8],
+  ["Grimy avantoe", "Avantoe", 48, 10],
+  ["Grimy kwuarm", "Kwuarm", 54, 11.3],
+  ["Grimy huasca", "Huasca", 58, 11.8],
+  ["Grimy snapdragon", "Snapdragon", 59, 11.8],
+  ["Grimy cadantine", "Cadantine", 65, 12.5],
+  ["Grimy lantadyme", "Lantadyme", 67, 13.1],
+  ["Grimy dwarf weed", "Dwarf weed", 70, 13.8],
+  ["Grimy torstol", "Torstol", 75, 15],
+];
+
+function manualCleanMethods(): HerbloreMethod[] {
+  return HERBS.map(([grimy, clean, level, xp]) => ({
+    id: `clean-${clean.toLowerCase().replace(/ /g, "-")}`,
+    label: `Clean ${clean}`,
+    level,
+    xp,
+    actionsPerHour: CLEAN_APH,
+    inputs: [{ name: grimy, qty: 1 }],
+    output: { name: clean, qty: 1 },
+  }));
+}
+
+/**
+ * Degrime (Arceuus): half the normal clean XP per herb.
+ * 4 law + 2 earth per cast; ~600 casts/h × 27 herbs.
+ * https://oldschool.runescape.wiki/w/Degrime
+ */
+function degrimeMethods(): HerbloreMethod[] {
+  return HERBS.map(([grimy, clean, level, xp]) => ({
+    id: `degrime-${clean.toLowerCase().replace(/ /g, "-")}`,
+    label: `Degrime ${clean}`,
+    level,
+    xp: (xp / 2) * DEGRIME_HERBS,
+    actionsPerHour: DEGRIME_CASTS_PER_HOUR,
+    inputs: [
+      { name: grimy, qty: DEGRIME_HERBS },
+      { name: "Law rune", qty: 4 },
+      { name: "Earth rune", qty: 2 },
+    ],
+    output: { name: clean, qty: DEGRIME_HERBS },
+  }));
+}
 
 export const HERBLORE_METHODS: HerbloreMethod[] = [
+  // —— Potions ——
+  {
+    id: "guthix-rest",
+    label: "Guthix rest(3)",
+    level: 18,
+    xp: 59,
+    actionsPerHour: GUTHIX_APH,
+    inputs: [
+      { name: "Cup of hot water", qty: 1 },
+      { name: "Guam leaf", qty: 2 },
+      { name: "Marrentill", qty: 1 },
+      { name: "Harralander", qty: 1 },
+    ],
+    output: { name: "Guthix rest(3)", qty: 1 },
+  },
   {
     id: "prayer-potion",
     label: "Prayer potion(3)",
@@ -48,6 +135,18 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Super attack(3)", qty: 1 },
   },
   {
+    id: "super-energy",
+    label: "Super energy(3)",
+    level: 52,
+    xp: 117.5,
+    actionsPerHour: POTION_APH,
+    inputs: [
+      { name: "Avantoe potion (unf)", qty: 1 },
+      { name: "Mort myre fungus", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Super energy(3)", qty: 1 },
+  },
+  {
     id: "super-strength",
     label: "Super strength(3)",
     level: 55,
@@ -60,18 +159,6 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Super strength(3)", qty: 1 },
   },
   {
-    id: "super-defence",
-    label: "Super defence(3)",
-    level: 66,
-    xp: 150,
-    actionsPerHour: POTION_APH,
-    inputs: [
-      { name: "Cadantine potion (unf)", qty: 1 },
-      { name: "White berries", qty: 1, isSecondary: true },
-    ],
-    output: { name: "Super defence(3)", qty: 1 },
-  },
-  {
     id: "super-restore",
     label: "Super restore(3)",
     level: 63,
@@ -82,6 +169,18 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
       { name: "Red spiders' eggs", qty: 1, isSecondary: true },
     ],
     output: { name: "Super restore(3)", qty: 1 },
+  },
+  {
+    id: "super-defence",
+    label: "Super defence(3)",
+    level: 66,
+    xp: 150,
+    actionsPerHour: POTION_APH,
+    inputs: [
+      { name: "Cadantine potion (unf)", qty: 1 },
+      { name: "White berries", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Super defence(3)", qty: 1 },
   },
   {
     id: "ranging-potion",
@@ -108,6 +207,18 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Magic potion(3)", qty: 1 },
   },
   {
+    id: "stamina-potion",
+    label: "Stamina potion(4)",
+    level: 77,
+    xp: 102,
+    actionsPerHour: STAMINA_APH,
+    inputs: [
+      { name: "Super energy(4)", qty: 1 },
+      { name: "Amylase crystal", qty: 4, isSecondary: true },
+    ],
+    output: { name: "Stamina potion(4)", qty: 1 },
+  },
+  {
     id: "saradomin-brew",
     label: "Saradomin brew(3)",
     level: 81,
@@ -120,11 +231,23 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Saradomin brew(3)", qty: 1 },
   },
   {
+    id: "armadyl-brew",
+    label: "Armadyl brew(3)",
+    level: 89,
+    xp: 205,
+    actionsPerHour: POTION_APH,
+    inputs: [
+      { name: "Umbral potion (unf)", qty: 1 },
+      { name: "Rainbow crab paste", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Armadyl brew(3)", qty: 1 },
+  },
+  {
     id: "super-combat",
     label: "Super combat potion(4)",
     level: 90,
     xp: 150,
-    actionsPerHour: 2000,
+    actionsPerHour: SUPER_COMBAT_APH,
     inputs: [
       { name: "Torstol potion (unf)", qty: 1 },
       { name: "Super attack(4)", qty: 1, isSecondary: true },
@@ -133,15 +256,12 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     ],
     output: { name: "Super combat potion(4)", qty: 1 },
   },
-  {
-    id: "clean-ranarr",
-    label: "Clean ranarr weed",
-    level: 25,
-    xp: 7.5,
-    actionsPerHour: 5000,
-    inputs: [{ name: "Grimy ranarr weed", qty: 1 }],
-    output: { name: "Ranarr weed", qty: 1 },
-  },
+
+  // —— Manual herb cleaning (wiki: 10,000/h) ——
+  ...manualCleanMethods(),
+
+  // —— Degrime (Arceuus, half clean XP, ~600 casts/h) ——
+  ...degrimeMethods(),
 ];
 
 export function herbloreMethodItemNames(): string[] {
