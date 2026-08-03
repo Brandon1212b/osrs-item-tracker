@@ -19,6 +19,17 @@ const G_MIN = 250_000;
 const G_MAX = 10_000_000;
 const G_STEP = 250_000;
 
+/** Game-mechanic probabilities only — not market prices. */
+const AMULET_BONUS_DOSE_CHANCE = {
+  none: 0,
+  chemistry: 0.05,
+  alchemist: 0.15,
+} as const;
+
+const GOGGLES_SKIP_CHANCE = 0.1;
+
+type AmuletChoice = keyof typeof AMULET_BONUS_DOSE_CHANCE;
+
 type CraftSort =
   | "gp_desc"
   | "gp_asc"
@@ -29,7 +40,12 @@ type CraftSort =
 
 const DEFAULT_SORT: CraftSort = "cost_asc";
 
-export type MethodPart = { name: string; qty: number };
+export type MethodPart = {
+  name: string;
+  qty: number;
+  /** Secondary ingredient — Prescription goggles can skip consuming it. */
+  isSecondary?: boolean;
+};
 
 export type SkillingMethod = {
   id: string;
@@ -96,6 +112,17 @@ function nullsLast(a: number | null, b: number | null, dir: 1 | -1): number {
   return (a - b) * dir;
 }
 
+/** Charge cost from live Amulet of chemistry GE price — never hardcoded. */
+function amuletChargeCost(
+  amulet: AmuletChoice,
+  chemistryPrice: number | null,
+): number {
+  if (amulet === "none" || chemistryPrice == null) return 0;
+  // Amulet of chemistry: 5 charges per amulet.
+  // Alchemist's amulet: charged BY amulets of chemistry, 10 charges each.
+  return amulet === "chemistry" ? chemistryPrice / 5 : chemistryPrice / 10;
+}
+
 type Ranked = {
   method: SkillingMethod;
   xpPerHour: number;
@@ -132,9 +159,19 @@ export function SkillingMethodsPanel({
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
+  const [amulet, setAmulet] = useState<AmuletChoice>("none");
+  const [goggles, setGoggles] = useState(false);
   const skillLevel = playerSkills?.[skillKey];
+  const isHerblore = skillKey === "herblore";
 
   const ranked = useMemo(() => {
+    const chemistryPrice = isHerblore
+      ? buyPrice(rowsByName.get("Amulet of chemistry"))
+      : null;
+    const chargeCost = isHerblore ? amuletChargeCost(amulet, chemistryPrice) : 0;
+    const expectedDoses = isHerblore ? 3 + AMULET_BONUS_DOSE_CHANCE[amulet] : 3;
+    const secondaryMult = isHerblore && goggles ? 1 - GOGGLES_SKIP_CHANCE : 1;
+
     const list: Ranked[] = methods.map((method) => {
       const xpPerHour = method.xp * method.actionsPerHour;
       let inputCost = 0;
@@ -149,11 +186,18 @@ export function SkillingMethodsPanel({
           missing = true;
           break;
         }
-        inputCost += p * part.qty;
+        const qty =
+          isHerblore && part.isSecondary ? part.qty * secondaryMult : part.qty;
+        inputCost += p * qty;
 
         const base = avg30Price(row, trendsById);
         if (base == null) baselineMissing = true;
-        else baselineInput += base * part.qty;
+        else baselineInput += base * qty;
+      }
+
+      if (isHerblore && !missing) {
+        inputCost += chargeCost;
+        // Baseline does not include amulet charge (consumable, not a 30d market component of the recipe itself)
       }
 
       let outValue: number | null = 0;
@@ -168,8 +212,14 @@ export function SkillingMethodsPanel({
         if (baselineOutUnit == null) baselineMissing = true;
 
         const outQty = method.output.qty;
-        outValue = outUnit == null ? null : outUnit * outQty;
-        baselineOutValue = baselineOutUnit == null ? null : baselineOutUnit * outQty;
+        // Amulet of chemistry: expected doses on 3-dose potion products
+        const doseScale =
+          isHerblore && method.output.name.includes("(3)")
+            ? expectedDoses / 3
+            : 1;
+        outValue = outUnit == null ? null : outUnit * outQty * doseScale;
+        baselineOutValue =
+          baselineOutUnit == null ? null : baselineOutUnit * outQty * doseScale;
       }
 
       const profitPerCraft =
@@ -230,7 +280,7 @@ export function SkillingMethodsPanel({
       }
       return cmp || a.method.level - b.method.level;
     });
-  }, [methods, rowsByName, trendsById, g, sort, skillLevel]);
+  }, [methods, rowsByName, trendsById, g, sort, skillLevel, isHerblore, amulet, goggles]);
 
   return (
     <div className="mt-4 space-y-3">
@@ -287,6 +337,37 @@ export function SkillingMethodsPanel({
             </SelectContent>
           </Select>
         </div>
+
+        {isHerblore && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground">Amulet</span>
+              <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                <SelectTrigger className="h-8 w-[11.5rem] text-xs" aria-label="Amulet modifier">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="chemistry">Amulet of chemistry</SelectItem>
+                  <SelectItem value="alchemist">Alchemist's amulet</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGoggles((v) => !v)}
+              aria-pressed={goggles}
+              className={`inline-flex h-8 items-center rounded-full border px-3 text-[11px] font-medium transition-colors ${
+                goggles
+                  ? "border-primary/70 bg-primary/15 text-primary"
+                  : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
+              }`}
+              title="Prescription goggles — 10% chance not to consume secondary"
+            >
+              Goggles
+            </button>
+          </div>
+        )}
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>

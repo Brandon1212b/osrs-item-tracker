@@ -3,7 +3,12 @@
  * https://oldschool.runescape.wiki/w/Herblore_training
  * ~2,500 finished potions/h with clean banking.
  */
-export type MethodPart = { name: string; qty: number };
+export type MethodPart = {
+  name: string;
+  qty: number;
+  /** Secondary ingredient — Prescription goggles can skip consuming it. */
+  isSecondary?: boolean;
+};
 
 export type HerbloreMethod = {
   id: string;
@@ -26,7 +31,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Ranarr potion (unf)", qty: 1 },
-      { name: "Snape grass", qty: 1 },
+      { name: "Snape grass", qty: 1, isSecondary: true },
     ],
     output: { name: "Prayer potion(3)", qty: 1 },
   },
@@ -38,7 +43,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Irit potion (unf)", qty: 1 },
-      { name: "Eye of newt", qty: 1 },
+      { name: "Eye of newt", qty: 1, isSecondary: true },
     ],
     output: { name: "Super attack(3)", qty: 1 },
   },
@@ -50,7 +55,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Kwuarm potion (unf)", qty: 1 },
-      { name: "Limpwurt root", qty: 1 },
+      { name: "Limpwurt root", qty: 1, isSecondary: true },
     ],
     output: { name: "Super strength(3)", qty: 1 },
   },
@@ -62,7 +67,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Cadantine potion (unf)", qty: 1 },
-      { name: "White berries", qty: 1 },
+      { name: "White berries", qty: 1, isSecondary: true },
     ],
     output: { name: "Super defence(3)", qty: 1 },
   },
@@ -74,7 +79,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Snapdragon potion (unf)", qty: 1 },
-      { name: "Red spiders' eggs", qty: 1 },
+      { name: "Red spiders' eggs", qty: 1, isSecondary: true },
     ],
     output: { name: "Super restore(3)", qty: 1 },
   },
@@ -86,7 +91,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Dwarf weed potion (unf)", qty: 1 },
-      { name: "Wine of zamorak", qty: 1 },
+      { name: "Wine of zamorak", qty: 1, isSecondary: true },
     ],
     output: { name: "Ranging potion(3)", qty: 1 },
   },
@@ -98,7 +103,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Lantadyme potion (unf)", qty: 1 },
-      { name: "Potato cactus", qty: 1 },
+      { name: "Potato cactus", qty: 1, isSecondary: true },
     ],
     output: { name: "Magic potion(3)", qty: 1 },
   },
@@ -110,7 +115,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: POTION_APH,
     inputs: [
       { name: "Toadflax potion (unf)", qty: 1 },
-      { name: "Crushed nest", qty: 1 },
+      { name: "Crushed nest", qty: 1, isSecondary: true },
     ],
     output: { name: "Saradomin brew(3)", qty: 1 },
   },
@@ -122,9 +127,9 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: 2000,
     inputs: [
       { name: "Torstol potion (unf)", qty: 1 },
-      { name: "Super attack(4)", qty: 1 },
-      { name: "Super strength(4)", qty: 1 },
-      { name: "Super defence(4)", qty: 1 },
+      { name: "Super attack(4)", qty: 1, isSecondary: true },
+      { name: "Super strength(4)", qty: 1, isSecondary: true },
+      { name: "Super defence(4)", qty: 1, isSecondary: true },
     ],
     output: { name: "Super combat potion(4)", qty: 1 },
   },
@@ -145,5 +150,7 @@ export function herbloreMethodItemNames(): string[] {
     for (const p of m.inputs) names.add(p.name);
     names.add(m.output.name);
   }
+  // Charge cost is derived from live Amulet of chemistry price
+  names.add("Amulet of chemistry");
   return [...names];
 }
