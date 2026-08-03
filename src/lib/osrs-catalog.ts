@@ -310,6 +310,7 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Wine of zamorak", tags: ["herblore"] },
       { name: "Vial of water", tags: ["herblore"] },
       { name: "Amylase crystal", tags: ["herblore"] },
+      { name: "Amulet of chemistry", tags: ["herblore"] },
     ],
   },
   {
