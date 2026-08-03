@@ -1,9 +1,14 @@
 /**
  * Herblore training methods (P2P).
- * https://oldschool.runescape.wiki/w/Herblore_training
- * ~2,500 finished potions/h with clean banking (standard 14×14).
- * Stamina ~2,750/h (27×1). Guthix rest ~1,400/h. Super combat ~2,000/h.
- * Manual herb cleaning ~5,000/h; Degrime ~600 casts/h × 27 herbs.
+ * Rates from https://oldschool.runescape.wiki/w/Herblore_training
+ *
+ * Actions/hour assumptions (wiki):
+ * - 2,500 standard 14×14 potions
+ * - 2,750 for 27×1 (stamina potions)
+ * - 2,166 for super combat potions
+ * - ~1,400 for Guthix rest (3-dose cups)
+ * - 10,000 for manual herb cleaning (auto-clean ≈ 3,000 / 30% of that)
+ * - ~600 Degrime casts/h (full inventory of grimy herbs per cast)
  */
 export type MethodPart = {
   name: string;
@@ -22,12 +27,19 @@ export type HerbloreMethod = {
   output: MethodPart;
 };
 
+/** Wiki: 2,500 standard 14×14 potions/h */
 const POTION_APH = 2500;
+/** Wiki: 2,750 for 27×1 (stamina) */
 const STAMINA_APH = 2750;
+/** Wiki: 2,166 for super combat */
+const SUPER_COMBAT_APH = 2166;
+/** Wiki: ~1,400 Guthix rest (3)/h */
 const GUTHIX_APH = 1400;
-const CLEAN_APH = 5000;
-/** Full inventory of grimy herbs per Degrime cast (Arceuus). */
+/** Wiki XP table assumes 10,000 herbs cleaned/h (manual / fast clicking) */
+const CLEAN_APH = 10_000;
+/** Full inventory of grimy herbs per Degrime cast (runes stack). */
 const DEGRIME_HERBS = 27;
+/** Wiki: ~600 Degrime casts/h */
 const DEGRIME_CASTS_PER_HOUR = 600;
 
 /** Standard tradeable herbs: [grimy name, clean name, level, clean XP]. */
@@ -61,7 +73,11 @@ function manualCleanMethods(): HerbloreMethod[] {
   }));
 }
 
-/** Degrime grants half the normal clean XP; 4 law + 2 earth per cast. */
+/**
+ * Degrime (Arceuus): half the normal clean XP per herb.
+ * 4 law + 2 earth per cast; ~600 casts/h × 27 herbs.
+ * https://oldschool.runescape.wiki/w/Degrime
+ */
 function degrimeMethods(): HerbloreMethod[] {
   return HERBS.map(([grimy, clean, level, xp]) => ({
     id: `degrime-${clean.toLowerCase().replace(/ /g, "-")}`,
@@ -231,7 +247,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     label: "Super combat potion(4)",
     level: 90,
     xp: 150,
-    actionsPerHour: 2000,
+    actionsPerHour: SUPER_COMBAT_APH,
     inputs: [
       { name: "Torstol potion (unf)", qty: 1 },
       { name: "Super attack(4)", qty: 1, isSecondary: true },
@@ -241,10 +257,10 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Super combat potion(4)", qty: 1 },
   },
 
-  // —— Manual herb cleaning ——
+  // —— Manual herb cleaning (wiki: 10,000/h) ——
   ...manualCleanMethods(),
 
-  // —— Degrime (Arceuus spell, half clean XP) ——
+  // —— Degrime (Arceuus, half clean XP, ~600 casts/h) ——
   ...degrimeMethods(),
 ];
 
