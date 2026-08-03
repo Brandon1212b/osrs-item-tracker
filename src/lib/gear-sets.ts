@@ -29,10 +29,8 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "20+",
     tier: "early",
     items: [
-      // Range
       "Maple shortbow",
       "Adamant arrow",
-      // Magic
       "Mystic hat (dark)",
       "Mystic robe top (dark)",
       "Mystic robe bottom (dark)",
@@ -59,7 +57,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "40+",
     tier: "early",
     items: [
-      // Melee
       "Dragon scimitar",
       "Dragon boots",
       "Helm of neitiznot",
@@ -67,14 +64,12 @@ export const GEAR_SETS: GearSetDef[] = [
       "Combat bracelet",
       "Rune boots",
       "Berserker helm",
-      // Range
       "Maple shortbow",
       "Adamant arrow",
       "Magic shortbow",
       "Rune arrow",
       "Dorgeshuun crossbow",
       "Bone bolts",
-      // Magic
       "Mystic hat (dark)",
       "Mystic robe top (dark)",
       "Mystic robe bottom (dark)",
@@ -90,14 +85,11 @@ export const GEAR_SETS: GearSetDef[] = [
     combat: "range",
     items: ["Dorgeshuun crossbow", "Bone bolts"],
   },
-
-  // ── Mid ────────────────────────────────────────────────
   {
     key: "pre-rfd",
     label: "Pre-RfD",
     tier: "mid",
     items: [
-      // Melee
       "Abyssal whip",
       "Amulet of fury",
       "Zamorakian hasta",
@@ -111,7 +103,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Ursine chainmace",
       "Helm of neitiznot",
       "Dragon boots",
-      // Range (Level 40 Pre-RfD)
       "Dorgeshuun crossbow",
       "Bone bolts",
       "Magic shortbow",
@@ -125,7 +116,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "Post-RfD",
     tier: "mid",
     items: [
-      // Melee
       "Abyssal whip",
       "Kraken tentacle",
       "Amulet of fury",
@@ -139,7 +129,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Dharok's platebody",
       "Dharok's platelegs",
       "Dharok's greataxe",
-      // Range (Level 50 Post-RfD)
       "Magic shortbow",
       "Rune arrow",
       "Amethyst arrow",
@@ -147,7 +136,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Broad bolts",
       "Diamond bolts (e)",
       "Ruby bolts (e)",
-      // Magic (Level 60 Post-RfD)
       "Infinity hat",
       "Infinity top",
       "Infinity bottoms",
@@ -242,7 +230,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "70+",
     tier: "mid",
     items: [
-      // Melee
       "Abyssal whip",
       "Kraken tentacle",
       "Amulet of fury",
@@ -257,7 +244,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Obsidian platebody",
       "Obsidian platelegs",
       "Berserker necklace",
-      // Range
       "Rune crossbow",
       "Broad bolts",
       "Diamond bolts (e)",
@@ -268,7 +254,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Steel cannonball",
       "Red chinchompa",
       "Black chinchompa",
-      // Magic (70+ Ancients + Elemental)
       "Ahrim's hood",
       "Ahrim's robetop",
       "Ahrim's robeskirt",
@@ -294,8 +279,6 @@ export const GEAR_SETS: GearSetDef[] = [
     combat: "magic",
     items: ["Ahrim's hood", "Ahrim's robetop", "Ahrim's robeskirt", "Ahrim's staff"],
   },
-
-  // ── Late ───────────────────────────────────────────────
   {
     key: "lvl70-void",
     label: "70+ (Elite void)",
@@ -339,14 +322,12 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "75+",
     tier: "late",
     items: [
-      // Melee (wiki 75+ loadout + content upgrades)
       "Kraken tentacle",
       "Serpentine helm",
       "Amulet of fury",
       "Berserker ring",
       "Dragon boots",
       "Burning claws",
-      // Range (wiki 75: blowpipe + anguish)
       "Dragon crossbow",
       "Twisted buckler",
       "Toxic blowpipe (empty)",
@@ -359,7 +340,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Armadyl crossbow",
       "Ruby dragon bolts (e)",
       "Diamond dragon bolts (e)",
-      // Magic (75+ Ancients)
       "Trident of the seas (full)",
       "Uncharged toxic trident",
       "Ancient sceptre",
@@ -391,7 +371,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "80+",
     tier: "late",
     items: [
-      // Melee (wiki 80+: torture, ferocious, blood moon; content upgrades)
       "Kraken tentacle",
       "Serpentine helm",
       "Amulet of torture",
@@ -410,7 +389,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Bandos chestplate",
       "Bandos tassets",
       "Bandos boots",
-      // Range (wiki 80: Masori + anguish + blowpipe)
       "Armadyl crossbow",
       "Armadyl helmet",
       "Armadyl chestplate",
@@ -430,7 +408,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Webweaver bow (u)",
       "Scorching bow",
       "Dragon arrow",
-      // Magic (80+ Ancients + Powered stave)
       "Ancient sceptre",
       "Toxic staff (uncharged)",
       "Purging staff",
@@ -454,7 +431,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "85+",
     tier: "late",
     items: [
-      // Range (wiki 85+: Bowfa + crystal + anguish)
       "Bow of faerdhinen (inactive)",
       "Crystal helm",
       "Crystal body",
@@ -475,7 +451,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Dragon dart",
       "Webweaver bow (u)",
       "Scorching bow",
-      // Magic (85+ Powered stave)
       "Sanguinesti staff (uncharged)",
       "Eye of ayak (uncharged)",
       "Toxic staff (uncharged)",
@@ -501,11 +476,10 @@ export const GEAR_SETS: GearSetDef[] = [
     tier: "late",
     combat: "melee",
     items: [
-      // Wiki 90+ loadout: rancour, faceguard, ferocious, dragon boots + content
       "Dragon hunter lance",
       "Voidwaker",
       "Dragon claws",
-      "Noxious halberd",
+      "Noxioushalberd",
       "Osmumten's fang",
       "Abyssal bludgeon",
       "Dragon warhammer",
@@ -535,7 +509,6 @@ export const GEAR_SETS: GearSetDef[] = [
     tier: "late",
     combat: "melee",
     items: [
-      // Wiki 95+: rancour, faceguard, ferocious, primordial, ultor + t80 weapons
       "Ghrazi rapier",
       "Blade of saeldor (inactive)",
       "Inquisitor's mace",
@@ -642,8 +615,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Eye of ayak (uncharged)",
     ],
   },
-
-  // ── End ────────────────────────────────────────────────
   {
     key: "end-slash",
     label: "Endgame Slash",
@@ -863,7 +834,6 @@ export const GEAR_SETS: GearSetDef[] = [
     label: "Endgame Megarare",
     tier: "end",
     items: [
-      // Melee
       "Scythe of vitur (uncharged)",
       "Soulreaper axe",
       "Blade of saeldor (inactive)",
@@ -875,7 +845,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Amulet of rancour",
       "Ferocious gloves",
       "Primordial boots",
-      // Range
       "Twisted bow",
       "Zaryte crossbow",
       "Masori mask (f)",
@@ -885,7 +854,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Venator ring",
       "Necklace of anguish",
       "Necklace of rupture",
-      // Magic
       "Tumeken's shadow (uncharged)",
       "Harmonised nightmare staff",
       "Kodai wand",
