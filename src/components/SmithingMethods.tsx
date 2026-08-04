@@ -380,14 +380,16 @@ function MethodRow({
             {rank}
           </span>
           {titleIcon && (
-            <WikiImage
-              icon={titleIcon}
-              alt={titlePart?.name ?? ""}
-              width={40}
-              height={40}
-              className="size-10 shrink-0 drop-shadow-sm"
-              lazy={false}
-            />
+            <span className="flex size-10 shrink-0 items-center justify-center">
+              <WikiImage
+                icon={titleIcon}
+                alt={titlePart?.name ?? ""}
+                width={40}
+                height={40}
+                className="size-10 drop-shadow-sm"
+                lazy={false}
+              />
+            </span>
           )}
           <div className="min-w-0">
             <h3 className="text-sm font-semibold leading-tight">{method.label}</h3>
@@ -511,7 +513,7 @@ function PartChip({
 
   const inner = (
     <>
-      <span className="relative inline-flex">
+      <span className="relative inline-flex size-6 shrink-0 items-center justify-center">
         <WikiImage
           icon={chipIcon(row, name)}
           alt={name}

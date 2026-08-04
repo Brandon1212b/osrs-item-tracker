@@ -36,6 +36,7 @@ type WikiImageProps = {
  * - referrerPolicy="no-referrer" avoids intermittent blocks from the wiki CDN / Safari privacy features
  * - Retries (with cache-buster) recover from cancelled lazy loads on mobile scroll / list remounts
  * - Soft placeholder when the image ultimately fails so the layout never shows a broken icon
+ * - Always object-contain inside the given box so varying wiki icon padding/aspect still fills consistently
  */
 export function WikiImage({
   icon,
@@ -87,6 +88,12 @@ export function WikiImage({
       draggable={draggable}
       onError={handleError}
       className={cn("object-contain", className)}
+      style={{
+        // Ensure the laid-out box is respected even when the source PNG is
+        // small or heavily padded (common for bars vs ores).
+        maxWidth: width ? `${width}px` : undefined,
+        maxHeight: height ? `${height}px` : undefined,
+      }}
     />
   );
 }
