@@ -83,13 +83,6 @@ export const GEAR_SETS: GearSetDef[] = [
       "Iban's staff (u)",
     ],
   },
-  {
-    key: "dorgeshuun",
-    label: "Dorgeshuun",
-    tier: "early",
-    combat: "range",
-    items: ["Dorgeshuun crossbow", "Bone bolts"],
-  },
 
   // ── Mid ────────────────────────────────────────────────
   {
