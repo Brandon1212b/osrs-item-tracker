@@ -11,10 +11,10 @@ export function RunecraftMethodsPanel({
   playerSkills,
 }: {
   rowsByName: Map<string, PriceRow>;
-  trendsById?: Record<number, Trend>;
+  trendsById?: Record<number, Trend> | undefined;
   moneyPerHour: number;
   onMoneyPerHourChange: (n: number) => void;
-  playerSkills?: PlayerSkills | null;
+  playerSkills?: PlayerSkills | null | undefined;
 }) {
   return (
     <SkillingMethodsPanel
