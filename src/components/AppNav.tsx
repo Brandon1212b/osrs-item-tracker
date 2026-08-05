@@ -13,13 +13,13 @@ export function AppNav() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
+    navigate({ to: "/", replace: true, search: {} as never });
   }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4">
-        <Link to="/" className="font-display text-sm font-semibold tracking-wide text-foreground sm:text-base">
+        <Link to="/" search={{} as never} className="font-display text-sm font-semibold tracking-wide text-foreground sm:text-base">
           GE Watch
         </Link>
         <div className="flex items-center gap-1.5">

@@ -154,7 +154,7 @@ function WatchlistPage() {
           <p className="text-sm text-muted-foreground">
             You aren't tracking anything yet. Tap the star on any item to add it.
           </p>
-          <Link to="/" className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground">
+          <Link to="/" search={{} as never} className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground">
             Browse items
           </Link>
         </div>
