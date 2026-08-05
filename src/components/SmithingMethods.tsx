@@ -110,7 +110,7 @@ export function SmithingMethodsPanel({
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
-  const smithingLevel = playerSkills?.smithing;
+  const smithingLevel = playerSkills?.["smithing"];
 
   const ranked = useMemo(() => {
     const list: Ranked[] = SMITHING_METHODS.map((method) => {
@@ -567,7 +567,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  tone?: "deal" | "steep";
+  tone?: "deal" | "steep" | undefined;
   emphasis?: boolean;
   title?: string;
 }) {

@@ -181,9 +181,9 @@ function Home() {
 
   const patchSearch = (patch: Partial<HomeSearch>) => {
     void navigate({
-      search: (prev) => {
+      search: (prev: HomeSearch) => {
         const next = { ...prev, ...patch };
-        const cleaned: Record<string, string | number> = {};
+        const cleaned: Partial<HomeSearch> = {};
         if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
         if (next.sort && next.sort !== DEFAULT_SORT) cleaned.sort = next.sort;
         if (next.range && next.range !== DEFAULT_RANGE) cleaned.range = next.range;

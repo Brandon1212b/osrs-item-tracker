@@ -570,7 +570,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  tone?: "deal" | "steep";
+  tone?: "deal" | "steep" | undefined;
   emphasis?: boolean;
   title?: string;
 }) {
