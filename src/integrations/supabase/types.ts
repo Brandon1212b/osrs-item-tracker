@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          email_alerts: boolean
+          id: string
+          rsn: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          email_alerts?: boolean
+          id: string
+          rsn?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          email_alerts?: boolean
+          id?: string
+          rsn?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      watchlist_items: {
+        Row: {
+          created_at: string
+          drop_pct: number | null
+          id: string
+          item_id: number
+          item_name: string
+          last_notified_at: string | null
+          last_notified_price: number | null
+          target_price: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          drop_pct?: number | null
+          id?: string
+          item_id: number
+          item_name: string
+          last_notified_at?: string | null
+          last_notified_price?: number | null
+          target_price?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          drop_pct?: number | null
+          id?: string
+          item_id?: number
+          item_name?: string
+          last_notified_at?: string | null
+          last_notified_price?: number | null
+          target_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
