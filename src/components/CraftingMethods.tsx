@@ -111,7 +111,7 @@ export function CraftingMethodsPanel({
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
-  const craftingLevel = playerSkills?.crafting;
+  const craftingLevel = playerSkills?.["crafting"];
 
   const ranked = useMemo(() => {
     const list: Ranked[] = CRAFTING_METHODS.map((method) => {

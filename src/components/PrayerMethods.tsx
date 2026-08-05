@@ -110,8 +110,8 @@ export function PrayerMethodsPanel({
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
-  const prayerLevel = playerSkills?.prayer;
-  const magicLevel = playerSkills?.magic;
+  const prayerLevel = playerSkills?.["prayer"];
+  const magicLevel = playerSkills?.["magic"];
 
   const ranked = useMemo(() => {
     const list: Ranked[] = PRAYER_METHODS.map((method) => {

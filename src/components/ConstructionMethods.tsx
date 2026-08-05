@@ -110,7 +110,7 @@ export function ConstructionMethodsPanel({
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
-  const constructionLevel = playerSkills?.construction;
+  const constructionLevel = playerSkills?.["construction"];
 
   const ranked = useMemo(() => {
     const list: Ranked[] = CONSTRUCTION_METHODS.map((method) => {
