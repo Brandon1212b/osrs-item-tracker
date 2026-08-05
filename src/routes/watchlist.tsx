@@ -208,7 +208,7 @@ function WatchRow({
       }`}
     >
       <Link to="/item/$id" params={{ id: String(item.item_id) }} className="flex min-w-0 flex-1 items-center gap-3">
-        <WikiImage icon={row?.icon} alt={item.item_name} width={28} height={28} className="size-7 shrink-0" />
+        <WikiImage icon={row?.icon ?? `${item.item_name}.png`} alt={item.item_name} width={28} height={28} className="size-7 shrink-0" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{item.item_name}</p>
           <p className="text-sm font-bold tabular-nums gold-text">
