@@ -89,7 +89,7 @@ function ItemPage() {
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.history.back();
     } else {
-      void router.navigate({ to: "/" });
+      void router.navigate({ to: "/", search: {} as never });
     }
   };
 
