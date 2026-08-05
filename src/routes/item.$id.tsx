@@ -8,6 +8,7 @@ import type { EquipmentStats, RangeKey } from "@/lib/osrs.server";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { PriceChart } from "@/components/PriceChart";
 import { WikiImage } from "@/components/WikiImage";
+import { WatchButton } from "@/components/WatchButton";
 import { gp, formatCompact, signalOf, timeAgo } from "@/lib/format";
 
 const RANGES: { key: RangeKey; label: string }[] = [
@@ -120,7 +121,10 @@ function ItemPage() {
               className="size-12 drop-shadow"
             />
             <div className="min-w-0 flex-1">
-              <h1 className="font-sans text-2xl font-bold leading-tight sm:text-3xl">{row.name}</h1>
+              <div className="flex items-start gap-2">
+                <h1 className="font-sans text-2xl font-bold leading-tight sm:text-3xl">{row.name}</h1>
+                <WatchButton itemId={row.id} itemName={row.name} className="mt-1.5" />
+              </div>
               <p className="mt-1 text-sm text-muted-foreground">{row.examine}</p>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
