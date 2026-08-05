@@ -103,14 +103,14 @@ export function ConstructionMethodsPanel({
   playerSkills,
 }: {
   rowsByName: Map<string, PriceRow>;
-  trendsById?: Record<number, Trend>;
+  trendsById?: Record<number, Trend> | undefined;
   moneyPerHour: number;
   onMoneyPerHourChange: (n: number) => void;
-  playerSkills?: PlayerSkills | null;
+  playerSkills?: PlayerSkills | null | undefined;
 }) {
   const g = clampG(moneyPerHour);
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
-  const constructionLevel = playerSkills?.construction;
+  const constructionLevel = playerSkills?.["construction"];
 
   const ranked = useMemo(() => {
     const list: Ranked[] = CONSTRUCTION_METHODS.map((method) => {
@@ -579,7 +579,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  tone?: "deal" | "steep";
+  tone?: "deal" | "steep" | undefined;
   emphasis?: boolean;
   title?: string;
 }) {
