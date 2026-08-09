@@ -343,6 +343,7 @@ export function HomeMain({
 
       {showSkillSub && (
         <div className="mt-4 flex flex-wrap items-center gap-1.5">
+          <SubTab active={skill === "all"} onClick={() => patchSearch({ skill: "all" })} label="All items" />
           {SKILLING_FILTERS.map((f) => (
             <WikiIconTab
               key={f.key}
@@ -352,7 +353,6 @@ export function HomeMain({
               wikiIcon={f.wikiIcon}
             />
           ))}
-          <SubTab active={skill === "all"} onClick={() => patchSearch({ skill: "all" })} label="All items" />
         </div>
       )}
 
