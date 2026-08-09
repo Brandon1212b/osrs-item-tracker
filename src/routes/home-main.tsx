@@ -122,7 +122,7 @@ export function HomeMain({
     <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
       <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:flex-row sm:items-start sm:px-6 pointer-events-auto isolate">
         <div className="flex flex-1 flex-wrap gap-2">
-          <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="Everything" />
+          <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="All" />
           <Tab
             active={filter === "gear"}
             onClick={() => handleFilterChange("gear")}
