@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -55,12 +55,11 @@ function WatchlistPage() {
   const watchlist = useWatchlist();
   const { remove, update } = useWatchlistMutations();
   const { rsn, setRsn } = useLocalRsn();
-  const [rsnDraft, setRsnDraft] = useState(rsn);
+  const [rsnDraft, setRsnDraft] = useState("");
 
-  // Keep draft in sync when storage loads
-  if (rsn && rsnDraft === "" && rsn !== rsnDraft) {
-    // no-op pattern avoided; effect not needed — user types freely
-  }
+  useEffect(() => {
+    if (rsn) setRsnDraft(rsn);
+  }, [rsn]);
 
   const rowsById = useMemo(() => {
     const map = new Map<number, PriceRow>();
