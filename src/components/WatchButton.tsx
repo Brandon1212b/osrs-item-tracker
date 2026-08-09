@@ -1,7 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 import { useWatchlist, useWatchlistMutations } from "@/lib/watchlist";
 
 export function WatchButton({
@@ -13,9 +11,7 @@ export function WatchButton({
   itemName: string;
   className?: string;
 }) {
-  const { user, signedIn } = useAuth();
-  const navigate = useNavigate();
-  const watchlist = useWatchlist(signedIn);
+  const watchlist = useWatchlist();
   const { add, remove } = useWatchlistMutations();
 
   const entry = watchlist.data?.find((w) => w.item_id === itemId);
@@ -30,15 +26,11 @@ export function WatchButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!signedIn || !user) {
-          navigate({ to: "/auth" });
-          return;
-        }
         if (entry) {
           remove.mutate(entry.id, { onSuccess: () => toast(`Removed ${itemName}`) });
         } else {
           add.mutate(
-            { itemId, itemName, userId: user.id },
+            { itemId, itemName },
             { onSuccess: () => toast(`Tracking ${itemName}`) },
           );
         }
