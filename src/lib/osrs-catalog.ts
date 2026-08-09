@@ -476,7 +476,7 @@ export const CATALOG: CatalogGroup[] = [
       { name: "Rune dart tip", tags: ["smithing", "fletching"] },
       { name: "Bronze nails", tags: ["smithing", "construction"] },
       { name: "Iron nails", tags: ["smithing", "construction"] },
-      { name: "Steel nails", tags: ["smithing", "fletching"] },
+      { name: "Steel nails", tags: ["smithing", "construction"] },
       { name: "Mithril nails", tags: ["smithing", "construction"] },
       { name: "Adamantite nails", tags: ["smithing", "construction"] },
       { name: "Rune nails", tags: ["smithing", "construction"] },
