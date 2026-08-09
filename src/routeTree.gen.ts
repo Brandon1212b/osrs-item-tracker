@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as ItemIdRouteImport } from './routes/item.$id'
@@ -17,6 +18,11 @@ import { Route as ItemIdRouteImport } from './routes/item.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodsRoute = MethodsRouteImport.update({
+  id: '/methods',
+  path: '/methods',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -37,12 +43,14 @@ const ItemIdRoute = ItemIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/methods': typeof MethodsRoute
   '/auth': typeof AuthRoute
   '/watchlist': typeof WatchlistRoute
   '/item/$id': typeof ItemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/methods': typeof MethodsRoute
   '/auth': typeof AuthRoute
   '/watchlist': typeof WatchlistRoute
   '/item/$id': typeof ItemIdRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/methods': typeof MethodsRoute
   '/auth': typeof AuthRoute
   '/watchlist': typeof WatchlistRoute
   '/item/$id': typeof ItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/watchlist' | '/item/$id'
+  fullPaths: '/' | '/methods' | '/auth' | '/watchlist' | '/item/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/watchlist' | '/item/$id'
-  id: '__root__' | '/' | '/auth' | '/watchlist' | '/item/$id'
+  to: '/' | '/methods' | '/auth' | '/watchlist' | '/item/$id'
+  id: '__root__' | '/' | '/methods' | '/auth' | '/watchlist' | '/item/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MethodsRoute: typeof MethodsRoute
   AuthRoute: typeof AuthRoute
   WatchlistRoute: typeof WatchlistRoute
   ItemIdRoute: typeof ItemIdRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methods': {
+      id: '/methods'
+      path: '/methods'
+      fullPath: '/methods'
+      preLoaderRoute: typeof MethodsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MethodsRoute: MethodsRoute,
   AuthRoute: AuthRoute,
   WatchlistRoute: WatchlistRoute,
   ItemIdRoute: ItemIdRoute,
