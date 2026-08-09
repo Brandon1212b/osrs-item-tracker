@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Trend } from "@/lib/osrs.server";
 
 const STORAGE_KEY = "ge-watch-watchlist";
+const CHANGE_EVENT = "ge-watch-watchlist";
 
 export type WatchItem = {
   id: string;
@@ -49,34 +50,27 @@ function writeList(items: WatchItem[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    window.dispatchEvent(new Event("ge-watch-watchlist"));
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   } catch {
     /* private mode / quota */
   }
 }
 
-function subscribe(cb: () => void) {
-  if (typeof window === "undefined") return () => {};
-  const handler = () => cb();
-  window.addEventListener("storage", handler);
-  window.addEventListener("ge-watch-watchlist", handler);
-  return () => {
-    window.removeEventListener("storage", handler);
-    window.removeEventListener("ge-watch-watchlist", handler);
-  };
-}
-
-function getSnapshot(): WatchItem[] {
-  return readList();
-}
-
-function getServerSnapshot(): WatchItem[] {
-  return [];
-}
-
 /** Live watchlist from localStorage (this browser only). */
 export function useWatchlist(_enabled = true) {
-  const data = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [data, setData] = useState<WatchItem[]>([]);
+
+  useEffect(() => {
+    const refresh = () => setData(readList());
+    refresh();
+    window.addEventListener("storage", refresh);
+    window.addEventListener(CHANGE_EVENT, refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener(CHANGE_EVENT, refresh);
+    };
+  }, []);
+
   return { data, isLoading: false, isError: false, error: null as Error | null };
 }
 
@@ -97,7 +91,10 @@ export function useWatchlistMutations() {
           return;
         }
         const next: WatchItem = {
-          id: crypto.randomUUID(),
+          id:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `w-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           item_id: input.itemId,
           item_name: input.itemName,
           target_price: null,
