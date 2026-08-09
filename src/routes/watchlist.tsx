@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell, Star, Trash2 } from "lucide-react";
@@ -9,17 +9,14 @@ import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { WikiImage } from "@/components/WikiImage";
 import { Sparkline } from "@/components/Sparkline";
 import { gp } from "@/lib/format";
-import { useAuth } from "@/hooks/useAuth";
 import {
   isTriggered,
   pctFromHigh,
-  useProfile,
-  useProfileMutation,
+  useLocalRsn,
   useWatchlist,
   useWatchlistMutations,
   type WatchItem,
 } from "@/lib/watchlist";
-import { PLAYER_STORAGE_KEY } from "@/lib/player-stats";
 
 export const Route = createFileRoute("/watchlist")({
   head: () => ({
@@ -41,13 +38,6 @@ export const Route = createFileRoute("/watchlist")({
 });
 
 function WatchlistPage() {
-  const { user, signedIn, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !signedIn) navigate({ to: "/auth", replace: true });
-  }, [loading, signedIn, navigate]);
-
   const snapshotFn = useServerFn(fetchSnapshot);
   const trendsFn = useServerFn(fetchTrends);
 
@@ -55,19 +45,22 @@ function WatchlistPage() {
     queryKey: ["snapshot"],
     queryFn: () => snapshotFn(),
     refetchInterval: 120_000,
-    enabled: signedIn,
   });
   const trends = useQuery({
     queryKey: ["trends", "6m"],
     queryFn: () => trendsFn({ data: { range: "6m" } }),
     staleTime: 30 * 60_000,
-    enabled: signedIn,
   });
 
-  const watchlist = useWatchlist(signedIn);
-  const profile = useProfile(signedIn);
-  const saveProfile = useProfileMutation();
+  const watchlist = useWatchlist();
   const { remove, update } = useWatchlistMutations();
+  const { rsn, setRsn } = useLocalRsn();
+  const [rsnDraft, setRsnDraft] = useState(rsn);
+
+  // Keep draft in sync when storage loads
+  if (rsn && rsnDraft === "" && rsn !== rsnDraft) {
+    // no-op pattern avoided; effect not needed — user types freely
+  }
 
   const rowsById = useMemo(() => {
     const map = new Map<number, PriceRow>();
@@ -81,18 +74,11 @@ function WatchlistPage() {
     return isTriggered(i, row?.high ?? row?.low, trends.data?.[i.item_id]);
   });
 
-  const [rsnDraft, setRsnDraft] = useState("");
-  useEffect(() => {
-    if (profile.data?.rsn != null) setRsnDraft(profile.data.rsn);
-  }, [profile.data?.rsn]);
-
-  if (loading || !signedIn) return null;
-
   return (
     <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6">
       <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl">My watchlist</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Set a price target or a percentage drop from the 6-month high — items that hit either one show up as alerts.
+        Saved on this device only. Set a price target or a % drop from the 6-month high — items that hit either show as alerts.
       </p>
 
       <section className="panel mt-4 flex flex-col gap-3 p-3 sm:flex-row sm:items-end sm:gap-4 sm:p-4">
@@ -107,36 +93,13 @@ function WatchlistPage() {
         </label>
         <button
           onClick={() => {
-            const next = rsnDraft.trim();
-            saveProfile.mutate(
-              { userId: user!.id, rsn: next || null, email: user!.email ?? null },
-              {
-                onSuccess: () => {
-                  try {
-                    if (next) localStorage.setItem(PLAYER_STORAGE_KEY, next);
-                    else localStorage.removeItem(PLAYER_STORAGE_KEY);
-                  } catch {
-                    /* private mode */
-                  }
-                  toast("Saved");
-                },
-              },
-            );
+            setRsn(rsnDraft);
+            toast("Saved");
           }}
           className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
         >
           Save RSN
         </button>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground sm:pb-1.5">
-          <input
-            type="checkbox"
-            checked={profile.data?.email_alerts ?? true}
-            onChange={(e) =>
-              saveProfile.mutate({ userId: user!.id, email_alerts: e.target.checked, email: user!.email ?? null })
-            }
-          />
-          Email me alerts
-        </label>
       </section>
 
       {alerts.length > 0 && (
@@ -174,8 +137,7 @@ function WatchlistPage() {
       )}
 
       <p className="mt-6 text-xs text-muted-foreground">
-        Alerts show here whenever you open the site. Email delivery needs a verified sending domain — ask and I'll set
-        it up.
+        Watchlist is stored in this browser. Clearing site data or switching devices will reset it. Accounts can come later if you want sync.
       </p>
     </main>
   );
