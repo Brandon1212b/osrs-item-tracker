@@ -1,1 +1,45 @@
-PLACEHOLDER
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import type { RangeKey } from "@/lib/osrs.server";
+import { Home } from "./home";
+
+type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
+
+const DEFAULT_RANGE: RangeKey = "6m";
+const DEFAULT_SORT: SortKey = "losers";
+
+const homeSearchSchema = z.object({
+  filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
+  sort: z.enum(["gainers", "losers", "expensive", "cheap", "value"]).catch(DEFAULT_SORT),
+  range: z.enum(["1d", "1w", "1m", "3m", "6m", "1y"]).catch(DEFAULT_RANGE),
+  q: z.string().catch(""),
+  combat: z.string().catch("all"),
+  slot: z.string().catch("all"),
+  tier: z.string().catch("all"),
+  set: z.string().catch("all"),
+  skill: z.string().catch("all"),
+  supply: z.string().catch("all"),
+});
+
+export type HomeSearch = z.infer<typeof homeSearchSchema>;
+
+export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): HomeSearch => homeSearchSchema.parse(search),
+  head: () => ({
+    meta: [
+      { title: "GE Watch — OSRS Gear & Skilling Price Tracker" },
+      {
+        name: "description",
+        content:
+          "Live OSRS Grand Exchange prices for gear and skilling supplies, with range-based buy signals so you know when an item is actually cheap.",
+      },
+      { property: "og:title", content: "GE Watch — OSRS Gear & Skilling Price Tracker" },
+      {
+        property: "og:description",
+        content:
+          "Live OSRS prices for gear upgrades and wiki-recommended skilling supplies, scored against their selected range.",
+      },
+    ],
+  }),
+  component: Home,
+});
