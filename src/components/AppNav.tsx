@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 
+const navLinkClass =
+  "inline-flex shrink-0 items-center rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-2.5 sm:text-sm";
+const navInactive = `${navLinkClass} text-muted-foreground hover:bg-accent hover:text-foreground`;
+const navActive = `${navLinkClass} bg-accent text-foreground`;
+
 export function AppNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
@@ -16,24 +21,25 @@ export function AppNav() {
           <Link
             to="/"
             search={{} as never}
-            className="inline-flex shrink-0 items-center rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:px-2.5 sm:text-sm"
-            activeProps={{ className: "text-foreground bg-accent" }}
-            activeOptions={{ exact: true }}
+            className={navInactive}
+            activeProps={{ className: navActive }}
+            activeOptions={{ exact: true, includeSearch: false }}
           >
             Item Prices
           </Link>
           <Link
             to="/methods"
             search={{} as never}
-            className="inline-flex shrink-0 items-center rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:px-2.5 sm:text-sm"
-            activeProps={{ className: "text-foreground bg-accent" }}
+            className={navInactive}
+            activeProps={{ className: navActive }}
+            activeOptions={{ includeSearch: false }}
           >
             Skilling Methods
           </Link>
           <Link
             to="/watchlist"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:px-2.5 sm:text-sm"
-            activeProps={{ className: "text-foreground bg-accent" }}
+            className={`${navInactive} gap-1.5`}
+            activeProps={{ className: `${navActive} gap-1.5` }}
           >
             <Star className="size-3.5 sm:size-4" />
             Watchlist
