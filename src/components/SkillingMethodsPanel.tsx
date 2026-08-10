@@ -96,6 +96,7 @@ function readSkillLevel(skills: PlayerSkills | null | undefined, skillKey: strin
 type Ranked = {
   id: string; label: string; level: number; xpPerHour: number; gpPerHour: number | null;
   profitPerCraft: number | null; netChangePct: number | null; costPerXp: number | null;
+  netValuePerHour: number | null;
   missing: boolean; locked: boolean; method?: SkillingMethod; activity?: ActivityMethod;
   secondaryLine?: string | null; notes?: string | null; intensity?: "low" | "medium" | "high" | null;
   rateBandLevel?: number | null;
@@ -130,44 +131,60 @@ export function SkillingMethodsPanel({
       for (const part of method.inputs) {
         const row = rowsByName.get(part.name);
         const p = buyPrice(row);
-        if (p == null) { missing = true; break; }
+        if (p == null) {
+          missing = true;
+          continue;
+        }
         const qty = isHerblore && part.isSecondary ? part.qty * secondaryMult : part.qty;
         inputCost += p * qty;
         const base = avg30Price(row, trendsById);
         if (base == null) baselineMissing = true; else baselineInput += base * qty;
       }
-      if (isHerblore && !missing) inputCost += chargeCost;
+      if (isHerblore && chargeCost > 0) inputCost += chargeCost;
 
       const outParts: MethodPart[] =
         method.outputs && method.outputs.length > 0 ? method.outputs
         : method.output ? [method.output] : [];
 
-      let outValue: number | null = 0;
+      let outValue = 0;
       let baselineOutValue: number | null = 0;
       if (outParts.length > 0) {
-        let sum = 0, baseSum = 0, anyMissing = false, anyBaseMissing = false;
+        let sum = 0, baseSum = 0, anyBaseMissing = false;
         for (const part of outParts) {
-          if (part.name === "Coins") { sum += part.qty; baseSum += part.qty; continue; }
+          if (part.name === "Coins") {
+            sum += part.qty;
+            baseSum += part.qty;
+            continue;
+          }
           const outRow = rowsByName.get(part.name);
           const outUnit = sellPrice(outRow);
-          if (outUnit == null) { anyMissing = true; break; }
+          if (outUnit == null) {
+            missing = true;
+            continue;
+          }
           const doseScale = isHerblore && part.name.includes("(3)") ? expectedDoses / 3 : 1;
           sum += outUnit * part.qty * doseScale;
           const baselineOutUnit = avg30Price(outRow, trendsById);
           if (baselineOutUnit == null) anyBaseMissing = true;
           else baseSum += baselineOutUnit * part.qty * doseScale;
         }
-        if (anyMissing) { missing = true; outValue = null; baselineOutValue = null; }
-        else { outValue = sum; baselineOutValue = anyBaseMissing ? null : baseSum; if (anyBaseMissing) baselineMissing = true; }
+        outValue = sum;
+        baselineOutValue = anyBaseMissing ? null : baseSum;
+        if (anyBaseMissing) baselineMissing = true;
       }
 
-      const profitPerCraft = missing || outValue == null ? null : outValue - inputCost;
+      const profitPerCraft = outValue - inputCost;
       const baselineNet = baselineMissing || baselineOutValue == null ? null : baselineOutValue - baselineInput;
-      const netChangePct = profitPerCraft != null && baselineNet != null ? netPctChange(profitPerCraft, baselineNet) : null;
-      const gpPerHour = profitPerCraft == null ? null : Math.round(profitPerCraft * method.actionsPerHour);
-      const costPerXp = gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, g);
+      const netChangePct = baselineNet != null ? netPctChange(profitPerCraft, baselineNet) : null;
+      const gpPerHour = Math.round(profitPerCraft * method.actionsPerHour);
+      const costPerXp = effectiveGpPerXp(xpPerHour, gpPerHour, g);
       const locked = skillLevel != null && skillLevel < method.level;
-      return { id: method.id, label: method.label, level: method.level, method, xpPerHour, gpPerHour, profitPerCraft, netChangePct, costPerXp, missing, locked };
+      return {
+        id: method.id, label: method.label, level: method.level, method,
+        xpPerHour, gpPerHour, profitPerCraft, netChangePct, costPerXp,
+        netValuePerHour: null,
+        missing, locked,
+      };
     });
 
     for (const activity of activities) {
@@ -175,28 +192,52 @@ export function SkillingMethodsPanel({
       let consumableCost = 0, missing = false;
       for (const part of activity.consumables) {
         const p = buyPrice(rowsByName.get(part.name));
-        if (p == null) { missing = true; break; }
+        if (p == null) {
+          missing = true;
+          continue;
+        }
         consumableCost += p * part.qty;
       }
       let rewardValue = band.expectedLootGpPerHour ?? 0;
-      if (!missing) {
-        for (const r of activity.rewards) {
-          const unit = sellPrice(rowsByName.get(r.name));
-          if (unit == null) { missing = true; break; }
-          rewardValue += unit * r.expectedQtyPerHour;
+      for (const r of activity.rewards) {
+        const unit = sellPrice(rowsByName.get(r.name));
+        if (unit == null) {
+          missing = true;
+          continue;
         }
+        rewardValue += unit * r.expectedQtyPerHour;
       }
-      const gpPerHour = missing ? null : Math.round(rewardValue - consumableCost);
-      const costPerXp = gpPerHour == null ? null : effectiveGpPerXp(band.xpPerHour, gpPerHour, g);
+      const gpPerHour = Math.round(rewardValue - consumableCost);
+      const costPerXp = effectiveGpPerXp(band.xpPerHour, gpPerHour, g);
       const locked = skillLevel != null && skillLevel < activity.level;
       const secondaryLine = activity.secondarySkill && band.secondaryXpPerHour
         ? `+${compactNum(Math.round(band.secondaryXpPerHour))} ${activity.secondarySkill} XP/h` : null;
       list.push({
         id: activity.id, label: activity.label, level: activity.level, activity,
         xpPerHour: band.xpPerHour, gpPerHour, profitPerCraft: null, netChangePct: null,
-        costPerXp, missing, locked, secondaryLine, notes: activity.notes ?? null,
-        intensity: activity.intensity ?? null, rateBandLevel: band.level,
+        costPerXp, netValuePerHour: null, missing, locked, secondaryLine,
+        notes: activity.notes ?? null, intensity: activity.intensity ?? null,
+        rateBandLevel: band.level,
       });
+    }
+
+    const unlocked = list.filter((r) => !r.locked);
+    const refPool = unlocked.length > 0 ? unlocked : list;
+    let refXpPerHour = 0;
+    for (const r of refPool) {
+      if (Number.isFinite(r.xpPerHour) && r.xpPerHour > refXpPerHour) {
+        refXpPerHour = r.xpPerHour;
+      }
+    }
+    const xpValue = refXpPerHour > 0 && g > 0 ? g / refXpPerHour : 0;
+
+    for (const r of list) {
+      if (r.gpPerHour == null || !Number.isFinite(r.xpPerHour)) {
+        r.netValuePerHour = null;
+      } else {
+        const nv = r.gpPerHour + r.xpPerHour * xpValue;
+        r.netValuePerHour = Number.isFinite(nv) ? nv : null;
+      }
     }
 
     return list.sort((a, b) => {
@@ -207,21 +248,13 @@ export function SkillingMethodsPanel({
         case "gp_asc": cmp = nullsLast(a.gpPerHour, b.gpPerHour, 1); break;
         case "xp_desc": cmp = b.xpPerHour - a.xpPerHour; break;
         case "xp_asc": cmp = a.xpPerHour - b.xpPerHour; break;
-        case "cost_desc": cmp = nullsLast(a.costPerXp, b.costPerXp, -1); break;
-        case "cost_asc":
-        default: {
-          // Among methods that beat the MM rate (cost <= 0), prefer higher XP/h
-          // so Rogues' chests rank above Master Farmers when GP is similar.
-          const aProfit = a.costPerXp != null && a.costPerXp <= 0;
-          const bProfit = b.costPerXp != null && b.costPerXp <= 0;
-          if (aProfit && bProfit) {
-            cmp = b.xpPerHour - a.xpPerHour;
-            if (cmp === 0) cmp = nullsLast(a.costPerXp, b.costPerXp, 1);
-          } else {
-            cmp = nullsLast(a.costPerXp, b.costPerXp, 1);
-          }
+        case "cost_desc":
+          cmp = nullsLast(a.netValuePerHour, b.netValuePerHour, 1);
           break;
-        }
+        case "cost_asc":
+        default:
+          cmp = nullsLast(a.netValuePerHour, b.netValuePerHour, -1);
+          break;
       }
       return cmp || a.level - b.level;
     });
@@ -234,12 +267,12 @@ export function SkillingMethodsPanel({
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">
-              {description ?? "Sorted by what each XP costs you — supplies plus the gold you could have made instead. Lower cost is better."}
+              {description ?? "Ranked by net economic value (GP/h + XP valued from your money-making rate). Your cost still shows supplies + opportunity cost per XP - lower is better."}
               {skillLevel != null && <> Methods above your {skillLabel} level ({skillLevel}) are greyed out.</>}
             </p>
           </div>
           <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-            <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods"><SelectValue placeholder="Sort by…" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods"><SelectValue placeholder="Sort by..." /></SelectTrigger>
             <SelectContent>
               <SelectItem value="gp_desc"><span className="inline-flex items-center gap-1">GP/h <ArrowUp className="size-3" /></span></SelectItem>
               <SelectItem value="gp_asc"><span className="inline-flex items-center gap-1">GP/h <ArrowDown className="size-3" /></span></SelectItem>
@@ -266,7 +299,7 @@ export function SkillingMethodsPanel({
             <button type="button" onClick={() => setGoggles((v) => !v)} aria-pressed={goggles}
               className={`inline-flex h-8 items-center rounded-full border px-3 text-[11px] font-medium transition-colors ${
                 goggles ? "border-primary/70 bg-primary/15 text-primary" : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-              }`} title="Prescription goggles — 10% chance not to consume secondary">Goggles</button>
+              }`} title="Prescription goggles - 10% chance not to consume secondary">Goggles</button>
           </div>
         )}
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
@@ -310,7 +343,7 @@ function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: n
       </div>
       <input type="range" min={G_MIN} max={G_MAX} step={G_STEP} value={value} onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary" aria-label="Money-making rate slider" />
-      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow → Fast money</span><span>10m</span></div>
+      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow to Fast money</span><span>10m</span></div>
     </div>
   );
 }
@@ -343,25 +376,25 @@ function MethodRow({
               )}
             </div>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
-              {isActivity && rateBandLevel != null ? `Unlock ${level} · rates @ ${rateBandLevel}` : `Lvl ${level}`}
-              {locked ? " · locked" : ""}{secondaryLine ? ` · ${secondaryLine}` : ""}
+              {isActivity && rateBandLevel != null ? `Unlock ${level} | rates @ ${rateBandLevel}` : `Lvl ${level}`}
+              {locked ? " | locked" : ""}{secondaryLine ? ` | ${secondaryLine}` : ""}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
           <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
-          <Stat label="GP/h" value={gpPerHour == null ? "—" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
+          <Stat label="GP/h" value={gpPerHour == null ? "-" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
             tone={gpPerHour == null ? undefined : gpPerHour >= 0 ? "deal" : "steep"} />
-          <Stat label="Your cost" value={costPerXp == null ? "—" : `${formatCost(costPerXp)} gp/xp`} emphasis
+          <Stat label="Your cost" value={costPerXp == null ? "-" : `${formatCost(costPerXp)} gp/xp`} emphasis
             tone={costPerXp == null ? undefined : costPerXp <= 0 ? "deal" : costPerXp <= 15 ? "deal" : costPerXp >= 40 ? "steep" : undefined}
             title="Supplies + opportunity cost of not money-making, per XP. Lower is better." />
         </div>
       </div>
       {isActivity ? (
         <div className="space-y-1 text-xs">
-          <p className="text-[11px] text-muted-foreground">Activity method — expected reward value (not a single GE output)</p>
+          <p className="text-[11px] text-muted-foreground">Activity method - expected reward value (not a single GE output)</p>
           {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
-          {missing && <p className="text-[11px] text-muted-foreground">(missing price data)</p>}
+          {missing && <p className="text-[11px] text-muted-foreground">(partial / missing price data)</p>}
         </div>
       ) : method ? (
         <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
@@ -379,7 +412,7 @@ function MethodRow({
             if (outs.length === 0) return null;
             return (
               <>
-                <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
+                <span className="shrink-0 px-0.5 text-muted-foreground">{"\u2192"}</span>
                 {outs.map((part, idx) => (
                   <span key={`out-${part.name}-${idx}`} className="inline-flex shrink-0 items-center gap-1">
                     {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
@@ -406,8 +439,8 @@ function MethodRow({
               )}
             </span>
           )}
-          {missing && profitPerCraft == null && (
-            <span className="shrink-0 text-[11px] text-muted-foreground">(missing price data)</span>
+          {missing && (
+            <span className="shrink-0 text-[11px] text-muted-foreground">(partial / missing price data)</span>
           )}
         </div>
       ) : null}
@@ -426,14 +459,14 @@ function PartChip({ name, qty, row, kind }: { name: string; qty: number; row: Pr
           <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">{qty}</span>
         )}
       </span>
-      <span className="text-[11px] font-semibold tabular-nums text-foreground">{price == null ? "—" : gp(price)}</span>
+      <span className="text-[11px] font-semibold tabular-nums text-foreground">{price == null ? "-" : gp(price)}</span>
     </>
   );
   const className = "inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/30 px-1.5 py-1 transition-colors hover:border-primary/50 hover:bg-primary/10";
   if (row?.id != null) {
     return (
       <Link to="/item/$id" params={{ id: String(row.id) }} className={className}
-        title={qty !== 1 && unit != null ? `${name} × ${qty} @ ${gp(unit)} each` : name}
+        title={qty !== 1 && unit != null ? `${name} x ${qty} @ ${gp(unit)} each` : name}
         aria-label={`View ${name} price history`} onClick={saveScroll}>{inner}</Link>
     );
   }
