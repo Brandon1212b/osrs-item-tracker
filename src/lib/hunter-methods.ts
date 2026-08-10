@@ -26,12 +26,11 @@ export type HunterMethod = {
  * Expected nests per birdhouse scales with Hunter level + house tier.
  * Magic @99 ≈ 9.94 nests/run → ~2.485/house.
  * Empty nests dominate the nest table (~65%); ring/egg/seed are opened for value.
- * We model tradeable Bird nest (empty) at ~60–70% of expected nests + feathers/meat.
- * Raw bird meat 10 + Feathers ~45 always per house.
+ * We model tradeable Bird nest (empty) at ~60–70% of expected nests + feathers.
+ * Feathers ~45 always per house (raw bird meat omitted — low value).
  */
 function birdhouseOutputs(expectedNestsPerHouse: number): MethodPart[] {
   return [
-    { name: "Raw bird meat", qty: 10 },
     { name: "Feather", qty: 45 },
     // ~65% of nest rolls are empty nests (GE tradeable / crushable)
     { name: "Bird nest (empty)", qty: Math.round(expectedNestsPerHouse * 0.65 * 100) / 100 },
