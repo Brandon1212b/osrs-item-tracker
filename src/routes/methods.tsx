@@ -21,6 +21,7 @@ import { FishingMethodsPanel } from "@/components/FishingMethods";
 import { WoodcuttingMethodsPanel } from "@/components/WoodcuttingMethods";
 import { FiremakingMethodsPanel } from "@/components/FiremakingMethods";
 import { ThievingMethodsPanel } from "@/components/ThievingMethods";
+import { HunterMethodsPanel } from "@/components/HunterMethods";
 import { WikiImage } from "@/components/WikiImage";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
@@ -106,6 +107,7 @@ const METHOD_SKILLS: {
     Panel: FiremakingMethodsPanel,
   },
   { key: "thieving", label: "Thieving", wikiIcon: "Thieving_icon.png", Panel: ThievingMethodsPanel },
+  { key: "hunter", label: "Hunter", wikiIcon: "Hunter_icon.png", Panel: HunterMethodsPanel },
 ];
 
 export const Route = createFileRoute("/methods")({
