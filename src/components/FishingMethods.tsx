@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { FISHING_METHODS } from "@/lib/fishing-methods";
+import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -21,8 +22,9 @@ export function FishingMethodsPanel({
       title="Fishing methods"
       skillKey="fishing"
       skillLabel="Fishing"
-      description="Net, cage, fly and harpoon fish. Rates from wiki focused values. Tempoross excluded — activity rewards."
+      description="Net, cage, fly and harpoon fish plus Tempoross. Rates from wiki focused values. Sorted by what each XP costs you."
       methods={FISHING_METHODS}
+      activities={activitiesForSkill("fishing")}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
