@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, CircleHelp } from "lucide-react";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 const G_MIN = 250_000;
@@ -184,7 +185,12 @@ function getActivityType(
 
     case "magic":
       if (id.includes("alch") || label.includes("alch")) return "High Alchemy";
-      if (id.includes("burst") || id.includes("barrage") || label.includes("burst") || label.includes("barrage"))
+      if (
+        id.includes("burst") ||
+        id.includes("barrage") ||
+        label.includes("burst") ||
+        label.includes("barrage")
+      )
         return "Burst / Barrage";
       if (id.includes("mta") || label.includes("mta")) return "MTA";
       return "Spells";
@@ -273,6 +279,9 @@ type Ranked = {
   rateBandLevel?: number | null;
   category: string;
 };
+
+const DEFAULT_DESCRIPTION =
+  "XP rates from OSRS Wiki focused training guides (static). GP values update live from the Grand Exchange. Your cost = supplies + opportunity cost vs your money-making rate — lower is better.";
 
 export function SkillingMethodsPanel({
   title,
@@ -518,7 +527,6 @@ export function SkillingMethodsPanel({
       const next = new Set(prev);
       if (next.has(cat)) next.delete(cat);
       else next.add(cat);
-      // If user selected every category, treat as "all" (empty set)
       if (next.size === categories.length) return new Set();
       return next;
     });
@@ -533,8 +541,7 @@ export function SkillingMethodsPanel({
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">
-              {description ??
-                "Ranked by net economic value (GP/h + XP valued from your money-making rate). Your cost still shows supplies + opportunity cost per XP - lower is better."}
+              {description ?? DEFAULT_DESCRIPTION}
               {skillLevel != null && (
                 <> Methods above your {skillLabel} level ({skillLevel}) are greyed out.</>
               )}
@@ -581,7 +588,7 @@ export function SkillingMethodsPanel({
 
         {categories.length > 1 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground mr-0.5">Type</span>
+            <span className="mr-0.5 text-[11px] text-muted-foreground">Type</span>
             <button
               type="button"
               onClick={clearCategories}
@@ -755,6 +762,7 @@ function MethodRow({
   const titleRow =
     titlePart && titlePart.name !== "Coins" ? rowsByName.get(titlePart.name) : undefined;
   const titleIcon = titlePart ? chipIcon(titleRow, titlePart.name) : null;
+
   return (
     <article
       className={`panel flex flex-col gap-2 p-3 sm:p-3.5 ${locked ? "opacity-45" : ""}`}
@@ -785,6 +793,7 @@ function MethodRow({
                   {intensity}
                 </span>
               )}
+              <RateSourceHelp isActivity={isActivity} notes={notes} method={method} />
             </div>
             <p
               className={`text-[11px] ${
@@ -828,7 +837,7 @@ function MethodRow({
       {isActivity ? (
         <div className="space-y-1 text-xs">
           <p className="text-[11px] text-muted-foreground">
-            Activity method - expected reward value (not a single GE output)
+            Activity method — expected reward value (not a single GE output)
           </p>
           {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
           {missing && (
@@ -932,8 +941,67 @@ function MethodRow({
   );
 }
 
+/** Clickable ? that explains where XP rates and live GP numbers come from. */
+function RateSourceHelp({
+  isActivity,
+  notes,
+  method,
+}: {
+  isActivity: boolean;
+  notes?: string | null;
+  method?: SkillingMethod;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          aria-label="Where do these rates come from?"
+        >
+          <CircleHelp className="size-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        className="w-[min(18rem,calc(100vw-2rem))] space-y-2 p-3 text-xs"
+      >
+        <p className="font-semibold text-foreground">Where these numbers come from</p>
+        <ul className="space-y-1.5 text-muted-foreground">
+          <li>
+            <span className="font-medium text-foreground">XP/h</span> — Focused rates from the OSRS
+            Wiki training guides (static). Assumes attentive play and normal banking; not max
+            tick-perfect unless the method says so.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">GP/h & Net</span> — Calculated live from
+            current Grand Exchange prices (buy high / sell low). Updates automatically with the
+            price feed.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Your cost</span> — Supply cost plus the
+            opportunity cost of spending that time training instead of money-making, per XP. Lower
+            is better.
+          </li>
+        </ul>
+        {isActivity && notes && (
+          <p className="border-t border-border/60 pt-2 text-muted-foreground">
+            <span className="font-medium text-foreground">This method:</span> {notes}
+          </p>
+        )}
+        {!isActivity && method && (
+          <p className="border-t border-border/60 pt-2 text-[11px] text-muted-foreground">
+            {method.xp} XP × {method.actionsPerHour.toLocaleString()} actions/h ={" "}
+            {Math.round(method.xp * method.actionsPerHour).toLocaleString()} XP/h
+          </p>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function formatQty(qty: number): string {
-  // Limit displayed quantity to one decimal place (hides badge when exactly 1)
   if (Number.isInteger(qty)) return String(qty);
   return qty.toFixed(1);
 }
