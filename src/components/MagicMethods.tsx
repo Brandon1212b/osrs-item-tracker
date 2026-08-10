@@ -21,7 +21,7 @@ export function MagicMethodsPanel({
       title="Magic methods"
       skillKey="magic"
       skillLabel="Magic"
-      description="Plank Make, Tan leather, Superheat and Humidify rates from wiki. Sorted by what each XP costs you."
+      description="High/Low Alchemy, jewellery enchanting, Plank Make, Tan leather, Superheat and Humidify. Sorted by what each XP costs you."
       methods={MAGIC_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}

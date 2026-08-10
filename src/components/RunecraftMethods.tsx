@@ -21,7 +21,7 @@ export function RunecraftMethodsPanel({
       title="Runecraft methods"
       skillKey="runecraft"
       skillLabel="Runecraft"
-      description="Abyss combination runes, True Blood/Soul altar and Wrath rates from wiki training pages."
+      description="Abyss combination runes, Ourania/ZMI, standard altars and True Blood/Soul. GOTR excluded (activity rewards). Sorted by what each XP costs you."
       methods={RUNECRAFT_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
