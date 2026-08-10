@@ -53,7 +53,6 @@ export type ActivityMethod = {
 
 /**
  * Wintertodt — official mass worlds, no kindling (roots only).
- * Wiki XP/hr scales with FM level. Loot EV excl. rare unique EV.
  */
 export const WINTERTODT_METHODS: ActivityMethod[] = [
   {
@@ -78,8 +77,6 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
 
 /**
  * Tempoross — mass worlds, cook harpoonfish (points/loot focus).
- * XP from wiki Tempoross page (regular harpoon, cooking strategy).
- * GP from money-making guide ~60 permits/hr at high fishing.
  */
 export const TEMPOROSS_METHODS: ActivityMethod[] = [
   {
@@ -105,7 +102,6 @@ export const TEMPOROSS_METHODS: ActivityMethod[] = [
 
 /**
  * Guardians of the Rift — mass worlds, balanced elemental/catalytic.
- * XP/GP scale with RC level and pouch tier. Reward EV is rune + pouch loot.
  */
 export const GOTR_METHODS: ActivityMethod[] = [
   {
@@ -132,8 +128,6 @@ export const GOTR_METHODS: ActivityMethod[] = [
 
 /**
  * Giants' Foundry — optimal alloy for band, average commission score.
- * expectedLootGpPerHour is approx net profit (Kovac reward − bar cost) from wiki strategies.
- * Positive at lower alloys; expensive at addy/rune.
  */
 export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
   {
@@ -142,13 +136,9 @@ export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
     skillKey: "smithing",
     level: 15,
     rateBands: [
-      // Iron/steel — wiki strategies ~108k net with items; XP ~134k
       { level: 30, xpPerHour: 134_000, expectedLootGpPerHour: 100_000 },
-      // Steel/mithril
       { level: 50, xpPerHour: 165_000, expectedLootGpPerHour: 30_000 },
-      // Mith/addy — often slightly negative on bars
       { level: 70, xpPerHour: 198_000, expectedLootGpPerHour: -70_000 },
-      // Addy/rune — high XP, heavy loss on pure bars
       { level: 85, xpPerHour: 250_000, expectedLootGpPerHour: -400_000 },
       { level: 99, xpPerHour: 265_000, expectedLootGpPerHour: -450_000 },
     ],
@@ -162,8 +152,6 @@ export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
 
 /**
  * Mahogany Homes — contract tier by Construction level.
- * expectedLootGpPerHour is approximate net cost (negative) at mid plank prices.
- * Plank sack / teleports improve XP; rates are focused mid estimates.
  */
 export const MAHOGANY_HOMES_METHODS: ActivityMethod[] = [
   {
@@ -183,6 +171,112 @@ export const MAHOGANY_HOMES_METHODS: ActivityMethod[] = [
     intensity: "medium",
     notes:
       "Contract tier follows Construction level (Beginner→Expert). Much cheaper GP/XP than POH tables. Plank sack + teleports push XP higher. Net GP is material cost (no sell-back).",
+  },
+];
+
+/**
+ * Motherlode Mine — AFK pay-dirt washing. Multi-ore sack rewards.
+ * Wiki rates assume prospector + upper floor (72+) where applicable.
+ */
+export const MOTHERLODE_METHODS: ActivityMethod[] = [
+  {
+    id: "motherlode-mine",
+    label: "Motherlode Mine",
+    skillKey: "mining",
+    level: 30,
+    rateBands: [
+      { level: 30, xpPerHour: 13_000, expectedLootGpPerHour: 30_000 },
+      { level: 40, xpPerHour: 26_000, expectedLootGpPerHour: 36_000 },
+      { level: 50, xpPerHour: 33_000, expectedLootGpPerHour: 53_000 },
+      { level: 61, xpPerHour: 45_000, expectedLootGpPerHour: 70_000 },
+      { level: 70, xpPerHour: 48_000, expectedLootGpPerHour: 91_000 },
+      { level: 80, xpPerHour: 52_000, expectedLootGpPerHour: 115_000 },
+      { level: 90, xpPerHour: 59_000, expectedLootGpPerHour: 260_000 },
+      { level: 99, xpPerHour: 64_000, expectedLootGpPerHour: 380_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "low",
+    notes:
+      "AFK pay-dirt → random ores + golden nuggets. Upper level at 72 Mining. Profit jumps hard once runite enters the table (85+). Prospector outfit assumed at higher bands.",
+  },
+];
+
+/**
+ * Volcanic Mine — team boulder minigame on Fossil Island.
+ * Wiki rates for consistent 3–5 player teams (mid role).
+ */
+export const VOLCANIC_MINE_METHODS: ActivityMethod[] = [
+  {
+    id: "volcanic-mine",
+    label: "Volcanic Mine",
+    skillKey: "mining",
+    level: 50,
+    rateBands: [
+      { level: 50, xpPerHour: 40_000, expectedLootGpPerHour: 150_000 },
+      { level: 70, xpPerHour: 66_000, expectedLootGpPerHour: 250_000 },
+      { level: 80, xpPerHour: 75_000, expectedLootGpPerHour: 350_000 },
+      { level: 85, xpPerHour: 81_000, expectedLootGpPerHour: 450_000 },
+      { level: 90, xpPerHour: 85_000, expectedLootGpPerHour: 550_000 },
+      { level: 99, xpPerHour: 90_000, expectedLootGpPerHour: 650_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes:
+      "Fossil Island team minigame. XP/points scale with team quality and Mining level. Loot EV from ore shop + fossils; highly variable. Best non–3-tick Mining XP when coordinated.",
+  },
+];
+
+/**
+ * Blast Mine — Lovakengj dynamite mining. +10 effective mining for ore tier.
+ * Net GP assumes ~330 dynamite/hr cost subtracted from ore value (wiki MMG).
+ */
+export const BLAST_MINE_METHODS: ActivityMethod[] = [
+  {
+    id: "blast-mine",
+    label: "Blast Mine",
+    skillKey: "mining",
+    level: 43,
+    secondarySkill: "firemaking",
+    rateBands: [
+      { level: 43, xpPerHour: 40_000, expectedLootGpPerHour: 80_000, secondaryXpPerHour: 16_500 },
+      { level: 70, xpPerHour: 55_000, expectedLootGpPerHour: 250_000, secondaryXpPerHour: 16_500 },
+      { level: 75, xpPerHour: 70_000, expectedLootGpPerHour: 450_000, secondaryXpPerHour: 16_500 },
+      { level: 85, xpPerHour: 85_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 16_500 },
+      { level: 99, xpPerHour: 95_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 16_500 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes:
+      "Requires dynamite (cost baked into net GP). Runite available from 75 effective (65 +10 boost). ~16.5k Firemaking XP/hr from lighting. Prospector for collect XP.",
+  },
+];
+
+/**
+ * Pyramid Plunder — Sophanem thieving rooms.
+ * Focused rates on last rooms; sceptre recommended.
+ */
+export const PYRAMID_PLUNDER_METHODS: ActivityMethod[] = [
+  {
+    id: "pyramid-plunder",
+    label: "Pyramid Plunder",
+    skillKey: "thieving",
+    level: 21,
+    rateBands: [
+      { level: 21, xpPerHour: 40_000, expectedLootGpPerHour: 20_000 },
+      { level: 51, xpPerHour: 70_000, expectedLootGpPerHour: 40_000 },
+      { level: 71, xpPerHour: 120_000, expectedLootGpPerHour: 80_000 },
+      { level: 81, xpPerHour: 190_000, expectedLootGpPerHour: 150_000 },
+      { level: 91, xpPerHour: 260_000, expectedLootGpPerHour: 220_000 },
+      { level: 99, xpPerHour: 275_000, expectedLootGpPerHour: 250_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes:
+      "Icthlarin's Little Helper for Sophanem. Official world + last rooms for best XP. Pharaoh's sceptre skips entry. Artefact/sceptre EV in loot estimate.",
   },
 ];
 
@@ -213,6 +307,10 @@ export function activitiesForSkill(skillKey: string): ActivityMethod[] {
       return GIANTS_FOUNDRY_METHODS;
     case "construction":
       return MAHOGANY_HOMES_METHODS;
+    case "mining":
+      return [...MOTHERLODE_METHODS, ...VOLCANIC_MINE_METHODS, ...BLAST_MINE_METHODS];
+    case "thieving":
+      return PYRAMID_PLUNDER_METHODS;
     default:
       return [];
   }

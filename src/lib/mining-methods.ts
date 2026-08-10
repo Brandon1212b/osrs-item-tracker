@@ -2,8 +2,7 @@
  * Mining training methods (P2P).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Mining_training
  * Rates are typical focused (not theoretical max 3-tick unless noted).
- * Activity methods (Motherlode, Volcanic Mine, Blast Mine) excluded —
- * multi-output / team / points-based rewards do not map cleanly to GE input→output.
+ * Activity methods (Motherlode, Volcanic Mine, Blast Mine) live in activity-methods.ts.
  */
 export type MethodPart = { name: string; qty: number };
 

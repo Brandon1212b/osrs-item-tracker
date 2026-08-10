@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { THIEVING_METHODS } from "@/lib/thieving-methods";
+import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -21,8 +22,9 @@ export function ThievingMethodsPanel({
       title="Thieving methods"
       skillKey="thieving"
       skillLabel="Thieving"
-      description="Stalls and pickpocketing. Most methods are pure XP (coin/loot not modelled as fixed GE output). Rates from wiki focused values."
+      description="Stalls, pickpocketing, and Pyramid Plunder. Sorted by what each XP costs you."
       methods={THIEVING_METHODS}
+      activities={activitiesForSkill("thieving")}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
