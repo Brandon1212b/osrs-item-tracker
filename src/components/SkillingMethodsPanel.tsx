@@ -1,1 +1,1 @@
-RECOVER
+@/home/workdir/artifacts/panel_to_push.tsx
