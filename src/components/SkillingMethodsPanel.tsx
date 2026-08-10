@@ -448,15 +448,23 @@ function MethodRow({
   );
 }
 
+function formatQty(qty: number): string {
+  // Limit displayed quantity to one decimal place (hides badge when exactly 1)
+  if (Number.isInteger(qty)) return String(qty);
+  return qty.toFixed(1);
+}
+
 function PartChip({ name, qty, row, kind }: { name: string; qty: number; row: PriceRow | undefined; kind: "input" | "output" }) {
   const unit = name === "Coins" ? 1 : kind === "input" ? buyPrice(row) : sellPrice(row);
   const price = unit == null ? null : unit * qty;
+  const qtyLabel = formatQty(qty);
+  const showQty = qty !== 1;
   const inner = (
     <>
       <span className="relative inline-flex size-6 shrink-0 items-center justify-center">
         <WikiImage icon={chipIcon(row, name)} alt={name} width={24} height={24} className="size-6" />
-        {qty !== 1 && (
-          <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">{qty}</span>
+        {showQty && (
+          <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">{qtyLabel}</span>
         )}
       </span>
       <span className="text-[11px] font-semibold tabular-nums text-foreground">{price == null ? "-" : gp(price)}</span>
@@ -466,7 +474,7 @@ function PartChip({ name, qty, row, kind }: { name: string; qty: number; row: Pr
   if (row?.id != null) {
     return (
       <Link to="/item/$id" params={{ id: String(row.id) }} className={className}
-        title={qty !== 1 && unit != null ? `${name} x ${qty} @ ${gp(unit)} each` : name}
+        title={showQty && unit != null ? `${name} x ${qtyLabel} @ ${gp(unit)} each` : name}
         aria-label={`View ${name} price history`} onClick={saveScroll}>{inner}</Link>
     );
   }
