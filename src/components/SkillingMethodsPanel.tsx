@@ -343,7 +343,7 @@ function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: n
       </div>
       <input type="range" min={G_MIN} max={G_MAX} step={G_STEP} value={value} onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary" aria-label="Money-making rate slider" />
-      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow -> Fast money</span><span>10m</span></div>
+      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow to Fast money</span><span>10m</span></div>
     </div>
   );
 }
@@ -412,7 +412,7 @@ function MethodRow({
             if (outs.length === 0) return null;
             return (
               <>
-                <span className="shrink-0 px-0.5 text-muted-foreground">-></span>
+                <span className="shrink-0 px-0.5 text-muted-foreground">{"\u2192"}</span>
                 {outs.map((part, idx) => (
                   <span key={`out-${part.name}-${idx}`} className="inline-flex shrink-0 items-center gap-1">
                     {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
