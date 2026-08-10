@@ -2,9 +2,9 @@
  * Thieving training methods (P2P).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Thieving_training
  *
- * Multi-loot methods use `outputs` with expected qty per successful action
- * (fractional). Coins are special-cased at 1 gp in the panel.
- * Drop rates / averages from wiki Drop Rate Project + money-making guides (2026).
+ * Multi-loot methods use `outputs` with expected qty per action
+ * (fractional allowed). Coins are special-cased at 1 gp in the panel.
+ * Sources: wiki Drop Rate Project + money-making guides (2026).
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -15,11 +15,60 @@ export type ThievingMethod = {
   xp: number;
   actionsPerHour: number;
   inputs: MethodPart[];
-  /** Single primary output (legacy). Prefer `outputs` for multi-loot. */
   output: MethodPart | null;
-  /** Expected outputs per action (fractional qty allowed). Takes precedence over `output`. */
+  /** Expected outputs per action (fractional qty). Prefer over single output. */
   outputs?: MethodPart[];
 };
+
+/**
+ * Expected loot per Rogues' Castle chest — Medium Wilderness Diary.
+ * Rarities from wiki Drop Rate Project (n/66 table).
+ * Average value ~4,648 (live GE).
+ */
+const ROGUES_MEDIUM_OUTPUTS: MethodPart[] = [
+  { name: "Nature rune", qty: 40 * (11 / 66) },
+  { name: "Red spiders' eggs", qty: 6 * (10 / 66) },
+  { name: "Law rune", qty: 40 * (10 / 66) },
+  { name: "Coal", qty: 20 * (8 / 66) },
+  { name: "Coins", qty: 4500 * (6 / 66) },
+  { name: "Vile ashes", qty: 15 * (3 / 66) },
+  { name: "Uncut diamond", qty: 3 * (3 / 66) + 5 * (2 / 66) },
+  { name: "Uncut emerald", qty: 10 * (2 / 66) },
+  { name: "Blighted ancient ice sack", qty: 13 * (2 / 66) },
+  { name: "Iron ore", qty: 40 * (1 / 66) },
+  { name: "Chaos rune", qty: 60 * (1 / 66) },
+  { name: "Death rune", qty: 50 * (1 / 66) },
+  { name: "Blighted manta ray", qty: 20 * (1 / 66) },
+  { name: "Blighted anglerfish", qty: 15 * (1 / 66) },
+  { name: "Uncut sapphire", qty: 15 * (1 / 66) },
+  { name: "Prayer potion(2)", qty: 1 * (2 / 66) },
+  { name: "Dragonstone", qty: 2 * (1 / 66) },
+];
+
+/**
+ * Expected loot per Rogues' Castle chest — Hard Wilderness Diary
+ * (also used for Elite). Quantities increased ~15–25% on most resources.
+ * Average value ~5,557 (live GE).
+ */
+const ROGUES_HARD_OUTPUTS: MethodPart[] = [
+  { name: "Nature rune", qty: 50 * (11 / 66) },
+  { name: "Red spiders' eggs", qty: 7 * (10 / 66) },
+  { name: "Law rune", qty: 50 * (10 / 66) },
+  { name: "Coal", qty: 25 * (8 / 66) },
+  { name: "Coins", qty: 5625 * (6 / 66) },
+  { name: "Vile ashes", qty: 18 * (3 / 66) },
+  { name: "Uncut diamond", qty: 3 * (3 / 66) + 6 * (2 / 66) },
+  { name: "Uncut emerald", qty: 12 * (2 / 66) },
+  { name: "Blighted ancient ice sack", qty: 16 * (2 / 66) },
+  { name: "Iron ore", qty: 50 * (1 / 66) },
+  { name: "Chaos rune", qty: 75 * (1 / 66) },
+  { name: "Death rune", qty: 62 * (1 / 66) },
+  { name: "Blighted manta ray", qty: 25 * (1 / 66) },
+  { name: "Blighted anglerfish", qty: 18 * (1 / 66) },
+  { name: "Uncut sapphire", qty: 18 * (1 / 66) },
+  { name: "Prayer potion(2)", qty: 1 * (2 / 66) },
+  { name: "Dragonstone", qty: 2 * (1 / 66) },
+];
 
 export const THIEVING_METHODS: ThievingMethod[] = [
   {
@@ -30,7 +79,6 @@ export const THIEVING_METHODS: ThievingMethod[] = [
     actionsPerHour: 2000,
     inputs: [],
     output: null,
-    // Mostly low coins; not worth modelling for ranking
   },
   {
     id: "silk-stall",
@@ -46,7 +94,7 @@ export const THIEVING_METHODS: ThievingMethod[] = [
     label: "Fruit stall (Hosidius)",
     level: 25,
     xp: 28.5,
-    actionsPerHour: 1200, // two-stall focused ~34k
+    actionsPerHour: 1200,
     inputs: [],
     output: null, // mixed fruit; not fixed GE
   },
@@ -54,121 +102,116 @@ export const THIEVING_METHODS: ThievingMethod[] = [
     id: "blackjacking",
     label: "Blackjacking (Pollnivneach)",
     level: 45,
-    xp: 46.5, // typical bandit/thug average
-    actionsPerHour: 1800, // ~84k mid; higher with practice
+    xp: 46.5,
+    actionsPerHour: 1800,
     inputs: [],
     output: null,
   },
+  /**
+   * Knights of Ardougne — always 50 coins per success.
+   * Full Rogue outfit doubles loot → model 100 coins (standard for ranking).
+   * At 95+ with diary ~100% success → ~3000 successful /h → ~300k gp/h.
+   * actionsPerHour is successful pickpockets (conservative mid-high).
+   */
   {
     id: "ardougne-knights",
-    label: "Knights of Ardougne",
+    label: "Knights of Ardougne (Rogue outfit)",
     level: 55,
     xp: 84.3,
-    actionsPerHour: 1200, // ~100k+ with diary/dodgy; conservative
-    inputs: [{ name: "Dodgy necklace", qty: 0.05 }], // approximate wear rate
+    actionsPerHour: 2500, // ~210k xp/h mid; ~3000 theoretical at 95+
+    inputs: [{ name: "Dodgy necklace", qty: 0.04 }],
     output: null,
-    // Coins pouch + occasional gems; variable — leave XP-focused for now
+    outputs: [{ name: "Coins", qty: 100 }], // 50 base × 2 Rogue
   },
   {
     id: "stealing-valuables",
     label: "Stealing valuables (Varlamore)",
     level: 50,
     xp: 45,
-    actionsPerHour: 1800, // ~80k mid
+    actionsPerHour: 1800,
     inputs: [],
-    output: null, // valuables exchanged for coins + jewellery; complex mix
+    output: null,
   },
   {
     id: "elves",
     label: "Pickpocket elves (Prifddinas)",
     level: 85,
     xp: 353.3,
-    actionsPerHour: 400, // ~140k at high level; higher with rogue + diary
+    actionsPerHour: 400,
     inputs: [],
-    // Approx expected per successful pickpocket (rogue outfit doubles rare loot).
-    // Enhanced crystal teleport seed 1/1024 base → ~0.001; crystal shards ~3%.
-    // Coins + runes form bulk of common loot. Values will track live GE.
-    outputs: [
-      { name: "Coins", qty: 250 }, // rough average common coins
-      { name: "Crystal shard", qty: 0.03 },
-      { name: "Enhanced crystal teleport seed", qty: 0.001 },
-      { name: "Death rune", qty: 0.25 },
-      { name: "Nature rune", qty: 0.25 },
-    ],
     output: null,
+    outputs: [
+      { name: "Coins", qty: 350 },
+      { name: "Crystal shard", qty: 0.03 },
+      { name: "Death rune", qty: 0.25 },
+      { name: "Nature rune", qty: 0.23 },
+    ],
   },
   {
     id: "vyres",
     label: "Pickpocket vyres",
     level: 82,
     xp: 306.9,
-    actionsPerHour: 450, // ~140k focused; higher with rogue
+    actionsPerHour: 450,
     inputs: [],
-    // Blood shard 1/5000 base; rogue doubles. Coins + blood-related common.
-    outputs: [
-      { name: "Coins", qty: 200 },
-      { name: "Blood shard", qty: 0.0002 },
-      { name: "Death rune", qty: 0.2 },
-      { name: "Blood rune", qty: 0.15 },
-      { name: "Uncut ruby", qty: 0.08 },
-    ],
     output: null,
+    outputs: [
+      { name: "Coins", qty: 400 },
+      { name: "Death rune", qty: 0.24 },
+      { name: "Blood rune", qty: 0.12 },
+      { name: "Uncut ruby", qty: 0.075 },
+    ],
   },
   {
     id: "master-farmers",
     label: "Master Farmers",
     level: 38,
     xp: 43,
-    actionsPerHour: 1800, // ~77k; higher at 94+ 100%
+    actionsPerHour: 1800,
     inputs: [],
-    // Seed table is large; high-value seeds drive profit. Approximate EV of
-    // common high-value seeds at 85+ Farming (wiki MMG). Refine later with
-    // full expected table if needed.
+    output: null,
     outputs: [
       { name: "Ranarr seed", qty: 0.012 },
-      { name: "Snapdragon seed", qty: 0.006 },
-      { name: "Snape grass seed", qty: 0.04 },
-      { name: "Watermelon seed", qty: 0.02 },
+      { name: "Snapdragon seed", qty: 0.008 },
+      { name: "Snape grass seed", qty: 0.02 },
       { name: "Toadflax seed", qty: 0.015 },
-      { name: "Avantoe seed", qty: 0.012 },
-      { name: "Kwuarm seed", qty: 0.01 },
-      { name: "Cadantine seed", qty: 0.008 },
-      { name: "Lantadyme seed", qty: 0.006 },
-      { name: "Dwarf weed seed", qty: 0.005 },
-      { name: "Torstol seed", qty: 0.003 },
+      { name: "Irit seed", qty: 0.025 },
+      { name: "Avantoe seed", qty: 0.015 },
+      { name: "Kwuarm seed", qty: 0.012 },
+      { name: "Cadantine seed", qty: 0.01 },
+      { name: "Lantadyme seed", qty: 0.008 },
+      { name: "Dwarf weed seed", qty: 0.008 },
+      { name: "Torstol seed", qty: 0.005 },
+      { name: "Watermelon seed", qty: 0.018 },
     ],
-    output: null,
   },
+  /**
+   * Rogues' Castle — Medium Wilderness Diary required for any loot.
+   * XP 701.7 per successful open (wiki). ~350–400 chests/h realistic with PKers.
+   */
   {
-    id: "rogues-castle",
-    label: "Rogues' Castle chests",
+    id: "rogues-castle-medium",
+    label: "Rogues' Castle chests (Medium diary)",
     level: 84,
-    xp: 100, // approximate per successful open cycle
-    actionsPerHour: 400, // realistic with PKer risk (~385–425 wiki MMG)
+    xp: 701.7,
+    actionsPerHour: 350,
     inputs: [],
-    // Expected qty per chest (Medium Wilderness Diary). Derived from wiki
-    // drop table (Drop Rate Project). Hard diary increases most resource
-    // quantities ~15–25%; these numbers are medium baseline so GP tracks live.
-    outputs: [
-      { name: "Nature rune", qty: 6.667 }, // 40 × 1/6
-      { name: "Red spiders' eggs", qty: 0.909 }, // 6 × 1/6.6
-      { name: "Law rune", qty: 6.061 }, // 40 × 1/6.6
-      { name: "Coal", qty: 2.424 }, // 20 × 1/8.25
-      { name: "Coins", qty: 409.09 }, // 4500 × 1/11
-      { name: "Vile ashes", qty: 0.682 }, // 15 × 1/22
-      { name: "Uncut diamond", qty: 0.288 }, // 3×1/22 + 5×1/33
-      { name: "Uncut emerald", qty: 0.303 }, // 10 × 1/33
-      { name: "Blighted ancient ice sack", qty: 0.394 }, // 13 × 1/33
-      { name: "Prayer potion(2)", qty: 0.03 }, // 1 × 1/33
-      { name: "Iron ore", qty: 0.606 }, // 40 × 1/66
-      { name: "Chaos rune", qty: 0.909 }, // 60 × 1/66
-      { name: "Death rune", qty: 0.758 }, // 50 × 1/66
-      { name: "Blighted manta ray", qty: 0.303 }, // 20 × 1/66
-      { name: "Blighted anglerfish", qty: 0.227 }, // 15 × 1/66
-      { name: "Uncut sapphire", qty: 0.227 }, // 15 × 1/66
-      { name: "Dragonstone", qty: 0.03 }, // 2 × 1/66
-    ],
     output: null,
+    outputs: ROGUES_MEDIUM_OUTPUTS,
+  },
+  /**
+   * Rogues' Castle — Hard (or Elite) Wilderness Diary.
+   * ~20% higher average loot value; also enables better obelisk returns.
+   */
+  {
+    id: "rogues-castle-hard",
+    label: "Rogues' Castle chests (Hard diary)",
+    level: 84,
+    xp: 701.7,
+    actionsPerHour: 385, // slightly higher sustained with hard diary obelisks
+    inputs: [],
+    output: null,
+    outputs: ROGUES_HARD_OUTPUTS,
   },
 ];
 
@@ -179,5 +222,5 @@ export function thievingMethodItemNames(): string[] {
     if (m.output) names.add(m.output.name);
     if (m.outputs) for (const p of m.outputs) names.add(p.name);
   }
-  return [...names];
+  return [...names].filter((n) => n !== "Coins");
 }

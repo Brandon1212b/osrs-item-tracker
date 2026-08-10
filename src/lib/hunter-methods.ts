@@ -2,10 +2,11 @@
  * Hunter production methods (simple input→output / multi-output).
  * Complex activities (Herbiboar) live in activity-methods.ts.
  *
- * Birdhouses use effective rates (XP/h for active time spent on runs).
- * Chin rates are focused box-trap catches; refine with live playtesting.
+ * Birdhouse runs use effective rates (active-time XP/h from the wiki table).
+ * Clockwork is returned on dismantle — never consumed.
+ * Nest EV uses Bird nest (empty) as the tradeable proxy (most common nest type).
  *
- * Sources: oldschool.runescape.wiki Hunter training + money-making guides (2026).
+ * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs (2026).
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -16,25 +17,35 @@ export type HunterMethod = {
   xp: number;
   actionsPerHour: number;
   inputs: MethodPart[];
-  /** Single primary output (legacy). Prefer `outputs` for multi-loot. */
   output: MethodPart | null;
-  /** Expected outputs per action (fractional qty allowed). Takes precedence over `output`. */
+  /** Expected outputs per action (fractional qty). Prefer over single output. */
   outputs?: MethodPart[];
 };
 
 /**
- * Production list.
- * Birdhouse "actions" are individual houses; actionsPerHour uses effective
- * active-time rates from the wiki table (not wall-clock passive time).
+ * Expected nests per birdhouse scales with Hunter level + house tier.
+ * Magic @99 ≈ 9.94 nests/run → ~2.485/house.
+ * Empty nests dominate the nest table (~65%); ring/egg/seed are opened for value.
+ * We model tradeable Bird nest (empty) at ~60–70% of expected nests + feathers/meat.
+ * Raw bird meat 10 + Feathers ~45 always per house.
  */
+function birdhouseOutputs(expectedNestsPerHouse: number): MethodPart[] {
+  return [
+    { name: "Raw bird meat", qty: 10 },
+    { name: "Feather", qty: 45 },
+    // ~65% of nest rolls are empty nests (GE tradeable / crushable)
+    { name: "Bird nest (empty)", qty: Math.round(expectedNestsPerHouse * 0.65 * 100) / 100 },
+  ];
+}
+
 export const HUNTER_METHODS: HunterMethod[] = [
-  // ── Chinchompas ─────────────────────────────────────────────────────────
+  // ── Chinchompas ──────────────────────────────────────────────────────────
   {
     id: "grey-chins",
     label: "Grey chinchompas",
     level: 53,
     xp: 198.4,
-    actionsPerHour: 225, // wiki ~225 focused
+    actionsPerHour: 225,
     inputs: [],
     output: { name: "Chinchompa", qty: 1 },
   },
@@ -43,7 +54,7 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Red chinchompas",
     level: 63,
     xp: 265,
-    actionsPerHour: 400, // ~400 at 80; higher with good spots / horn
+    actionsPerHour: 400, // focused mid-high; up to ~500+ at 80+
     inputs: [],
     output: { name: "Red chinchompa", qty: 1 },
   },
@@ -52,111 +63,96 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Black chinchompas",
     level: 73,
     xp: 315,
-    actionsPerHour: 280, // wilderness; lower intensity / risk
+    actionsPerHour: 350, // wilderness risk; focused
     inputs: [],
     output: { name: "Black chinchompa", qty: 1 },
   },
 
-  // ── Birdhouses (effective rates) ────────────────────────────────────────
-  // XP and actionsPerHour are effective (active time only).
-  // One run = 4 houses; wiki effective Hunter XP/h assumes continuous runs.
-  // Nested loot is variable — nests/seeds not modelled as fixed GE output yet.
+  // ── Birdhouse runs (effective rates) ─────────────────────────────────────
+  // Clockwork is always returned — only logs consumed (+ cheap seeds ignored).
+  // actionsPerHour ≈ effective houses/h from wiki (active-time equivalent).
+  // xp = Hunter XP per single house.
   {
     id: "birdhouse-oak",
-    label: "Birdhouse runs (Oak)",
+    label: "Birdhouse runs (Oak, effective)",
     level: 14,
-    xp: 80, // per house (320 per run of 4)
-    actionsPerHour: 45, // ~effective from wiki table active time
-    inputs: [
-      { name: "Oak logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-      // cheap seeds omitted (negligible)
-    ],
-    output: null, // nests / feathers / bird meat — multi-loot later
+    xp: 105, // 420 / 4
+    actionsPerHour: 34, // effective ~3,600 xp/h → 3600/105
+    inputs: [{ name: "Oak logs", qty: 1 }],
+    output: null,
+    outputs: birdhouseOutputs(0.8),
   },
   {
     id: "birdhouse-willow",
-    label: "Birdhouse runs (Willow)",
+    label: "Birdhouse runs (Willow, effective)",
     level: 24,
-    xp: 100,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Willow logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 140, // 560 / 4
+    actionsPerHour: 32, // ~4,500 xp/h
+    inputs: [{ name: "Willow logs", qty: 1 }],
     output: null,
+    outputs: birdhouseOutputs(1.0),
   },
   {
     id: "birdhouse-teak",
-    label: "Birdhouse runs (Teak)",
+    label: "Birdhouse runs (Teak, effective)",
     level: 34,
-    xp: 120,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Teak logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 175, // 700 / 4
+    actionsPerHour: 31, // ~5,400 xp/h
+    inputs: [{ name: "Teak logs", qty: 1 }],
     output: null,
+    outputs: birdhouseOutputs(1.2),
   },
   {
     id: "birdhouse-maple",
-    label: "Birdhouse runs (Maple)",
+    label: "Birdhouse runs (Maple, effective)",
     level: 44,
-    xp: 140,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Maple logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 205, // 820 / 4
+    actionsPerHour: 31, // ~6,300 xp/h
+    inputs: [{ name: "Maple logs", qty: 1 }],
     output: null,
+    outputs: birdhouseOutputs(1.4),
   },
   {
     id: "birdhouse-mahogany",
-    label: "Birdhouse runs (Mahogany)",
+    label: "Birdhouse runs (Mahogany, effective)",
     level: 49,
-    xp: 160,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Mahogany logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 240, // 960 / 4
+    actionsPerHour: 30, // ~7,200 xp/h
+    inputs: [{ name: "Mahogany logs", qty: 1 }],
     output: null,
+    outputs: birdhouseOutputs(1.6),
   },
   {
     id: "birdhouse-yew",
-    label: "Birdhouse runs (Yew)",
+    label: "Birdhouse runs (Yew, effective)",
     level: 59,
-    xp: 180,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Yew logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 255, // 1,020 / 4
+    actionsPerHour: 32, // ~8,100 xp/h
+    inputs: [{ name: "Yew logs", qty: 1 }],
     output: null,
+    outputs: birdhouseOutputs(1.9),
   },
   {
     id: "birdhouse-magic",
-    label: "Birdhouse runs (Magic)",
+    label: "Birdhouse runs (Magic, effective)",
     level: 74,
-    xp: 200,
-    actionsPerHour: 45,
-    inputs: [
-      { name: "Magic logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 285, // 1,140 / 4
+    actionsPerHour: 32, // ~9,000 xp/h
+    inputs: [{ name: "Magic logs", qty: 1 }],
     output: null,
+    // Magic @74 ≈ 7.37 nests/run → ~1.84/house; @99 ≈ 2.49
+    outputs: birdhouseOutputs(2.2),
   },
   {
     id: "birdhouse-redwood",
-    label: "Birdhouse runs (Redwood)",
+    label: "Birdhouse runs (Redwood, effective)",
     level: 89,
-    xp: 220,
-    actionsPerHour: 45, // effective ~9.9k Hunter XP/h active
-    inputs: [
-      { name: "Redwood logs", qty: 1 },
-      { name: "Clockwork", qty: 1 },
-    ],
+    xp: 300, // 1,200 / 4
+    actionsPerHour: 33, // ~9,900 xp/h
+    inputs: [{ name: "Redwood logs", qty: 1 }],
     output: null,
+    // Redwood @89 ≈ 9.8 nests/run → ~2.45/house
+    outputs: birdhouseOutputs(2.5),
   },
 ];
 
@@ -167,5 +163,5 @@ export function hunterMethodItemNames(): string[] {
     if (m.output) names.add(m.output.name);
     if (m.outputs) for (const p of m.outputs) names.add(p.name);
   }
-  return [...names];
+  return [...names].filter((n) => n !== "Coins");
 }
