@@ -1,0 +1,33 @@
+import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
+import { WOODCUTTING_METHODS } from "@/lib/woodcutting-methods";
+import type { PriceRow, Trend } from "@/lib/osrs.server";
+import type { PlayerSkills } from "@/lib/player-stats";
+
+export function WoodcuttingMethodsPanel({
+  rowsByName,
+  trendsById,
+  moneyPerHour,
+  onMoneyPerHourChange,
+  playerSkills,
+}: {
+  rowsByName: Map<string, PriceRow>;
+  trendsById?: Record<number, Trend> | undefined;
+  moneyPerHour: number;
+  onMoneyPerHourChange: (n: number) => void;
+  playerSkills?: PlayerSkills | null | undefined;
+}) {
+  return (
+    <SkillingMethodsPanel
+      title="Woodcutting methods"
+      skillKey="woodcutting"
+      skillLabel="Woodcutting"
+      description="Standard trees through redwood / ironwood / rosewood. Rates from wiki focused values (non tick-perfect)."
+      methods={WOODCUTTING_METHODS}
+      rowsByName={rowsByName}
+      trendsById={trendsById}
+      moneyPerHour={moneyPerHour}
+      onMoneyPerHourChange={onMoneyPerHourChange}
+      playerSkills={playerSkills}
+    />
+  );
+}
