@@ -267,12 +267,12 @@ export function SkillingMethodsPanel({
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold">{title}</h2>
             <p className="text-xs text-muted-foreground">
-              {description ?? "Ranked by net economic value (GP/h + XP valued from your money-making rate). Your cost still shows supplies + opportunity cost per XP — lower is better."}
+              {description ?? "Ranked by net economic value (GP/h + XP valued from your money-making rate). Your cost still shows supplies + opportunity cost per XP - lower is better."}
               {skillLevel != null && <> Methods above your {skillLabel} level ({skillLevel}) are greyed out.</>}
             </p>
           </div>
           <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-            <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods"><SelectValue placeholder="Sort by…" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods"><SelectValue placeholder="Sort by..." /></SelectTrigger>
             <SelectContent>
               <SelectItem value="gp_desc"><span className="inline-flex items-center gap-1">GP/h <ArrowUp className="size-3" /></span></SelectItem>
               <SelectItem value="gp_asc"><span className="inline-flex items-center gap-1">GP/h <ArrowDown className="size-3" /></span></SelectItem>
@@ -299,7 +299,7 @@ export function SkillingMethodsPanel({
             <button type="button" onClick={() => setGoggles((v) => !v)} aria-pressed={goggles}
               className={`inline-flex h-8 items-center rounded-full border px-3 text-[11px] font-medium transition-colors ${
                 goggles ? "border-primary/70 bg-primary/15 text-primary" : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-              }`} title="Prescription goggles — 10% chance not to consume secondary">Goggles</button>
+              }`} title="Prescription goggles - 10% chance not to consume secondary">Goggles</button>
           </div>
         )}
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
@@ -343,7 +343,7 @@ function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: n
       </div>
       <input type="range" min={G_MIN} max={G_MAX} step={G_STEP} value={value} onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary" aria-label="Money-making rate slider" />
-      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow → Fast money</span><span>10m</span></div>
+      <div className="flex justify-between text-[10px] text-muted-foreground"><span>250k</span><span>Slow -> Fast money</span><span>10m</span></div>
     </div>
   );
 }
@@ -376,23 +376,23 @@ function MethodRow({
               )}
             </div>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
-              {isActivity && rateBandLevel != null ? `Unlock ${level} · rates @ ${rateBandLevel}` : `Lvl ${level}`}
-              {locked ? " · locked" : ""}{secondaryLine ? ` · ${secondaryLine}` : ""}
+              {isActivity && rateBandLevel != null ? `Unlock ${level} | rates @ ${rateBandLevel}` : `Lvl ${level}`}
+              {locked ? " | locked" : ""}{secondaryLine ? ` | ${secondaryLine}` : ""}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
           <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
-          <Stat label="GP/h" value={gpPerHour == null ? "—" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
+          <Stat label="GP/h" value={gpPerHour == null ? "-" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
             tone={gpPerHour == null ? undefined : gpPerHour >= 0 ? "deal" : "steep"} />
-          <Stat label="Your cost" value={costPerXp == null ? "—" : `${formatCost(costPerXp)} gp/xp`} emphasis
+          <Stat label="Your cost" value={costPerXp == null ? "-" : `${formatCost(costPerXp)} gp/xp`} emphasis
             tone={costPerXp == null ? undefined : costPerXp <= 0 ? "deal" : costPerXp <= 15 ? "deal" : costPerXp >= 40 ? "steep" : undefined}
             title="Supplies + opportunity cost of not money-making, per XP. Lower is better." />
         </div>
       </div>
       {isActivity ? (
         <div className="space-y-1 text-xs">
-          <p className="text-[11px] text-muted-foreground">Activity method — expected reward value (not a single GE output)</p>
+          <p className="text-[11px] text-muted-foreground">Activity method - expected reward value (not a single GE output)</p>
           {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
           {missing && <p className="text-[11px] text-muted-foreground">(partial / missing price data)</p>}
         </div>
@@ -412,7 +412,7 @@ function MethodRow({
             if (outs.length === 0) return null;
             return (
               <>
-                <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
+                <span className="shrink-0 px-0.5 text-muted-foreground">-></span>
                 {outs.map((part, idx) => (
                   <span key={`out-${part.name}-${idx}`} className="inline-flex shrink-0 items-center gap-1">
                     {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
@@ -459,14 +459,14 @@ function PartChip({ name, qty, row, kind }: { name: string; qty: number; row: Pr
           <span className="absolute -bottom-0.5 -right-0.5 rounded bg-background/90 px-0.5 text-[9px] font-bold leading-none tabular-nums text-foreground ring-1 ring-border/60">{qty}</span>
         )}
       </span>
-      <span className="text-[11px] font-semibold tabular-nums text-foreground">{price == null ? "—" : gp(price)}</span>
+      <span className="text-[11px] font-semibold tabular-nums text-foreground">{price == null ? "-" : gp(price)}</span>
     </>
   );
   const className = "inline-flex items-center gap-1 rounded-md border border-border/50 bg-secondary/30 px-1.5 py-1 transition-colors hover:border-primary/50 hover:bg-primary/10";
   if (row?.id != null) {
     return (
       <Link to="/item/$id" params={{ id: String(row.id) }} className={className}
-        title={qty !== 1 && unit != null ? `${name} × ${qty} @ ${gp(unit)} each` : name}
+        title={qty !== 1 && unit != null ? `${name} x ${qty} @ ${gp(unit)} each` : name}
         aria-label={`View ${name} price history`} onClick={saveScroll}>{inner}</Link>
     );
   }
