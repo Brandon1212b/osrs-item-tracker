@@ -1,6 +1,7 @@
 /**
  * Crafting training methods (P2P guide rates).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Crafting_training
+ * Golem Crafting: Wyrmscraig (post Fallen From Grace), 2026 content.
  *
  * XP/h from wiki assumptions; GP/h is computed live from GE prices.
  */
@@ -18,11 +19,52 @@ export type CraftingMethod = {
   /** Actions per hour (wiki / focused rate) */
   actionsPerHour: number;
   inputs: MethodPart[];
-  output: MethodPart;
+  output: MethodPart | null;
 };
 
 export const CRAFTING_METHODS: CraftingMethod[] = [
-  // Gem cutting — 2780 gems/h
+  // ── Glass ────────────────────────────────────────────────────────────────
+  {
+    id: "molten-glass",
+    label: "Molten glass",
+    level: 1,
+    xp: 20,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Bucket of sand", qty: 1 },
+      { name: "Soda ash", qty: 1 },
+    ],
+    output: { name: "Molten glass", qty: 1 },
+  },
+  {
+    id: "unpowered-orb",
+    label: "Unpowered orb",
+    level: 46,
+    xp: 52.5,
+    actionsPerHour: 1800,
+    inputs: [{ name: "Molten glass", qty: 1 }],
+    output: { name: "Unpowered orb", qty: 1 },
+  },
+  {
+    id: "light-orb",
+    label: "Empty light orb",
+    level: 87,
+    xp: 70,
+    actionsPerHour: 1800,
+    inputs: [{ name: "Molten glass", qty: 1 }],
+    output: { name: "Empty light orb", qty: 1 },
+  },
+  {
+    id: "vial",
+    label: "Vial (glassblowing)",
+    level: 33,
+    xp: 35,
+    actionsPerHour: 1800,
+    inputs: [{ name: "Molten glass", qty: 1 }],
+    output: { name: "Vial", qty: 1 },
+  },
+
+  // ── Gem cutting (existing) ───────────────────────────────────────────────
   {
     id: "cut-sapphire",
     label: "Cut sapphire",
@@ -59,7 +101,106 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Uncut diamond", qty: 1 }],
     output: { name: "Diamond", qty: 1 },
   },
-  // Battlestaves — 2450/h
+
+  // ── Jewellery (gold + gem) ───────────────────────────────────────────────
+  {
+    id: "sapphire-ring",
+    label: "Sapphire ring",
+    level: 20,
+    xp: 40,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Sapphire", qty: 1 },
+    ],
+    output: { name: "Sapphire ring", qty: 1 },
+  },
+  {
+    id: "sapphire-amulet-u",
+    label: "Sapphire amulet (u)",
+    level: 24,
+    xp: 65,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Sapphire", qty: 1 },
+    ],
+    output: { name: "Sapphire amulet (u)", qty: 1 },
+  },
+  {
+    id: "emerald-ring",
+    label: "Emerald ring",
+    level: 27,
+    xp: 55,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Emerald", qty: 1 },
+    ],
+    output: { name: "Emerald ring", qty: 1 },
+  },
+  {
+    id: "ruby-amulet-u",
+    label: "Ruby amulet (u)",
+    level: 50,
+    xp: 85,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Ruby", qty: 1 },
+    ],
+    output: { name: "Ruby amulet (u)", qty: 1 },
+  },
+  {
+    id: "diamond-amulet-u",
+    label: "Diamond amulet (u)",
+    level: 70,
+    xp: 100,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Diamond", qty: 1 },
+    ],
+    output: { name: "Diamond amulet (u)", qty: 1 },
+  },
+  {
+    id: "dragonstone-amulet-u",
+    label: "Dragonstone amulet (u)",
+    level: 80,
+    xp: 150,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Dragonstone", qty: 1 },
+    ],
+    output: { name: "Dragonstone amulet (u)", qty: 1 },
+  },
+  {
+    id: "zenyte-ring",
+    label: "Zenyte ring",
+    level: 89,
+    xp: 150,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Zenyte", qty: 1 },
+    ],
+    output: { name: "Zenyte ring", qty: 1 },
+  },
+  {
+    id: "zenyte-amulet-u",
+    label: "Zenyte amulet (u)",
+    level: 98,
+    xp: 200,
+    actionsPerHour: 650,
+    inputs: [
+      { name: "Gold bar", qty: 1 },
+      { name: "Zenyte", qty: 1 },
+    ],
+    output: { name: "Zenyte amulet (u)", qty: 1 },
+  },
+
+  // ── Battlestaves (existing) ──────────────────────────────────────────────
   {
     id: "water-battlestaff",
     label: "Water battlestaff",
@@ -108,7 +249,8 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     ],
     output: { name: "Air battlestaff", qty: 1 },
   },
-  // D'hide bodies — ~1705/h (costume needle, no tick manip)
+
+  // ── D'hide bodies (existing) ─────────────────────────────────────────────
   {
     id: "green-dhide-body",
     label: "Green d'hide body",
@@ -145,8 +287,8 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Black dragon leather", qty: 3 }],
     output: { name: "Black d'hide body", qty: 1 },
   },
-  // Amethyst cutting — ~2750/h (wiki money-making / same chisel pace as gems)
-  // https://oldschool.runescape.wiki/w/Money_making_guide/Cutting_amethyst_bolt_tips
+
+  // ── Amethyst (existing) ──────────────────────────────────────────────────
   {
     id: "amethyst-bolt-tips",
     label: "Amethyst bolt tips",
@@ -183,6 +325,46 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Amethyst", qty: 1 }],
     output: { name: "Amethyst dart tip", qty: 8 },
   },
+
+  // ── Golem Crafting (Wyrmscraig, 2026) ────────────────────────────────────
+  // Sunstone mined on-site (opportunity cost not GE-purchased). Fur is the GE input.
+  // XP ≈ 1560 golem base + fur bonus. Focused ~55–60 golems/h with banked furs.
+  {
+    id: "golem-dark-kebbit",
+    label: "Golem crafting (dark kebbit fur)",
+    level: 60,
+    xp: 2700, // 1560 + 1140
+    actionsPerHour: 55,
+    inputs: [{ name: "Dark kebbit fur", qty: 1 }],
+    output: null,
+  },
+  {
+    id: "golem-fox",
+    label: "Golem crafting (fox fur)",
+    level: 60,
+    xp: 2680,
+    actionsPerHour: 55,
+    inputs: [{ name: "Fox fur", qty: 1 }],
+    output: null,
+  },
+  {
+    id: "golem-graahk",
+    label: "Golem crafting (graahk fur)",
+    level: 60,
+    xp: 2640,
+    actionsPerHour: 55,
+    inputs: [{ name: "Graahk fur", qty: 1 }],
+    output: null,
+  },
+  {
+    id: "golem-moonlight-antelope",
+    label: "Golem crafting (moonlight antelope)",
+    level: 60,
+    xp: 2760,
+    actionsPerHour: 55,
+    inputs: [{ name: "Moonlight antelope fur", qty: 1 }],
+    output: null,
+  },
 ];
 
 /** All GE item names referenced by crafting methods (for price snapshot). */
@@ -190,7 +372,7 @@ export function craftingMethodItemNames(): string[] {
   const names = new Set<string>();
   for (const m of CRAFTING_METHODS) {
     for (const p of m.inputs) names.add(p.name);
-    names.add(m.output.name);
+    if (m.output) names.add(m.output.name);
   }
   return [...names];
 }
