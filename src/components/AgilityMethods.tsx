@@ -21,7 +21,7 @@ export function AgilityMethodsPanel({
       title="Agility methods"
       skillKey="agility"
       skillLabel="Agility"
-      description="Rooftop courses and Hallowed Sepulchre. Pure XP methods — cost is opportunity + stamina supplies."
+      description="Rooftop courses, Colossal Wyrm, Werewolf, Prifddinas, Wilderness, Ape Atoll, Dorgesh-Kaan and Hallowed Sepulchre. Pure XP methods — cost is opportunity + stamina supplies."
       methods={AGILITY_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
