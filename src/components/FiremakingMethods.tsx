@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { FIREMAKING_METHODS } from "@/lib/firemaking-methods";
+import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -21,8 +22,9 @@ export function FiremakingMethodsPanel({
       title="Firemaking methods"
       skillKey="firemaking"
       skillLabel="Firemaking"
-      description="Log burning at GE rates (~1485 logs/hr). Wintertodt excluded — activity multi-reward structure."
+      description="Log burning at GE rates (~1485 logs/hr) plus Wintertodt. Sorted by what each XP costs you."
       methods={FIREMAKING_METHODS}
+      activities={activitiesForSkill("firemaking")}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
