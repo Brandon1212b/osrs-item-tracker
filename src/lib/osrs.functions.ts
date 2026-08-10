@@ -11,6 +11,12 @@ import { fletchingMethodItemNames } from "./fletching-methods";
 import { cookingMethodItemNames } from "./cooking-methods";
 import { agilityMethodItemNames } from "./agility-methods";
 import { herbloreMethodItemNames } from "./herblore-methods";
+import { thievingMethodItemNames } from "./thieving-methods";
+import { miningMethodItemNames } from "./mining-methods";
+import { fishingMethodItemNames } from "./fishing-methods";
+import { woodcuttingMethodItemNames } from "./woodcutting-methods";
+import { firemakingMethodItemNames } from "./firemaking-methods";
+import { hunterMethodItemNames } from "./hunter-methods";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -29,6 +35,12 @@ const allNames = () => {
       ...cookingMethodItemNames(),
       ...agilityMethodItemNames(),
       ...herbloreMethodItemNames(),
+      ...thievingMethodItemNames(),
+      ...miningMethodItemNames(),
+      ...fishingMethodItemNames(),
+      ...woodcuttingMethodItemNames(),
+      ...firemakingMethodItemNames(),
+      ...hunterMethodItemNames(),
     ]),
   ];
 };
