@@ -126,6 +126,23 @@ function amuletChargeCost(
   return amulet === "chemistry" ? chemistryPrice / 5 : chemistryPrice / 10;
 }
 
+/** Read a skill level from playerSkills with case-insensitive fallback. */
+function readSkillLevel(
+  skills: PlayerSkills | null | undefined,
+  skillKey: string,
+): number | undefined {
+  if (!skills) return undefined;
+  const direct = skills[skillKey];
+  if (typeof direct === "number" && Number.isFinite(direct)) return direct;
+  const lower = skillKey.toLowerCase();
+  const viaLower = skills[lower];
+  if (typeof viaLower === "number" && Number.isFinite(viaLower)) return viaLower;
+  for (const [k, v] of Object.entries(skills)) {
+    if (k.toLowerCase() === lower && typeof v === "number" && Number.isFinite(v)) return v;
+  }
+  return undefined;
+}
+
 type Ranked = {
   id: string;
   label: string;
@@ -146,6 +163,8 @@ type Ranked = {
   /** Activity notes. */
   notes?: string | null;
   intensity?: "low" | "medium" | "high" | null;
+  /** For activities: which rate-band level is applied. */
+  rateBandLevel?: number | null;
 };
 
 export function SkillingMethodsPanel({
@@ -178,7 +197,7 @@ export function SkillingMethodsPanel({
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
-  const skillLevel = playerSkills?.[skillKey];
+  const skillLevel = readSkillLevel(playerSkills, skillKey);
   const isHerblore = skillKey === "herblore";
 
   const ranked = useMemo(() => {
@@ -324,6 +343,7 @@ export function SkillingMethodsPanel({
         secondaryLine,
         notes: activity.notes ?? null,
         intensity: activity.intensity ?? null,
+        rateBandLevel: band.level,
       });
     }
 
@@ -551,6 +571,7 @@ function MethodRow({
   secondaryLine,
   notes,
   intensity,
+  rateBandLevel,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow>; skillLabel: string }) {
   const isActivity = activity != null;
   const titlePart = method ? method.output ?? method.inputs[0] : undefined;
@@ -589,7 +610,9 @@ function MethodRow({
               )}
             </div>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
-              Lvl {level}
+              {isActivity && rateBandLevel != null
+                ? `Unlock ${level} · rates @ ${rateBandLevel}`
+                : `Lvl ${level}`}
               {locked ? " · locked" : ""}
               {secondaryLine ? ` · ${secondaryLine}` : ""}
             </p>
