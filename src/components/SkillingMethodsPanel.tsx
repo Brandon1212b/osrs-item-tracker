@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
+import type { ActivityMethod } from "@/lib/activity-methods";
+import { resolveActivityBand } from "@/lib/activity-methods";
 import { gp, compactNum, formatCost } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import {
@@ -125,7 +127,9 @@ function amuletChargeCost(
 }
 
 type Ranked = {
-  method: SkillingMethod;
+  id: string;
+  label: string;
+  level: number;
   xpPerHour: number;
   gpPerHour: number | null;
   profitPerCraft: number | null;
@@ -133,6 +137,15 @@ type Ranked = {
   costPerXp: number | null;
   missing: boolean;
   locked: boolean;
+  /** Production method (if any). */
+  method?: SkillingMethod;
+  /** Activity method (if any). */
+  activity?: ActivityMethod;
+  /** Resolved secondary XP line for activities. */
+  secondaryLine?: string | null;
+  /** Activity notes. */
+  notes?: string | null;
+  intensity?: "low" | "medium" | "high" | null;
 };
 
 export function SkillingMethodsPanel({
@@ -141,6 +154,7 @@ export function SkillingMethodsPanel({
   skillLabel,
   description,
   methods,
+  activities = [],
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -152,6 +166,8 @@ export function SkillingMethodsPanel({
   skillLabel: string;
   description?: string;
   methods: SkillingMethod[];
+  /** Optional activity / minigame methods ranked with production methods. */
+  activities?: ActivityMethod[];
   rowsByName: Map<string, PriceRow>;
   trendsById?: Record<number, Trend> | undefined;
   moneyPerHour: number;
@@ -198,7 +214,6 @@ export function SkillingMethodsPanel({
 
       if (isHerblore && !missing) {
         inputCost += chargeCost;
-        // Baseline does not include amulet charge (consumable, not a 30d market component of the recipe itself)
       }
 
       let outValue: number | null = 0;
@@ -213,7 +228,6 @@ export function SkillingMethodsPanel({
         if (baselineOutUnit == null) baselineMissing = true;
 
         const outQty = method.output.qty;
-        // Amulet of chemistry: expected doses on 3-dose potion products
         const doseScale =
           isHerblore && method.output.name.includes("(3)")
             ? expectedDoses / 3
@@ -244,6 +258,9 @@ export function SkillingMethodsPanel({
       const locked = skillLevel != null && skillLevel < method.level;
 
       return {
+        id: method.id,
+        label: method.label,
+        level: method.level,
         method,
         xpPerHour,
         gpPerHour,
@@ -254,6 +271,61 @@ export function SkillingMethodsPanel({
         locked,
       };
     });
+
+    // Activity methods — one card each, rates resolved from player level
+    for (const activity of activities) {
+      const band = resolveActivityBand(activity, skillLevel);
+      let consumableCost = 0;
+      let missing = false;
+
+      for (const part of activity.consumables) {
+        const p = buyPrice(rowsByName.get(part.name));
+        if (p == null) {
+          missing = true;
+          break;
+        }
+        consumableCost += p * part.qty;
+      }
+
+      let rewardValue = band.expectedLootGpPerHour ?? 0;
+      if (!missing) {
+        for (const r of activity.rewards) {
+          const unit = sellPrice(rowsByName.get(r.name));
+          if (unit == null) {
+            missing = true;
+            break;
+          }
+          rewardValue += unit * r.expectedQtyPerHour;
+        }
+      }
+
+      const gpPerHour = missing ? null : Math.round(rewardValue - consumableCost);
+      const costPerXp =
+        gpPerHour == null ? null : effectiveGpPerXp(band.xpPerHour, gpPerHour, g);
+      const locked = skillLevel != null && skillLevel < activity.level;
+
+      const secondaryLine =
+        activity.secondarySkill && band.secondaryXpPerHour
+          ? `+${compactNum(Math.round(band.secondaryXpPerHour))} ${activity.secondarySkill} XP/h`
+          : null;
+
+      list.push({
+        id: activity.id,
+        label: activity.label,
+        level: activity.level,
+        activity,
+        xpPerHour: band.xpPerHour,
+        gpPerHour,
+        profitPerCraft: null,
+        netChangePct: null,
+        costPerXp,
+        missing,
+        locked,
+        secondaryLine,
+        notes: activity.notes ?? null,
+        intensity: activity.intensity ?? null,
+      });
+    }
 
     return list.sort((a, b) => {
       if (skillLevel != null && a.locked !== b.locked) return a.locked ? 1 : -1;
@@ -279,9 +351,9 @@ export function SkillingMethodsPanel({
           cmp = nullsLast(a.costPerXp, b.costPerXp, 1);
           break;
       }
-      return cmp || a.method.level - b.method.level;
+      return cmp || a.level - b.level;
     });
-  }, [methods, rowsByName, trendsById, g, sort, skillLevel, isHerblore, amulet, goggles]);
+  }, [methods, activities, rowsByName, trendsById, g, sort, skillLevel, isHerblore, amulet, goggles]);
 
   return (
     <div className="mt-4 space-y-3">
@@ -375,7 +447,7 @@ export function SkillingMethodsPanel({
 
       <div className="space-y-2">
         {ranked.map((r, i) => (
-          <MethodRow key={r.method.id} rank={i + 1} rowsByName={rowsByName} skillLabel={skillLabel} {...r} />
+          <MethodRow key={r.id} rank={i + 1} rowsByName={rowsByName} skillLabel={skillLabel} {...r} />
         ))}
       </div>
     </div>
@@ -464,6 +536,9 @@ function MoneyMakingSlider({
 function MethodRow({
   rank,
   method,
+  activity,
+  label,
+  level,
   rowsByName,
   skillLabel,
   xpPerHour,
@@ -473,16 +548,19 @@ function MethodRow({
   costPerXp,
   missing,
   locked,
+  secondaryLine,
+  notes,
+  intensity,
 }: Ranked & { rank: number; rowsByName: Map<string, PriceRow>; skillLabel: string }) {
-  // Prefer the product (e.g. cleaned herb) for the title icon; fall back to first input.
-  const titlePart = method.output ?? method.inputs[0];
+  const isActivity = activity != null;
+  const titlePart = method ? method.output ?? method.inputs[0] : undefined;
   const titleRow = titlePart ? rowsByName.get(titlePart.name) : undefined;
   const titleIcon = titlePart ? chipIcon(titleRow, titlePart.name) : null;
 
   return (
     <article
       className={`panel flex flex-col gap-2 p-3 sm:p-3.5 ${locked ? "opacity-45" : ""}`}
-      title={locked ? `Requires ${skillLabel} ${method.level}` : undefined}
+      title={locked ? `Requires ${skillLabel} ${level}` : undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
@@ -502,10 +580,18 @@ function MethodRow({
             </span>
           )}
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold leading-tight">{method.label}</h3>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <h3 className="text-sm font-semibold leading-tight">{label}</h3>
+              {isActivity && intensity && (
+                <span className="rounded-full border border-border/60 bg-secondary/40 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {intensity}
+                </span>
+              )}
+            </div>
             <p className={`text-[11px] ${locked ? "font-semibold text-amber-500/90" : "text-muted-foreground"}`}>
-              Lvl {method.level}
+              Lvl {level}
               {locked ? " · locked" : ""}
+              {secondaryLine ? ` · ${secondaryLine}` : ""}
             </p>
           </div>
         </div>
@@ -536,80 +622,92 @@ function MethodRow({
         </div>
       </div>
 
-      <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
-        {method.inputs.length === 0 && !method.output && (
-          <span className="text-[11px] text-muted-foreground">No GE inputs (course XP)</span>
-        )}
-        {method.inputs.map((part, idx) => (
-          <span key={part.name} className="inline-flex shrink-0 items-center gap-1">
-            {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
-            <PartChip
-              name={part.name}
-              qty={part.qty}
-              row={rowsByName.get(part.name)}
-              kind="input"
-            />
-          </span>
-        ))}
-        {method.output && (
-          <>
-            <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
-            <PartChip
-              name={method.output.name}
-              qty={method.output.qty}
-              row={rowsByName.get(method.output.name)}
-              kind="output"
-            />
-          </>
-        )}
-
-        {profitPerCraft != null && (
-          <span
-            className="ml-auto inline-flex shrink-0 items-center gap-1 tabular-nums"
-            title="Net vs 30-day average component prices"
-          >
-            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              Net
+      {isActivity ? (
+        <div className="space-y-1 text-xs">
+          <p className="text-[11px] text-muted-foreground">
+            Activity method — expected reward value (not a single GE output)
+          </p>
+          {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
+          {missing && (
+            <p className="text-[11px] text-muted-foreground">(missing price data)</p>
+          )}
+        </div>
+      ) : method ? (
+        <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
+          {method.inputs.length === 0 && !method.output && (
+            <span className="text-[11px] text-muted-foreground">No GE inputs (course XP)</span>
+          )}
+          {method.inputs.map((part, idx) => (
+            <span key={part.name} className="inline-flex shrink-0 items-center gap-1">
+              {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
+              <PartChip
+                name={part.name}
+                qty={part.qty}
+                row={rowsByName.get(part.name)}
+                kind="input"
+              />
             </span>
+          ))}
+          {method.output && (
+            <>
+              <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
+              <PartChip
+                name={method.output.name}
+                qty={method.output.qty}
+                row={rowsByName.get(method.output.name)}
+                kind="output"
+              />
+            </>
+          )}
+
+          {profitPerCraft != null && (
             <span
-              className="font-bold"
-              style={{
-                color: profitPerCraft >= 0 ? "var(--deal)" : "var(--steep)",
-              }}
+              className="ml-auto inline-flex shrink-0 items-center gap-1 tabular-nums"
+              title="Net vs 30-day average component prices"
             >
-              {profitPerCraft > 0 ? "+" : ""}
-              {gp(profitPerCraft)}
-            </span>
-            {netChangePct != null && (
-              <span
-                className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
-                style={{
-                  background:
-                    netChangePct > 0
-                      ? "color-mix(in oklab, var(--deal) 22%, transparent)"
-                      : netChangePct < 0
-                        ? "color-mix(in oklab, var(--steep) 22%, transparent)"
-                        : "var(--secondary)",
-                  color:
-                    netChangePct > 0
-                      ? "var(--deal)"
-                      : netChangePct < 0
-                        ? "var(--steep)"
-                        : "var(--muted-foreground)",
-                }}
-                title="Change in net vs 30-day average prices"
-              >
-                {netChangePct > 0 ? "+" : ""}
-                {netChangePct}%
+              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                Net
               </span>
-            )}
-          </span>
-        )}
+              <span
+                className="font-bold"
+                style={{
+                  color: profitPerCraft >= 0 ? "var(--deal)" : "var(--steep)",
+                }}
+              >
+                {profitPerCraft > 0 ? "+" : ""}
+                {gp(profitPerCraft)}
+              </span>
+              {netChangePct != null && (
+                <span
+                  className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
+                  style={{
+                    background:
+                      netChangePct > 0
+                        ? "color-mix(in oklab, var(--deal) 22%, transparent)"
+                        : netChangePct < 0
+                          ? "color-mix(in oklab, var(--steep) 22%, transparent)"
+                          : "var(--secondary)",
+                    color:
+                      netChangePct > 0
+                        ? "var(--deal)"
+                        : netChangePct < 0
+                          ? "var(--steep)"
+                          : "var(--muted-foreground)",
+                  }}
+                  title="Change in net vs 30-day average prices"
+                >
+                  {netChangePct > 0 ? "+" : ""}
+                  {netChangePct}%
+                </span>
+              )}
+            </span>
+          )}
 
-        {missing && profitPerCraft == null && (
-          <span className="shrink-0 text-[11px] text-muted-foreground">(missing price data)</span>
-        )}
-      </div>
+          {missing && profitPerCraft == null && (
+            <span className="shrink-0 text-[11px] text-muted-foreground">(missing price data)</span>
+          )}
+        </div>
+      ) : null}
     </article>
   );
 }
