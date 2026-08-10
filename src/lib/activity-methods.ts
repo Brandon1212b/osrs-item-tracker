@@ -22,10 +22,6 @@ export type ActivityReward = {
 export type ActivityRateBand = {
   level: number;
   xpPerHour: number;
-  /**
-   * Net GP/hr from the activity after typical material costs when those costs
-   * are hard to itemize, OR gross reward EV when consumables[] covers costs.
-   */
   expectedLootGpPerHour?: number;
   secondaryXpPerHour?: number;
 };
@@ -34,26 +30,15 @@ export type ActivityMethod = {
   id: string;
   label: string;
   skillKey: string;
-  /** Minimum level to unlock the activity. */
   level: number;
-  /**
-   * Level-scaled rates. UI picks the highest band with band.level ≤ player level.
-   * If no player is loaded, uses the highest band (optimistic / end-game rates).
-   */
   rateBands: ActivityRateBand[];
-  /** Optional secondary skill label for passive XP (e.g. woodcutting). */
   secondarySkill?: string;
-  /** GE consumables used per hour (often empty when EV is net of costs). */
   consumables: MethodPart[];
-  /** Itemized rewards when the drop table is stable enough. */
   rewards: ActivityReward[];
   intensity?: "low" | "medium" | "high";
   notes?: string;
 };
 
-/**
- * Wintertodt — official mass worlds, no kindling (roots only).
- */
 export const WINTERTODT_METHODS: ActivityMethod[] = [
   {
     id: "wintertodt-mass",
@@ -75,9 +60,6 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Tempoross — mass worlds, cook harpoonfish (points/loot focus).
- */
 export const TEMPOROSS_METHODS: ActivityMethod[] = [
   {
     id: "tempoross-mass-cook",
@@ -100,9 +82,6 @@ export const TEMPOROSS_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Guardians of the Rift — mass worlds, balanced elemental/catalytic.
- */
 export const GOTR_METHODS: ActivityMethod[] = [
   {
     id: "gotr-mass",
@@ -126,9 +105,6 @@ export const GOTR_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Giants' Foundry — optimal alloy for band, average commission score.
- */
 export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
   {
     id: "giants-foundry",
@@ -150,9 +126,6 @@ export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Mahogany Homes — contract tier by Construction level.
- */
 export const MAHOGANY_HOMES_METHODS: ActivityMethod[] = [
   {
     id: "mahogany-homes",
@@ -174,10 +147,6 @@ export const MAHOGANY_HOMES_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Motherlode Mine — AFK pay-dirt washing. Multi-ore sack rewards.
- * Wiki rates assume prospector + upper floor (72+) where applicable.
- */
 export const MOTHERLODE_METHODS: ActivityMethod[] = [
   {
     id: "motherlode-mine",
@@ -202,10 +171,6 @@ export const MOTHERLODE_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Volcanic Mine — team boulder minigame on Fossil Island.
- * Wiki rates for consistent 3–5 player teams (mid role).
- */
 export const VOLCANIC_MINE_METHODS: ActivityMethod[] = [
   {
     id: "volcanic-mine",
@@ -228,10 +193,6 @@ export const VOLCANIC_MINE_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Blast Mine — Lovakengj dynamite mining. +10 effective mining for ore tier.
- * Net GP assumes ~330 dynamite/hr cost subtracted from ore value (wiki MMG).
- */
 export const BLAST_MINE_METHODS: ActivityMethod[] = [
   {
     id: "blast-mine",
@@ -255,9 +216,32 @@ export const BLAST_MINE_METHODS: ActivityMethod[] = [
 ];
 
 /**
- * Pyramid Plunder — Sophanem thieving rooms.
- * Focused rates on last rooms; sceptre recommended.
+ * Shooting Stars / crashed stars — ultra-AFK stardust mining.
+ * XP from community guides; GP from stardust shop + gem rolls.
  */
+export const SHOOTING_STARS_METHODS: ActivityMethod[] = [
+  {
+    id: "shooting-stars",
+    label: "Shooting Stars",
+    skillKey: "mining",
+    level: 10,
+    rateBands: [
+      { level: 10, xpPerHour: 8_000, expectedLootGpPerHour: 25_000 },
+      { level: 40, xpPerHour: 22_000, expectedLootGpPerHour: 45_000 },
+      { level: 60, xpPerHour: 26_000, expectedLootGpPerHour: 60_000 },
+      { level: 70, xpPerHour: 28_000, expectedLootGpPerHour: 70_000 },
+      { level: 80, xpPerHour: 30_000, expectedLootGpPerHour: 80_000 },
+      { level: 90, xpPerHour: 31_000, expectedLootGpPerHour: 85_000 },
+      { level: 99, xpPerHour: 32_000, expectedLootGpPerHour: 90_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "low",
+    notes:
+      "Ultra-AFK (~7 min between clicks per tier). Find stars via CC/telescope. Stardust → Dusuri shop (soft clay packs / gem bags). Size 6+ stars need 60 Mining to start.",
+  },
+];
+
 export const PYRAMID_PLUNDER_METHODS: ActivityMethod[] = [
   {
     id: "pyramid-plunder",
@@ -280,7 +264,82 @@ export const PYRAMID_PLUNDER_METHODS: ActivityMethod[] = [
   },
 ];
 
-/** Pick the best rate band for a player level (or the top band if unknown). */
+/**
+ * Stealing artefacts — Port Piscarilius (Captain Khaled).
+ * XP scales with Thieving level; Book of the Dead / memoirs for teleports.
+ */
+export const STEALING_ARTEFACTS_METHODS: ActivityMethod[] = [
+  {
+    id: "stealing-artefacts",
+    label: "Stealing artefacts",
+    skillKey: "thieving",
+    level: 49,
+    rateBands: [
+      { level: 49, xpPerHour: 150_000, expectedLootGpPerHour: 35_000 },
+      { level: 60, xpPerHour: 174_000, expectedLootGpPerHour: 40_000 },
+      { level: 70, xpPerHour: 197_000, expectedLootGpPerHour: 45_000 },
+      { level: 80, xpPerHour: 219_000, expectedLootGpPerHour: 50_000 },
+      { level: 90, xpPerHour: 241_000, expectedLootGpPerHour: 55_000 },
+      { level: 99, xpPerHour: 261_000, expectedLootGpPerHour: 60_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "medium",
+    notes:
+      "Port Piscarilius. Lockpick + stamina recommended. Book of the Dead teleports push ~55 artefacts/hr. Coin reward 500–1k per delivery; low GP vs XP focus.",
+  },
+];
+
+/**
+ * Mage Training Arena — Enchanting Chamber (best XP room for most levels).
+ * Net GP is rune cost (negative). Points go to shop (infinity, bones to peaches, etc.).
+ */
+export const MTA_METHODS: ActivityMethod[] = [
+  {
+    id: "mta-enchanting",
+    label: "MTA Enchanting Chamber",
+    skillKey: "magic",
+    level: 7,
+    rateBands: [
+      { level: 7, xpPerHour: 55_000, expectedLootGpPerHour: -80_000 },
+      { level: 27, xpPerHour: 84_000, expectedLootGpPerHour: -100_000 },
+      { level: 49, xpPerHour: 116_000, expectedLootGpPerHour: -120_000 },
+      { level: 57, xpPerHour: 128_000, expectedLootGpPerHour: -140_000 },
+      { level: 68, xpPerHour: 144_000, expectedLootGpPerHour: -160_000 },
+      { level: 87, xpPerHour: 172_000, expectedLootGpPerHour: -200_000 },
+      { level: 99, xpPerHour: 190_000, expectedLootGpPerHour: -220_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "medium",
+    notes:
+      "Enchanting Chamber depositing orbs (wiki peak rates by enchant tier). Rune cost baked into net GP. Other rooms: Graveyard ~100k, Alchemists ~60–80k, Telekinetic lower XP. Points for shop rewards.",
+  },
+];
+
+/**
+ * Herbiboar — Fossil Island tracking. Needs 80 Hunter (boostable) + 31 Herblore.
+ */
+export const HERBIBOAR_METHODS: ActivityMethod[] = [
+  {
+    id: "herbiboar",
+    label: "Herbiboar",
+    skillKey: "hunter",
+    level: 80,
+    secondarySkill: "herblore",
+    rateBands: [
+      { level: 80, xpPerHour: 120_000, expectedLootGpPerHour: 300_000, secondaryXpPerHour: 2_500 },
+      { level: 90, xpPerHour: 140_000, expectedLootGpPerHour: 350_000, secondaryXpPerHour: 3_000 },
+      { level: 99, xpPerHour: 150_000, expectedLootGpPerHour: 390_000, secondaryXpPerHour: 3_300 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "medium",
+    notes:
+      "Bone Voyage + 31 Herblore. Magic secateurs + herb sack + stamina. ~60 catches/hr focused. Herb value scales with Herblore level. Herbi pet 1/6,500.",
+  },
+];
+
 export function resolveActivityBand(
   method: ActivityMethod,
   playerLevel: number | null | undefined,
@@ -294,7 +353,6 @@ export function resolveActivityBand(
   return best;
 }
 
-/** All activity methods registered so far (by skill). */
 export function activitiesForSkill(skillKey: string): ActivityMethod[] {
   switch (skillKey) {
     case "firemaking":
@@ -308,9 +366,18 @@ export function activitiesForSkill(skillKey: string): ActivityMethod[] {
     case "construction":
       return MAHOGANY_HOMES_METHODS;
     case "mining":
-      return [...MOTHERLODE_METHODS, ...VOLCANIC_MINE_METHODS, ...BLAST_MINE_METHODS];
+      return [
+        ...MOTHERLODE_METHODS,
+        ...VOLCANIC_MINE_METHODS,
+        ...BLAST_MINE_METHODS,
+        ...SHOOTING_STARS_METHODS,
+      ];
     case "thieving":
-      return PYRAMID_PLUNDER_METHODS;
+      return [...PYRAMID_PLUNDER_METHODS, ...STEALING_ARTEFACTS_METHODS];
+    case "magic":
+      return MTA_METHODS;
+    case "hunter":
+      return HERBIBOAR_METHODS;
     default:
       return [];
   }

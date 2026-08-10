@@ -1,10 +1,10 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { MAGIC_METHODS } from "@/lib/magic-methods";
+import { HUNTER_METHODS } from "@/lib/hunter-methods";
 import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function MagicMethodsPanel({
+export function HunterMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -19,12 +19,12 @@ export function MagicMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Magic methods"
-      skillKey="magic"
-      skillLabel="Magic"
-      description="High/Low Alchemy, jewellery enchanting, Plank Make, Superheat, and Mage Training Arena. Sorted by what each XP costs you."
-      methods={MAGIC_METHODS}
-      activities={activitiesForSkill("magic")}
+      title="Hunter methods"
+      skillKey="hunter"
+      skillLabel="Hunter"
+      description="Activity methods such as Herbiboar. Production methods (chins, birdhouses) can be added next. Sorted by what each XP costs you."
+      methods={HUNTER_METHODS}
+      activities={activitiesForSkill("hunter")}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

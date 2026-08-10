@@ -22,7 +22,7 @@ export function MiningMethodsPanel({
       title="Mining methods"
       skillKey="mining"
       skillLabel="Mining"
-      description="Ores, specialty rocks, Motherlode Mine, Volcanic Mine, and Blast Mine. Sorted by what each XP costs you."
+      description="Ores, Motherlode Mine, Volcanic Mine, Blast Mine, and Shooting Stars. Sorted by what each XP costs you."
       methods={MINING_METHODS}
       activities={activitiesForSkill("mining")}
       rowsByName={rowsByName}
