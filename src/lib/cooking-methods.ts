@@ -1,7 +1,7 @@
 /**
  * Cooking training methods (P2P).
- * https://oldschool.runescape.wiki/w/Cooking
- * Standard (non 1-tick) rates unless noted.
+ * https://oldschool.runescape.wiki/w/Cooking_training / Pay-to-play_Cooking_training
+ * Standard (non 1-tick) rates unless noted. 1-tick Karambwan is a distinct method.
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -28,6 +28,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     ],
     output: { name: "Jug of wine", qty: 1 },
   },
+  // Standard karambwan (no tick manip)
   {
     id: "karambwan",
     label: "Cooked karambwan",
@@ -36,6 +37,61 @@ export const COOKING_METHODS: CookingMethod[] = [
     actionsPerHour: 1300,
     inputs: [{ name: "Raw karambwan", qty: 1 }],
     output: { name: "Cooked karambwan", qty: 1 },
+  },
+  // 1-tick karambwan — distinct high-intensity method
+  {
+    id: "karambwan-1tick",
+    label: "Cooked karambwan (1-tick)",
+    level: 30,
+    xp: 190,
+    actionsPerHour: 4500, // focused realistic; wiki max ~5000–5470
+    inputs: [{ name: "Raw karambwan", qty: 1 }],
+    output: { name: "Cooked karambwan", qty: 1 },
+  },
+  {
+    id: "poison-karambwan",
+    label: "Poison karambwan",
+    level: 30,
+    xp: 80,
+    actionsPerHour: 1300,
+    inputs: [{ name: "Raw karambwan", qty: 1 }],
+    output: { name: "Poison karambwan", qty: 1 },
+  },
+  {
+    id: "tuna",
+    label: "Cooked tuna",
+    level: 30,
+    xp: 100,
+    actionsPerHour: 1300,
+    inputs: [{ name: "Raw tuna", qty: 1 }],
+    output: { name: "Tuna", qty: 1 },
+  },
+  {
+    id: "lobster",
+    label: "Cooked lobster",
+    level: 40,
+    xp: 120,
+    actionsPerHour: 1300,
+    inputs: [{ name: "Raw lobster", qty: 1 }],
+    output: { name: "Lobster", qty: 1 },
+  },
+  {
+    id: "swordfish",
+    label: "Cooked swordfish",
+    level: 45,
+    xp: 140,
+    actionsPerHour: 1300,
+    inputs: [{ name: "Raw swordfish", qty: 1 }],
+    output: { name: "Swordfish", qty: 1 },
+  },
+  {
+    id: "monkfish",
+    label: "Cooked monkfish",
+    level: 62,
+    xp: 150,
+    actionsPerHour: 1300,
+    inputs: [{ name: "Raw monkfish", qty: 1 }],
+    output: { name: "Monkfish", qty: 1 },
   },
   {
     id: "shark",

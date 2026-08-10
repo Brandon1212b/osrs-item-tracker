@@ -1,9 +1,9 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { CRAFTING_METHODS } from "@/lib/crafting-methods";
+import { FIREMAKING_METHODS } from "@/lib/firemaking-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function CraftingMethodsPanel({
+export function FiremakingMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -18,11 +18,11 @@ export function CraftingMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Crafting methods"
-      skillKey="crafting"
-      skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
-      methods={CRAFTING_METHODS}
+      title="Firemaking methods"
+      skillKey="firemaking"
+      skillLabel="Firemaking"
+      description="Log burning at GE rates (~1485 logs/hr). Wintertodt excluded — activity multi-reward structure."
+      methods={FIREMAKING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

@@ -1,9 +1,9 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { CRAFTING_METHODS } from "@/lib/crafting-methods";
+import { FISHING_METHODS } from "@/lib/fishing-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function CraftingMethodsPanel({
+export function FishingMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -18,11 +18,11 @@ export function CraftingMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Crafting methods"
-      skillKey="crafting"
-      skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
-      methods={CRAFTING_METHODS}
+      title="Fishing methods"
+      skillKey="fishing"
+      skillLabel="Fishing"
+      description="Net, cage, fly and harpoon fish. Rates from wiki focused values. Tempoross excluded — activity rewards."
+      methods={FISHING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

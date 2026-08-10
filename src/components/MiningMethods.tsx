@@ -1,9 +1,9 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { CRAFTING_METHODS } from "@/lib/crafting-methods";
+import { MINING_METHODS } from "@/lib/mining-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function CraftingMethodsPanel({
+export function MiningMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -18,11 +18,11 @@ export function CraftingMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Crafting methods"
-      skillKey="crafting"
-      skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
-      methods={CRAFTING_METHODS}
+      title="Mining methods"
+      skillKey="mining"
+      skillLabel="Mining"
+      description="Ores and specialty rocks. Rates from wiki focused values. Activity methods (MLM, Volcanic/Blast Mine) excluded — multi-output rewards."
+      methods={MINING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

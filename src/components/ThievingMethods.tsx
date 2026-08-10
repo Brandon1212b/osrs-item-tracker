@@ -1,9 +1,9 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { CRAFTING_METHODS } from "@/lib/crafting-methods";
+import { THIEVING_METHODS } from "@/lib/thieving-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function CraftingMethodsPanel({
+export function ThievingMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -18,11 +18,11 @@ export function CraftingMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Crafting methods"
-      skillKey="crafting"
-      skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
-      methods={CRAFTING_METHODS}
+      title="Thieving methods"
+      skillKey="thieving"
+      skillLabel="Thieving"
+      description="Stalls and pickpocketing. Most methods are pure XP (coin/loot not modelled as fixed GE output). Rates from wiki focused values."
+      methods={THIEVING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

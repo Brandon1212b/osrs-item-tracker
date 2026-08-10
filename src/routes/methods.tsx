@@ -16,6 +16,11 @@ import { FletchingMethodsPanel } from "@/components/FletchingMethods";
 import { CookingMethodsPanel } from "@/components/CookingMethods";
 import { AgilityMethodsPanel } from "@/components/AgilityMethods";
 import { HerbloreMethodsPanel } from "@/components/HerbloreMethods";
+import { MiningMethodsPanel } from "@/components/MiningMethods";
+import { FishingMethodsPanel } from "@/components/FishingMethods";
+import { WoodcuttingMethodsPanel } from "@/components/WoodcuttingMethods";
+import { FiremakingMethodsPanel } from "@/components/FiremakingMethods";
+import { ThievingMethodsPanel } from "@/components/ThievingMethods";
 import { WikiImage } from "@/components/WikiImage";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
@@ -86,6 +91,21 @@ const METHOD_SKILLS: {
   },
   { key: "cooking", label: "Cooking", wikiIcon: "Cooking_icon.png", Panel: CookingMethodsPanel },
   { key: "agility", label: "Agility", wikiIcon: "Agility_icon.png", Panel: AgilityMethodsPanel },
+  { key: "mining", label: "Mining", wikiIcon: "Mining_icon.png", Panel: MiningMethodsPanel },
+  { key: "fishing", label: "Fishing", wikiIcon: "Fishing_icon.png", Panel: FishingMethodsPanel },
+  {
+    key: "woodcutting",
+    label: "Woodcutting",
+    wikiIcon: "Woodcutting_icon.png",
+    Panel: WoodcuttingMethodsPanel,
+  },
+  {
+    key: "firemaking",
+    label: "Firemaking",
+    wikiIcon: "Firemaking_icon.png",
+    Panel: FiremakingMethodsPanel,
+  },
+  { key: "thieving", label: "Thieving", wikiIcon: "Thieving_icon.png", Panel: ThievingMethodsPanel },
 ];
 
 export const Route = createFileRoute("/methods")({

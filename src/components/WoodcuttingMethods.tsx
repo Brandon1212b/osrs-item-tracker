@@ -1,9 +1,9 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
-import { CRAFTING_METHODS } from "@/lib/crafting-methods";
+import { WOODCUTTING_METHODS } from "@/lib/woodcutting-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
-export function CraftingMethodsPanel({
+export function WoodcuttingMethodsPanel({
   rowsByName,
   trendsById,
   moneyPerHour,
@@ -18,11 +18,11 @@ export function CraftingMethodsPanel({
 }) {
   return (
     <SkillingMethodsPanel
-      title="Crafting methods"
-      skillKey="crafting"
-      skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
-      methods={CRAFTING_METHODS}
+      title="Woodcutting methods"
+      skillKey="woodcutting"
+      skillLabel="Woodcutting"
+      description="Standard trees through redwood / ironwood / rosewood. Rates from wiki focused values (non tick-perfect)."
+      methods={WOODCUTTING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
