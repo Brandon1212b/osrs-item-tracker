@@ -82,19 +82,19 @@ function degrimeMethods(): HerbloreMethod[] {
   return HERBS.map(([grimy, clean, level, xp]) => ({
     id: `degrime-${clean.toLowerCase().replace(/ /g, "-")}`,
     label: `Degrime ${clean}`,
-    level,
-    xp: (xp / 2) * DEGRIME_HERBS,
-    actionsPerHour: DEGRIME_CASTS_PER_HOUR,
+    level: Math.max(level, 70), // Degrime requires 70 Magic; herb clean req still applies
+    xp: xp / 2,
+    // One "action" = one herb cleaned; rate = casts × herbs per cast
+    actionsPerHour: DEGRIME_CASTS_PER_HOUR * DEGRIME_HERBS,
     inputs: [
-      { name: grimy, qty: DEGRIME_HERBS },
-      { name: "Law rune", qty: 4 },
+      { name: grimy, qty: 1 },
+      { name: "Law rune", qty: 4 / DEGRIME_HERBS }, // 4 law / 27 herbs
     ],
-    output: { name: clean, qty: DEGRIME_HERBS },
+    output: { name: clean, qty: 1 },
   }));
 }
 
 export const HERBLORE_METHODS: HerbloreMethod[] = [
-  // —— Potions ——
   {
     id: "guthix-rest",
     label: "Guthix rest(3)",
@@ -103,9 +103,9 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     actionsPerHour: GUTHIX_APH,
     inputs: [
       { name: "Cup of hot water", qty: 1 },
-      { name: "Guam leaf", qty: 2 },
-      { name: "Marrentill", qty: 1 },
-      { name: "Harralander", qty: 1 },
+      { name: "Harralander", qty: 1, isSecondary: true },
+      { name: "Guam leaf", qty: 1, isSecondary: true },
+      { name: "Marrentill", qty: 1, isSecondary: true },
     ],
     output: { name: "Guthix rest(3)", qty: 1 },
   },
@@ -232,7 +232,7 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
   {
     id: "armadyl-brew",
     label: "Armadyl brew(3)",
-    level: 89,
+    level: 84,
     xp: 205,
     actionsPerHour: POTION_APH,
     inputs: [
@@ -256,6 +256,68 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     output: { name: "Super combat potion(4)", qty: 1 },
   },
 
+  // —— Divine potions (crystal dust + base potion) ——
+  {
+    id: "divine-super-combat",
+    label: "Divine super combat potion(4)",
+    level: 97,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Super combat potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine super combat potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-bastion",
+    label: "Divine bastion potion(4)",
+    level: 86,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Bastion potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine bastion potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-battlemage",
+    label: "Divine battlemage potion(4)",
+    level: 86,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Battlemage potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine battlemage potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-magic",
+    label: "Divine magic potion(4)",
+    level: 78,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Magic potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine magic potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-ranging",
+    label: "Divine ranging potion(4)",
+    level: 74,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Ranging potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine ranging potion(4)", qty: 1 },
+  },
+
   // —— Manual herb cleaning (wiki: 10,000/h) ——
   ...manualCleanMethods(),
 
@@ -269,7 +331,6 @@ export function herbloreMethodItemNames(): string[] {
     for (const p of m.inputs) names.add(p.name);
     names.add(m.output.name);
   }
-  // Charge cost is derived from live Amulet of chemistry price
   names.add("Amulet of chemistry");
   return [...names];
 }
