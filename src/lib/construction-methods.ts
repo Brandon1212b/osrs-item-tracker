@@ -27,6 +27,36 @@ export type ConstructionMethod = {
 };
 
 export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
+  // Oak larders — main mid method 33–52
+  {
+    id: "oak-larder",
+    label: "Oak larder",
+    level: 33,
+    xp: 480,
+    actionsPerHour: 900, // ~430k xp/h with butler
+    inputs: [{ name: "Oak plank", qty: 8 }],
+    output: null,
+  },
+  // Oak dining table — cheaper oak alternative
+  {
+    id: "oak-dining-table",
+    label: "Oak dining table",
+    level: 33,
+    xp: 240,
+    actionsPerHour: 1100,
+    inputs: [{ name: "Oak plank", qty: 4 }],
+    output: null,
+  },
+  // Teak armchair — teak training before mythical cape / tables
+  {
+    id: "teak-armchair",
+    label: "Teak armchair",
+    level: 35,
+    xp: 180,
+    actionsPerHour: 1200,
+    inputs: [{ name: "Teak plank", qty: 2 }],
+    output: null,
+  },
   // Mounted mythical cape — 3 teak planks (cape returned), ~430k xp/h
   // Requires Dragon Slayer II; level 47 object, demon butler from 50
   {
@@ -79,8 +109,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     output: null,
   },
   // Shipwright workbench products (Sailing) — sellable outputs
-  // https://oldschool.runescape.wiki/w/Hull_parts
-  // https://oldschool.runescape.wiki/w/Mahogany_repair_kit
   {
     id: "mahogany-hull-parts",
     label: "Mahogany hull parts",
@@ -95,7 +123,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     label: "Mahogany repair kit",
     level: 47,
     xp: 210,
-    // ~1200 kits/h → 2 kits per action → 600 actions/h
     actionsPerHour: 600,
     inputs: [
       { name: "Mahogany plank", qty: 2 },
