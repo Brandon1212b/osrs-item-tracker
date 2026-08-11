@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { HERBLORE_METHODS } from "@/lib/herblore-methods";
+import { MIXOLOGY_METHODS } from "@/lib/mixology-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -21,8 +22,9 @@ export function HerbloreMethodsPanel({
       title="Herblore methods"
       skillKey="herblore"
       skillLabel="Herblore"
-      description="Prayer / super potions, super combat and cleaning herbs. ~2500 potions/h focused rates."
+      description="Prayer / super potions, super combat, divine potions, herb cleaning, and Mastering Mixology."
       methods={HERBLORE_METHODS}
+      activities={MIXOLOGY_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

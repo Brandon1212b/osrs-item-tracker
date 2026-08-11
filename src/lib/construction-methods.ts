@@ -15,20 +15,40 @@ export type ConstructionMethod = {
   id: string;
   label: string;
   level: number;
-  /** XP per action */
   xp: number;
-  /** Actions per hour (wiki / focused rate) */
   actionsPerHour: number;
   inputs: MethodPart[];
-  /**
-   * GE-sellable product. null = materials consumed (build + remove in POH).
-   */
   output: MethodPart | null;
 };
 
 export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
-  // Mounted mythical cape — 3 teak planks (cape returned), ~430k xp/h
-  // Requires Dragon Slayer II; level 47 object, demon butler from 50
+  {
+    id: "oak-larder",
+    label: "Oak larder",
+    level: 33,
+    xp: 480,
+    actionsPerHour: 900,
+    inputs: [{ name: "Oak plank", qty: 8 }],
+    output: null,
+  },
+  {
+    id: "oak-dining-table",
+    label: "Oak dining table",
+    level: 33,
+    xp: 240,
+    actionsPerHour: 1100,
+    inputs: [{ name: "Oak plank", qty: 4 }],
+    output: null,
+  },
+  {
+    id: "teak-armchair",
+    label: "Teak armchair",
+    level: 35,
+    xp: 180,
+    actionsPerHour: 1200,
+    inputs: [{ name: "Teak plank", qty: 2 }],
+    output: null,
+  },
   {
     id: "mythical-cape",
     label: "Mounted mythical cape",
@@ -38,7 +58,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     inputs: [{ name: "Teak plank", qty: 3 }],
     output: null,
   },
-  // Mahogany tables — 6 mahogany planks, 840 xp, ~900k xp/h
   {
     id: "mahogany-table",
     label: "Mahogany table",
@@ -48,7 +67,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     inputs: [{ name: "Mahogany plank", qty: 6 }],
     output: null,
   },
-  // Teak garden benches — 6 teak planks, 540 xp, ~600k xp/h realistic
   {
     id: "teak-garden-bench",
     label: "Teak garden bench",
@@ -58,7 +76,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     inputs: [{ name: "Teak plank", qty: 6 }],
     output: null,
   },
-  // Oak dungeon doors — 10 oak planks, 600 xp, ~550k xp/h
   {
     id: "oak-door",
     label: "Oak dungeon door",
@@ -68,7 +85,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     inputs: [{ name: "Oak plank", qty: 10 }],
     output: null,
   },
-  // Mahogany gnome benches — 6 mahogany planks, 840 xp, ~1.1m xp/h
   {
     id: "mahogany-gnome-bench",
     label: "Mahogany gnome bench",
@@ -78,9 +94,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     inputs: [{ name: "Mahogany plank", qty: 6 }],
     output: null,
   },
-  // Shipwright workbench products (Sailing) — sellable outputs
-  // https://oldschool.runescape.wiki/w/Hull_parts
-  // https://oldschool.runescape.wiki/w/Mahogany_repair_kit
   {
     id: "mahogany-hull-parts",
     label: "Mahogany hull parts",
@@ -95,7 +108,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
     label: "Mahogany repair kit",
     level: 47,
     xp: 210,
-    // ~1200 kits/h → 2 kits per action → 600 actions/h
     actionsPerHour: 600,
     inputs: [
       { name: "Mahogany plank", qty: 2 },
@@ -106,7 +118,6 @@ export const CONSTRUCTION_METHODS: ConstructionMethod[] = [
   },
 ];
 
-/** All GE item names referenced by construction methods (for price snapshot). */
 export function constructionMethodItemNames(): string[] {
   const names = new Set<string>();
   for (const m of CONSTRUCTION_METHODS) {
