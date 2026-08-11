@@ -22,6 +22,7 @@ import { WoodcuttingMethodsPanel } from "@/components/WoodcuttingMethods";
 import { FiremakingMethodsPanel } from "@/components/FiremakingMethods";
 import { ThievingMethodsPanel } from "@/components/ThievingMethods";
 import { HunterMethodsPanel } from "@/components/HunterMethods";
+import { SailingMethodsPanel } from "@/components/SailingMethods";
 import { WikiImage } from "@/components/WikiImage";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
@@ -108,6 +109,7 @@ const METHOD_SKILLS: {
   },
   { key: "thieving", label: "Thieving", wikiIcon: "Thieving_icon.png", Panel: ThievingMethodsPanel },
   { key: "hunter", label: "Hunter", wikiIcon: "Hunter_icon.png", Panel: HunterMethodsPanel },
+  { key: "sailing", label: "Sailing", wikiIcon: "Sailing_icon.png", Panel: SailingMethodsPanel },
 ];
 
 export const Route = createFileRoute("/methods")({
@@ -125,7 +127,7 @@ export const Route = createFileRoute("/methods")({
       {
         property: "og:description",
         content:
-          "Compare OSRS training methods for Crafting, Construction, Prayer, Smithing, and more — scored against live GE prices.",
+          "Compare OSRS training methods for Crafting, Construction, Prayer, Smithing, Sailing, and more — scored against live GE prices.",
       },
     ],
   }),
@@ -178,90 +180,77 @@ function MethodsPage() {
           level,
         };
       })
-      .filter((s): s is NonNullable<typeof s> => s != null);
+      .filter((x): x is NonNullable<typeof x> => x != null);
   }, [playerSkills, selected]);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:flex-row sm:items-start sm:justify-between sm:px-6 pointer-events-auto isolate">
-        <div className="min-w-0">
-          <h1 className="font-display text-lg font-semibold tracking-wide text-foreground sm:text-xl">
-            Skilling Methods
+    <main className="mx-auto max-w-6xl px-3 pb-16 pt-3 sm:px-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+            Skilling methods
           </h1>
           <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-            Training guides with live GE prices and personalised cost scores.
+            Live GE prices · XP/hr · cost vs your money-making rate
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
-          <form
-            className="flex items-center gap-1.5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              loadRsn(rsnDraft);
-            }}
-          >
-            <div className="relative min-w-0 flex-1 sm:w-36">
-              <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <div className="flex flex-col gap-2 sm:items-end">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <User className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={rsnDraft}
                 onChange={(e) => setRsnDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") loadRsn(rsnDraft);
+                }}
                 placeholder="RSN"
-                className="h-9 pl-8 pr-7 text-xs"
-                aria-label="RuneScape name"
+                className="h-8 w-36 pl-7 text-xs sm:w-44"
+                autoComplete="off"
+                spellCheck={false}
               />
-              {activeRsn && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Clear player"
-                  onClick={clearRsn}
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
             </div>
             <button
-              type="submit"
-              disabled={!rsnDraft.trim() || playerQuery.isFetching}
-              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/60 px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+              type="button"
+              onClick={() => loadRsn(rsnDraft)}
+              className="h-8 rounded-md border border-border/60 bg-secondary/40 px-2.5 text-xs font-medium hover:bg-secondary/60"
             >
-              {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
+              Load
             </button>
-          </form>
-          {playerQuery.isError && (
-            <p className="text-[11px] text-destructive">
-              {(playerQuery.error as Error)?.message ?? "Lookup failed"}
+            {activeRsn && (
+              <button
+                type="button"
+                onClick={clearRsn}
+                className="inline-flex size-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:bg-secondary/50"
+                title="Clear RSN"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+
+          {playerQuery.isFetching && (
+            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Loader2 className="size-3 animate-spin" />
+              Looking up hiscores…
             </p>
           )}
+          {playerQuery.isError && (
+            <p className="text-[11px] text-destructive">Player not found on hiscores.</p>
+          )}
           {playerSkills && skillBarEntries.length > 0 && (
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="truncate text-[10px] font-medium text-muted-foreground">
-                {playerQuery.data?.name ?? activeRsn}
-              </p>
-              <div
-                className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"
-                title={skillBarEntries.map((s) => `${s.label} ${s.level}`).join(" · ")}
-              >
-                {skillBarEntries.map((s) => (
-                  <span
-                    key={s.key}
-                    className="inline-flex items-center gap-0.5 tabular-nums text-[11px] text-muted-foreground"
-                    title={`${s.label} ${s.level}`}
-                  >
-                    <WikiImage
-                      icon={s.icon}
-                      alt=""
-                      width={14}
-                      height={14}
-                      lazy={false}
-                      className="size-3.5 shrink-0"
-                      draggable={false}
-                    />
-                    <span className="font-semibold text-foreground/90">{s.level}</span>
-                  </span>
-                ))}
-              </div>
+            <div className="flex max-w-full flex-wrap items-center gap-1.5">
+              {skillBarEntries.map((s) => (
+                <span
+                  key={s.key}
+                  className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-secondary/30 px-2 py-0.5 text-[11px]"
+                  title={s.label}
+                >
+                  <WikiImage icon={s.icon} alt="" width={14} height={14} className="size-3.5" />
+                  <span className="font-semibold text-foreground/90">{s.level}</span>
+                </span>
+              ))}
             </div>
           )}
         </div>

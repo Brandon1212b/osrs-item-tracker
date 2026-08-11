@@ -33,6 +33,7 @@ export const SKILL_KEYS = [
   "runecraft",
   "hunter",
   "construction",
+  "sailing",
 ] as const;
 
 export type SkillKey = (typeof SKILL_KEYS)[number];
