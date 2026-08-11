@@ -86,14 +86,20 @@ export const HUNTER_METHODS: HunterMethod[] = [
     inputs: [],
     output: { name: "Black salamander", qty: 1 },
   },
+  // Tecu: 344 XP per catch. 999/1000 immature (~130–160 gp), 1/1000 mature (~150–260k gp).
+  // Model expected value so GP/hr isn't wildly overstated.
   {
     id: "tecu-salamander",
     label: "Tecu salamander",
     level: 79,
-    xp: 224,
-    actionsPerHour: 300,
+    xp: 344,
+    actionsPerHour: 380, // ~130k XP/hr focused with 5 traps mid–high level
     inputs: [],
-    output: { name: "Tecu salamander", qty: 1 },
+    output: null,
+    outputs: [
+      { name: "Immature tecu salamander", qty: 0.999 },
+      { name: "Tecu salamander", qty: 0.001 },
+    ],
   },
 
   // ── Pitfall (antelopes) ──────────────────────────────────────────────────
