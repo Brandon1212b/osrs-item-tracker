@@ -89,6 +89,18 @@ export const FISHING_METHODS: FishingMethod[] = [
     inputs: [],
     output: { name: "Raw shark", qty: 1 },
   },
+  // Leechfin — high-intensity method after The Blood Moon Rises.
+  // ~100–130k Fishing XP/hr at full focus (33.2 XP per successful catch).
+  // Can also yield blood sacs / vials of blood when cut.
+  {
+    id: "leechfin",
+    label: "Leechfin",
+    level: 78,
+    xp: 33.2,
+    actionsPerHour: 3500, // ~116k XP/hr focused high-intensity
+    inputs: [],
+    output: null, // primarily XP; optional cut for blood sacs
+  },
   {
     id: "anglerfish",
     label: "Raw anglerfish",
@@ -144,6 +156,18 @@ export const FISHING_METHODS: FishingMethod[] = [
     actionsPerHour: 650, // ~45k AFK mid levels
     inputs: [{ name: "Feather", qty: 1 }],
     output: null,
+  },
+  // Drift net fishing (Fossil Island underwater) — dual Fishing + Hunter.
+  // Models the Fishing side; strong mid-game rates (~70–100k Fishing XP/hr depending on level).
+  // Requires 47 Fishing, 44 Hunter, drift nets, and underwater access.
+  {
+    id: "drift-net",
+    label: "Drift net fishing",
+    level: 47,
+    xp: 80, // approximate average XP per shoal catch (scales with level)
+    actionsPerHour: 950, // ~76k Fishing XP/hr mid; higher at 90+
+    inputs: [{ name: "Drift net", qty: 1 }],
+    output: { name: "Raw shark", qty: 0.3 }, // rough mix of lobster→manta; GE proxy
   },
 ];
 

@@ -98,6 +98,15 @@ export const WOODCUTTING_METHODS: WoodcuttingMethod[] = [
     output: null, // usually chopped for XP; fungi not primary GE model
   },
   {
+    id: "camphor-logs",
+    label: "Camphor logs",
+    level: 66,
+    xp: 143,
+    actionsPerHour: 450,
+    inputs: [],
+    output: { name: "Camphor logs", qty: 1 },
+  },
+  {
     id: "magic-logs",
     label: "Magic logs",
     level: 75,
@@ -105,6 +114,30 @@ export const WOODCUTTING_METHODS: WoodcuttingMethod[] = [
     actionsPerHour: 180,
     inputs: [],
     output: { name: "Magic logs", qty: 1 },
+  },
+  // Bloodwood trees (Vampyrium) — The Blood Moon Rises required.
+  // High-intensity 2-tick method. Sap is untradeable (used for seeking arrows).
+  // Buckets are free from aranei dealers — no GE input cost. Pure XP method.
+  // ~90–100 buckets/hr; 130–210k+ XP/hr with felling axes.
+  {
+    id: "bloodwood",
+    label: "Bloodwood trees",
+    level: 77,
+    xp: 1364, // XP for fully processing a tree (sap collection)
+    actionsPerHour: 140, // ~190k XP/hr focused (higher with crystal felling axe)
+    inputs: [],
+    output: null, // Bucket of bloodwood sap is untradeable
+  },
+  // Engorged bloodwood — lower intensity alternative.
+  // Sap is untradeable; model as pure XP. ~65–70k XP/hr.
+  {
+    id: "engorged-bloodwood",
+    label: "Engorged bloodwood tree",
+    level: 77,
+    xp: 165,
+    actionsPerHour: 420, // ~69k XP/hr focused
+    inputs: [],
+    output: null, // Bucket of bloodwood sap is untradeable
   },
   {
     id: "ironwood-logs",
@@ -132,15 +165,6 @@ export const WOODCUTTING_METHODS: WoodcuttingMethod[] = [
     actionsPerHour: 400,
     inputs: [],
     output: { name: "Rosewood logs", qty: 1 },
-  },
-  {
-    id: "camphor-logs",
-    label: "Camphor logs",
-    level: 66,
-    xp: 143,
-    actionsPerHour: 450,
-    inputs: [],
-    output: { name: "Camphor logs", qty: 1 },
   },
 ];
 

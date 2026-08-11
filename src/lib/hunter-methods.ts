@@ -6,7 +6,7 @@
  * Clockwork is returned on dismantle — never consumed.
  * Nest EV uses Bird nest (empty) as the tradeable proxy (most common nest type).
  *
- * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs (2026).
+ * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs + Hunter training (2026).
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -65,6 +65,62 @@ export const HUNTER_METHODS: HunterMethod[] = [
     actionsPerHour: 350, // wilderness risk; focused
     inputs: [],
     output: { name: "Black chinchompa", qty: 1 },
+  },
+
+  // ── Box traps / salamanders ──────────────────────────────────────────────
+  {
+    id: "red-salamander",
+    label: "Red salamander",
+    level: 59,
+    xp: 272,
+    actionsPerHour: 280,
+    inputs: [],
+    output: { name: "Red salamander", qty: 1 },
+  },
+  {
+    id: "black-salamander",
+    label: "Black salamander",
+    level: 67,
+    xp: 319.5,
+    actionsPerHour: 260,
+    inputs: [],
+    output: { name: "Black salamander", qty: 1 },
+  },
+  // Tecu: 344 XP per catch. 999/1000 immature (~130–160 gp), 1/1000 mature (~150–260k gp).
+  // Model expected value so GP/hr isn't wildly overstated.
+  {
+    id: "tecu-salamander",
+    label: "Tecu salamander",
+    level: 79,
+    xp: 344,
+    actionsPerHour: 380, // ~130k XP/hr focused with 5 traps mid–high level
+    inputs: [],
+    output: null,
+    outputs: [
+      { name: "Immature tecu salamander", qty: 0.999 },
+      { name: "Tecu salamander", qty: 0.001 },
+    ],
+  },
+
+  // ── Pitfall (antelopes) ──────────────────────────────────────────────────
+  // Strong money-makers; 100% catch on moonlight once lured.
+  {
+    id: "sunlight-antelope",
+    label: "Sunlight antelope",
+    level: 72,
+    xp: 375,
+    actionsPerHour: 220,
+    inputs: [],
+    output: { name: "Sunlight antelope antler", qty: 1 },
+  },
+  {
+    id: "moonlight-antelope",
+    label: "Moonlight antelope",
+    level: 91,
+    xp: 400,
+    actionsPerHour: 250, // 200–300 catches/hr realistic; high GP from antlers
+    inputs: [],
+    output: { name: "Moonlight antelope antler", qty: 1 },
   },
 
   // ── Birdhouse runs (effective rates) ─────────────────────────────────────
