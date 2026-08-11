@@ -189,7 +189,7 @@ export function MethodRow({
             if (outs.length === 0) return null;
             return (
               <>
-                <span className="shrink-0 px-0.5 text-muted-foreground">{"\\u2192"}</span>
+                <span className="shrink-0 px-0.5 text-muted-foreground">→</span>
                 {outs.map((part, idx) => (
                   <span
                     key={`out-${part.name}-${idx}`}
