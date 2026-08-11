@@ -1,19 +1,10 @@
 /**
  * Herblore training methods (P2P).
  * Rates from https://oldschool.runescape.wiki/w/Herblore_training
- *
- * Actions/hour assumptions (wiki):
- * - 2,500 standard 14×14 potions
- * - 2,750 for 27×1 (stamina potions)
- * - 2,166 for super combat potions
- * - ~1,400 for Guthix rest (3-dose cups)
- * - 10,000 for manual herb cleaning (auto-clean ≈ 3,000 / 30% of that)
- * - ~600 Degrime casts/h (full inventory of grimy herbs per cast)
  */
 export type MethodPart = {
   name: string;
   qty: number;
-  /** Secondary ingredient — Prescription goggles can skip consuming it. */
   isSecondary?: boolean;
 };
 
@@ -27,22 +18,14 @@ export type HerbloreMethod = {
   output: MethodPart;
 };
 
-/** Wiki: 2,500 standard 14×14 potions/h */
 const POTION_APH = 2500;
-/** Wiki: 2,750 for 27×1 (stamina) */
 const STAMINA_APH = 2750;
-/** Wiki: 2,166 for super combat */
 const SUPER_COMBAT_APH = 2166;
-/** Wiki: ~1,400 Guthix rest (3)/h */
 const GUTHIX_APH = 1400;
-/** Wiki XP table assumes 10,000 herbs cleaned/h (manual / fast clicking) */
 const CLEAN_APH = 10_000;
-/** Full inventory of grimy herbs per Degrime cast (runes stack). */
 const DEGRIME_HERBS = 27;
-/** Wiki: ~600 Degrime casts/h */
 const DEGRIME_CASTS_PER_HOUR = 600;
 
-/** Standard tradeable herbs: [grimy name, clean name, level, clean XP]. */
 const HERBS: [string, string, number, number][] = [
   ["Grimy guam leaf", "Guam leaf", 3, 2.5],
   ["Grimy marrentill", "Marrentill", 5, 3.8],
@@ -73,11 +56,6 @@ function manualCleanMethods(): HerbloreMethod[] {
   }));
 }
 
-/**
- * Degrime (Arceuus): half the normal clean XP per herb.
- * 4 law runes per cast (earth runes free via staff of earth); ~600 casts/h × 27 herbs.
- * https://oldschool.runescape.wiki/w/Degrime
- */
 function degrimeMethods(): HerbloreMethod[] {
   return HERBS.map(([grimy, clean, level, xp]) => ({
     id: `degrime-${clean.toLowerCase().replace(/ /g, "-")}`,
@@ -94,7 +72,6 @@ function degrimeMethods(): HerbloreMethod[] {
 }
 
 export const HERBLORE_METHODS: HerbloreMethod[] = [
-  // —— Potions ——
   {
     id: "guthix-rest",
     label: "Guthix rest(3)",
@@ -255,11 +232,67 @@ export const HERBLORE_METHODS: HerbloreMethod[] = [
     ],
     output: { name: "Super combat potion(4)", qty: 1 },
   },
-
-  // —— Manual herb cleaning (wiki: 10,000/h) ——
+  {
+    id: "divine-super-combat",
+    label: "Divine super combat potion(4)",
+    level: 97,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Super combat potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine super combat potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-bastion",
+    label: "Divine bastion potion(4)",
+    level: 86,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Bastion potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine bastion potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-battlemage",
+    label: "Divine battlemage potion(4)",
+    level: 86,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Battlemage potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine battlemage potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-ranging",
+    label: "Divine ranging potion(4)",
+    level: 74,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Ranging potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine ranging potion(4)", qty: 1 },
+  },
+  {
+    id: "divine-magic",
+    label: "Divine magic potion(4)",
+    level: 78,
+    xp: 2,
+    actionsPerHour: 2500,
+    inputs: [
+      { name: "Magic potion(4)", qty: 1 },
+      { name: "Crystal dust", qty: 1, isSecondary: true },
+    ],
+    output: { name: "Divine magic potion(4)", qty: 1 },
+  },
   ...manualCleanMethods(),
-
-  // —— Degrime (Arceuus, half clean XP, ~600 casts/h) ——
   ...degrimeMethods(),
 ];
 
@@ -269,7 +302,6 @@ export function herbloreMethodItemNames(): string[] {
     for (const p of m.inputs) names.add(p.name);
     names.add(m.output.name);
   }
-  // Charge cost is derived from live Amulet of chemistry price
   names.add("Amulet of chemistry");
   return [...names];
 }
