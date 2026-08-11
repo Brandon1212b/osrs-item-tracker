@@ -22,7 +22,7 @@ export function FishingMethodsPanel({
       title="Fishing methods"
       skillKey="fishing"
       skillLabel="Fishing"
-      description="Net, cage, fly and harpoon fish plus Tempoross. Rates from wiki focused values. Sorted by what each XP costs you."
+      description="Core fish, barbarian, karambwan, minnows, eels, Leechfin (high-intensity), and Drift net. Tempoross lives under Activities. Rates from wiki focused values."
       methods={FISHING_METHODS}
       activities={activitiesForSkill("fishing")}
       rowsByName={rowsByName}

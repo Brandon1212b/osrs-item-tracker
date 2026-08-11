@@ -22,7 +22,7 @@ export function HunterMethodsPanel({
       title="Hunter methods"
       skillKey="hunter"
       skillLabel="Hunter"
-      description="Chinchompas, birdhouse runs (effective rates), and Herbiboar. Birdhouse nest loot can be expanded later. Sorted by what each XP costs you."
+      description="Chinchompas, salamanders, sunlight/moonlight antelopes, birdhouse runs (effective rates), and Herbiboar. Sorted by what each XP costs you."
       methods={HUNTER_METHODS}
       activities={activitiesForSkill("hunter")}
       rowsByName={rowsByName}

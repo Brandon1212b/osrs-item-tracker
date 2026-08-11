@@ -21,7 +21,7 @@ export function WoodcuttingMethodsPanel({
       title="Woodcutting methods"
       skillKey="woodcutting"
       skillLabel="Woodcutting"
-      description="Standard trees through redwood / ironwood / rosewood. Rates from wiki focused values (non tick-perfect)."
+      description="Standard trees through redwood / ironwood / rosewood, plus Bloodwood & Engorged bloodwood (Vampyrium). Rates from wiki focused values (non tick-perfect)."
       methods={WOODCUTTING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
