@@ -56,6 +56,12 @@ function writeList(items: WatchItem[]) {
   }
 }
 
+function makeId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `w-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 /** Live watchlist from localStorage (this browser only). */
 export function useWatchlist(_enabled = true) {
   const [data, setData] = useState<WatchItem[]>([]);
@@ -91,10 +97,7 @@ export function useWatchlistMutations() {
           return;
         }
         const next: WatchItem = {
-          id:
-            typeof crypto !== "undefined" && "randomUUID" in crypto
-              ? crypto.randomUUID()
-              : `w-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id: makeId(),
           item_id: input.itemId,
           item_name: input.itemName,
           target_price: null,
@@ -103,6 +106,40 @@ export function useWatchlistMutations() {
         };
         writeList([next, ...list]);
         opts?.onSuccess?.();
+      } catch (e) {
+        opts?.onError?.(e instanceof Error ? e : new Error(String(e)));
+      } finally {
+        setPending(false);
+      }
+    },
+  };
+
+  /** Add multiple GE items at once (skips duplicates). Returns count of newly added. */
+  const addMany = {
+    isPending: pending,
+    mutate: (
+      inputs: { itemId: number; itemName: string }[],
+      opts?: { onSuccess?: (added: number) => void; onError?: (e: Error) => void },
+    ) => {
+      setPending(true);
+      try {
+        const list = readList();
+        const existing = new Set(list.map((w) => w.item_id));
+        const fresh: WatchItem[] = [];
+        for (const input of inputs) {
+          if (existing.has(input.itemId)) continue;
+          existing.add(input.itemId);
+          fresh.push({
+            id: makeId(),
+            item_id: input.itemId,
+            item_name: input.itemName,
+            target_price: null,
+            drop_pct: null,
+            created_at: new Date().toISOString(),
+          });
+        }
+        if (fresh.length > 0) writeList([...fresh, ...list]);
+        opts?.onSuccess?.(fresh.length);
       } catch (e) {
         opts?.onError?.(e instanceof Error ? e : new Error(String(e)));
       } finally {
@@ -153,7 +190,7 @@ export function useWatchlistMutations() {
     },
   };
 
-  return { add, remove, update };
+  return { add, addMany, remove, update };
 }
 
 /** Local RSN only (same key the rest of the app already uses). */
