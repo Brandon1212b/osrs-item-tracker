@@ -19,6 +19,7 @@ import { firemakingMethodItemNames } from "./firemaking-methods";
 import { hunterMethodItemNames } from "./hunter-methods";
 import { sailingMethodItemNames } from "./sailing-methods";
 import { sailingActivityItemNames } from "./sailing-activity-methods";
+import { activityMethodItemNames } from "./activity-methods";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -45,6 +46,7 @@ const allNames = () => {
       ...hunterMethodItemNames(),
       ...sailingMethodItemNames(),
       ...sailingActivityItemNames(),
+      ...activityMethodItemNames(),
     ]),
   ];
 };

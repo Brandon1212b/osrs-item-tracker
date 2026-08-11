@@ -1,11 +1,9 @@
 /**
  * Activity / minigame training methods that do not fit simple input→output.
  *
- * Use when rewards are multi-item, points-based, or quality-scored.
- * Valuation: expectedLootGpPerHour + itemized rewards − consumable costs.
- *
- * Level-scaled activities use a rate table; the UI shows a single card
- * resolved to the highest band the player can access.
+ * Valuation: Σ(reward GE × qty/hr) + expectedLootGpPerHour − consumable costs.
+ * Itemized rewards track the live GE snapshot; residual EV covers uniques,
+ * shop conversions, and level-scaled leftovers.
  *
  * Sources: oldschool.runescape.wiki training + money-making guides (2026).
  */
@@ -47,16 +45,33 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
     level: 50,
     secondarySkill: "woodcutting",
     rateBands: [
-      { level: 50, xpPerHour: 161_000, expectedLootGpPerHour: 150_000, secondaryXpPerHour: 10_000 },
-      { level: 70, xpPerHour: 226_000, expectedLootGpPerHour: 180_000, secondaryXpPerHour: 15_000 },
-      { level: 90, xpPerHour: 290_000, expectedLootGpPerHour: 220_000, secondaryXpPerHour: 19_000 },
-      { level: 99, xpPerHour: 320_000, expectedLootGpPerHour: 250_000, secondaryXpPerHour: 21_000 },
+      { level: 50, xpPerHour: 161_000, expectedLootGpPerHour: 40_000, secondaryXpPerHour: 10_000 },
+      { level: 70, xpPerHour: 226_000, expectedLootGpPerHour: 50_000, secondaryXpPerHour: 15_000 },
+      { level: 90, xpPerHour: 290_000, expectedLootGpPerHour: 60_000, secondaryXpPerHour: 19_000 },
+      { level: 99, xpPerHour: 320_000, expectedLootGpPerHour: 70_000, secondaryXpPerHour: 21_000 },
     ],
     consumables: [],
-    rewards: [],
+    // ~30–36 crates/hr mass; pages dominate tradeable EV. Residual = uniques
+    // (tome/pyro pieces sold to Ignisia) + skill-scaled supply table variance.
+    rewards: [
+      { name: "Burnt page", expectedQtyPerHour: 15 },
+      { name: "Magic logs", expectedQtyPerHour: 12 },
+      { name: "Yew logs", expectedQtyPerHour: 17 },
+      { name: "Mahogany logs", expectedQtyPerHour: 20 },
+      { name: "Maple logs", expectedQtyPerHour: 17 },
+      { name: "Raw shark", expectedQtyPerHour: 10 },
+      { name: "Raw swordfish", expectedQtyPerHour: 10 },
+      { name: "Uncut diamond", expectedQtyPerHour: 4 },
+      { name: "Uncut ruby", expectedQtyPerHour: 5 },
+      { name: "Runite ore", expectedQtyPerHour: 0.7 },
+      { name: "Adamantite ore", expectedQtyPerHour: 2.7 },
+      { name: "Mithril ore", expectedQtyPerHour: 6.8 },
+      { name: "Gold ore", expectedQtyPerHour: 11 },
+      { name: "Coal", expectedQtyPerHour: 8 },
+    ],
     intensity: "low",
     notes:
-      "Official worlds (~4 min games). Roots only (no fletch). Reward cart EV excl. rare uniques. Rates scale with Firemaking.",
+      "Live GE on pages/logs/ores/fish. Residual ~40–70k for tome/pyro EV + herb/seed variance. Mass worlds, roots only (no fletch). Rates scale with Firemaking.",
   },
 ];
 
@@ -68,17 +83,32 @@ export const TEMPOROSS_METHODS: ActivityMethod[] = [
     level: 35,
     secondarySkill: "cooking",
     rateBands: [
-      { level: 35, xpPerHour: 22_000, expectedLootGpPerHour: 120_000, secondaryXpPerHour: 2_000 },
-      { level: 70, xpPerHour: 52_000, expectedLootGpPerHour: 220_000, secondaryXpPerHour: 4_000 },
-      { level: 80, xpPerHour: 56_000, expectedLootGpPerHour: 280_000, secondaryXpPerHour: 5_000 },
-      { level: 90, xpPerHour: 60_000, expectedLootGpPerHour: 320_000, secondaryXpPerHour: 5_500 },
-      { level: 99, xpPerHour: 66_000, expectedLootGpPerHour: 340_000, secondaryXpPerHour: 6_000 },
+      { level: 35, xpPerHour: 22_000, expectedLootGpPerHour: 40_000, secondaryXpPerHour: 2_000 },
+      { level: 70, xpPerHour: 52_000, expectedLootGpPerHour: 50_000, secondaryXpPerHour: 4_000 },
+      { level: 80, xpPerHour: 56_000, expectedLootGpPerHour: 55_000, secondaryXpPerHour: 5_000 },
+      { level: 90, xpPerHour: 60_000, expectedLootGpPerHour: 60_000, secondaryXpPerHour: 5_500 },
+      { level: 99, xpPerHour: 66_000, expectedLootGpPerHour: 65_000, secondaryXpPerHour: 6_000 },
     ],
     consumables: [],
-    rewards: [],
+    // Wiki MMG ~60 permits/hr, 81+ Fishing. Residual = caskets/soaked pages/uniques/spirit flakes EV.
+    rewards: [
+      { name: "Raw shark", expectedQtyPerHour: 101 },
+      { name: "Raw swordfish", expectedQtyPerHour: 190 },
+      { name: "Raw sea turtle", expectedQtyPerHour: 56 },
+      { name: "Raw manta ray", expectedQtyPerHour: 38 },
+      { name: "Raw bass", expectedQtyPerHour: 295 },
+      { name: "Plank", expectedQtyPerHour: 66 },
+      { name: "Oak plank", expectedQtyPerHour: 37.5 },
+      { name: "Steel nails", expectedQtyPerHour: 300 },
+      { name: "Feather", expectedQtyPerHour: 900 },
+      { name: "Fishing bait", expectedQtyPerHour: 900 },
+      { name: "Seaweed", expectedQtyPerHour: 60 },
+      { name: "Soaked page", expectedQtyPerHour: 7.82 },
+      { name: "Dragon harpoon", expectedQtyPerHour: 0.0075 },
+    ],
     intensity: "medium",
     notes:
-      "Mass worlds, cook fish for permits. Loot EV ~wiki MMG (~60 permits/hr at high level). Crystal harpoon / solo XP focus is faster XP, lower loot.",
+      "Live GE on fish/planks/pages. Residual ~40–65k for reward-pool caskets, tackle box/fish barrel, tome of water, spirit flakes. ~60 permits/hr mass cook.",
   },
 ];
 
@@ -89,19 +119,41 @@ export const GOTR_METHODS: ActivityMethod[] = [
     skillKey: "runecraft",
     level: 27,
     rateBands: [
-      { level: 27, xpPerHour: 25_000, expectedLootGpPerHour: 80_000 },
-      { level: 40, xpPerHour: 32_000, expectedLootGpPerHour: 120_000 },
-      { level: 50, xpPerHour: 40_000, expectedLootGpPerHour: 180_000 },
-      { level: 65, xpPerHour: 48_000, expectedLootGpPerHour: 250_000 },
-      { level: 75, xpPerHour: 55_000, expectedLootGpPerHour: 320_000 },
-      { level: 85, xpPerHour: 62_000, expectedLootGpPerHour: 400_000 },
-      { level: 99, xpPerHour: 68_000, expectedLootGpPerHour: 450_000 },
+      { level: 27, xpPerHour: 25_000, expectedLootGpPerHour: 20_000 },
+      { level: 40, xpPerHour: 32_000, expectedLootGpPerHour: 25_000 },
+      { level: 50, xpPerHour: 40_000, expectedLootGpPerHour: 30_000 },
+      { level: 65, xpPerHour: 48_000, expectedLootGpPerHour: 35_000 },
+      { level: 75, xpPerHour: 55_000, expectedLootGpPerHour: 40_000 },
+      { level: 85, xpPerHour: 62_000, expectedLootGpPerHour: 50_000 },
+      { level: 99, xpPerHour: 68_000, expectedLootGpPerHour: 55_000 },
     ],
-    consumables: [],
-    rewards: [],
+    consumables: [
+      { name: "Astral rune", qty: 6 }, // NPC Contact + Magic Imbue ballpark
+      { name: "Cosmic rune", qty: 12 },
+      { name: "Binding necklace", qty: 0.75 },
+    ],
+    // Wiki MMG at 85 RC, ~30 pulls/hr. Residual = talismans / intricate pouch / needle variance.
+    rewards: [
+      { name: "Blood rune", expectedQtyPerHour: 604 },
+      { name: "Death rune", expectedQtyPerHour: 604 },
+      { name: "Law rune", expectedQtyPerHour: 604 },
+      { name: "Nature rune", expectedQtyPerHour: 667 },
+      { name: "Chaos rune", expectedQtyPerHour: 253 },
+      { name: "Mud rune", expectedQtyPerHour: 2_419 },
+      { name: "Steam rune", expectedQtyPerHour: 1_814 },
+      { name: "Cosmic rune", expectedQtyPerHour: 60 },
+      { name: "Air rune", expectedQtyPerHour: 432 },
+      { name: "Water rune", expectedQtyPerHour: 432 },
+      { name: "Earth rune", expectedQtyPerHour: 432 },
+      { name: "Fire rune", expectedQtyPerHour: 432 },
+      { name: "Mind rune", expectedQtyPerHour: 312 },
+      { name: "Body rune", expectedQtyPerHour: 110 },
+      { name: "Abyssal pearls", expectedQtyPerHour: 64.8 },
+      { name: "Intricate pouch", expectedQtyPerHour: 1.2 },
+    ],
     intensity: "medium",
     notes:
-      "Temple of the Eye required. Mass worlds; XP/GP scale with pouches and altar access. Reward Guardian EV excl. rare uniques (needle/pet).",
+      "Live GE on runes/pearls/pouches. Residual ~20–55k for talismans + low-level access variance. Assumes combo runes + pearl shop conversion at high RC.",
   },
 ];
 
@@ -122,7 +174,7 @@ export const GIANTS_FOUNDRY_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "medium",
     notes:
-      "Optimal moulds, average commissions, no Smiths' Uniform. Net GP is Kovac payout minus typical bar cost (bars path). Using scavenged items is much cheaper for ironmen.",
+      "Net GP is Kovac payout minus bar cost (path-dependent). Kept as residual EV — itemizing every alloy mix is unstable. Scavenged items are much cheaper for ironmen.",
   },
 ];
 
@@ -143,7 +195,7 @@ export const MAHOGANY_HOMES_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "medium",
     notes:
-      "Contract tier follows Construction level (Beginner→Expert). Much cheaper GP/XP than POH tables. Plank sack + teleports push XP higher. Net GP is material cost (no sell-back).",
+      "Material cost only (no sell-back). Residual cost EV by contract tier. Plank sack + teleports push XP higher.",
   },
 ];
 
@@ -154,20 +206,29 @@ export const MOTHERLODE_METHODS: ActivityMethod[] = [
     skillKey: "mining",
     level: 30,
     rateBands: [
-      { level: 30, xpPerHour: 13_000, expectedLootGpPerHour: 30_000 },
-      { level: 40, xpPerHour: 26_000, expectedLootGpPerHour: 36_000 },
-      { level: 50, xpPerHour: 33_000, expectedLootGpPerHour: 53_000 },
-      { level: 61, xpPerHour: 45_000, expectedLootGpPerHour: 70_000 },
-      { level: 70, xpPerHour: 48_000, expectedLootGpPerHour: 91_000 },
-      { level: 80, xpPerHour: 52_000, expectedLootGpPerHour: 115_000 },
-      { level: 90, xpPerHour: 59_000, expectedLootGpPerHour: 260_000 },
-      { level: 99, xpPerHour: 64_000, expectedLootGpPerHour: 380_000 },
+      // Residual approximates lower-tier ore mix before full GE list applies cleanly.
+      { level: 30, xpPerHour: 13_000, expectedLootGpPerHour: 25_000 },
+      { level: 40, xpPerHour: 26_000, expectedLootGpPerHour: 30_000 },
+      { level: 50, xpPerHour: 33_000, expectedLootGpPerHour: 40_000 },
+      { level: 61, xpPerHour: 45_000, expectedLootGpPerHour: 15_000 },
+      { level: 70, xpPerHour: 48_000, expectedLootGpPerHour: 10_000 },
+      { level: 80, xpPerHour: 52_000, expectedLootGpPerHour: 12_000 },
+      { level: 90, xpPerHour: 59_000, expectedLootGpPerHour: 16_000 },
+      { level: 99, xpPerHour: 64_000, expectedLootGpPerHour: 16_500 },
     ],
     consumables: [],
-    rewards: [],
+    // Wiki MMG at 99 / 550 pay-dirt/hr. Residual ≈ golden nugget → soft clay pack EV.
+    // Lower bands use higher residual because runite/addy rates are overstated until 70/85.
+    rewards: [
+      { name: "Coal", expectedQtyPerHour: 135 },
+      { name: "Gold ore", expectedQtyPerHour: 133 },
+      { name: "Mithril ore", expectedQtyPerHour: 148 },
+      { name: "Adamantite ore", expectedQtyPerHour: 104 },
+      { name: "Runite ore", expectedQtyPerHour: 12.49 },
+    ],
     intensity: "low",
     notes:
-      "AFK pay-dirt → random ores + golden nuggets. Upper level at 72 Mining. Profit jumps hard once runite enters the table (85+). Prospector outfit assumed at higher bands.",
+      "Live GE on ores (wiki 99 rates). Residual ~nugget→soft clay value. Lower levels: ore mix is optimistic until 70 (addy) / 85 (rune). Upper level + prospector assumed at higher bands.",
   },
 ];
 
@@ -189,7 +250,7 @@ export const VOLCANIC_MINE_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "high",
     notes:
-      "Fossil Island team minigame. XP/points scale with team quality and Mining level. Loot EV from ore shop + fossils; highly variable. Best non–3-tick Mining XP when coordinated.",
+      "Points → ore shop + fossils; team-dependent. Kept as residual EV (no stable per-item MMG qty/hr).",
   },
 ];
 
@@ -201,23 +262,30 @@ export const BLAST_MINE_METHODS: ActivityMethod[] = [
     level: 43,
     secondarySkill: "firemaking",
     rateBands: [
-      { level: 43, xpPerHour: 40_000, expectedLootGpPerHour: 80_000, secondaryXpPerHour: 16_500 },
-      { level: 70, xpPerHour: 55_000, expectedLootGpPerHour: 250_000, secondaryXpPerHour: 16_500 },
-      { level: 75, xpPerHour: 70_000, expectedLootGpPerHour: 450_000, secondaryXpPerHour: 16_500 },
-      { level: 85, xpPerHour: 85_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 16_500 },
-      { level: 99, xpPerHour: 95_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 16_500 },
+      { level: 43, xpPerHour: 40_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
+      { level: 70, xpPerHour: 55_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
+      { level: 75, xpPerHour: 70_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
+      { level: 85, xpPerHour: 85_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
+      { level: 99, xpPerHour: 95_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
     ],
-    consumables: [],
-    rewards: [],
+    consumables: [{ name: "Dynamite", qty: 330 }],
+    // Wiki MMG assumes 75+ for runite. Lower levels overstated on runite until 75.
+    rewards: [
+      { name: "Runite ore", expectedQtyPerHour: 44.12 },
+      { name: "Adamantite ore", expectedQtyPerHour: 135 },
+      { name: "Mithril ore", expectedQtyPerHour: 157 },
+      { name: "Gold ore", expectedQtyPerHour: 97.32 },
+      { name: "Coal", expectedQtyPerHour: 61.84 },
+    ],
     intensity: "high",
     notes:
-      "Requires dynamite (cost baked into net GP). Runite available from 75 effective (65 +10 boost). ~16.5k Firemaking XP/hr from lighting. Prospector for collect XP.",
+      "Live GE on ores − dynamite cost. Wiki ~330 dynamite/hr. Runite from 75 effective (65+10 boost). ~16.5k FM XP/hr from lighting.",
   },
 ];
 
 /**
  * Shooting Stars / crashed stars — ultra-AFK stardust mining.
- * XP from community guides; GP from stardust shop + gem rolls.
+ * XP from community guides; GP from stardust shop + gem rolls (residual).
  */
 export const SHOOTING_STARS_METHODS: ActivityMethod[] = [
   {
@@ -238,7 +306,7 @@ export const SHOOTING_STARS_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "low",
     notes:
-      "Ultra-AFK (~7 min between clicks per tier). Find stars via CC/telescope. Stardust → Dusuri shop (soft clay packs / gem bags). Size 6+ stars need 60 Mining to start.",
+      "Stardust → Dusuri shop (soft clay packs / gem bags). Residual EV only — stardust itself is untradeable.",
   },
 ];
 
@@ -260,14 +328,10 @@ export const PYRAMID_PLUNDER_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "high",
     notes:
-      "Icthlarin's Little Helper for Sophanem. Official world + last rooms for best XP. Pharaoh's sceptre skips entry. Artefact/sceptre EV in loot estimate.",
+      "Artefact/sceptre EV in residual loot estimate. No stable per-item MMG qty/hr for all rooms.",
   },
 ];
 
-/**
- * Stealing artefacts — Port Piscarilius (Captain Khaled).
- * XP scales with Thieving level; Book of the Dead / memoirs for teleports.
- */
 export const STEALING_ARTEFACTS_METHODS: ActivityMethod[] = [
   {
     id: "stealing-artefacts",
@@ -286,14 +350,10 @@ export const STEALING_ARTEFACTS_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "medium",
     notes:
-      "Port Piscarilius. Lockpick + stamina recommended. Book of the Dead teleports push ~55 artefacts/hr. Coin reward 500–1k per delivery; low GP vs XP focus.",
+      "Coin reward 500–1k per delivery; residual EV. Book of the Dead teleports push ~55 artefacts/hr.",
   },
 ];
 
-/**
- * Mage Training Arena — Enchanting Chamber (best XP room for most levels).
- * Net GP is rune cost (negative). Points go to shop (infinity, bones to peaches, etc.).
- */
 export const MTA_METHODS: ActivityMethod[] = [
   {
     id: "mta-enchanting",
@@ -313,13 +373,10 @@ export const MTA_METHODS: ActivityMethod[] = [
     rewards: [],
     intensity: "medium",
     notes:
-      "Enchanting Chamber depositing orbs (wiki peak rates by enchant tier). Rune cost baked into net GP. Other rooms: Graveyard ~100k, Alchemists ~60–80k, Telekinetic lower XP. Points for shop rewards.",
+      "Rune cost baked into residual net GP (path depends on enchant tier). Points for shop rewards not GE-valued here.",
   },
 ];
 
-/**
- * Herbiboar — Fossil Island tracking. Needs 80 Hunter (boostable) + 31 Herblore.
- */
 export const HERBIBOAR_METHODS: ActivityMethod[] = [
   {
     id: "herbiboar",
@@ -328,15 +385,28 @@ export const HERBIBOAR_METHODS: ActivityMethod[] = [
     level: 80,
     secondarySkill: "herblore",
     rateBands: [
-      { level: 80, xpPerHour: 120_000, expectedLootGpPerHour: 300_000, secondaryXpPerHour: 2_500 },
-      { level: 90, xpPerHour: 140_000, expectedLootGpPerHour: 350_000, secondaryXpPerHour: 3_000 },
-      { level: 99, xpPerHour: 150_000, expectedLootGpPerHour: 390_000, secondaryXpPerHour: 3_300 },
+      { level: 80, xpPerHour: 120_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 2_500 },
+      { level: 90, xpPerHour: 140_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 3_000 },
+      { level: 99, xpPerHour: 150_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 3_300 },
     ],
-    consumables: [],
-    rewards: [],
+    consumables: [{ name: "Stamina potion(4)", qty: 7.5 }],
+    // Wiki MMG at 99 Herblore, ~60 catches/hr.
+    rewards: [
+      { name: "Grimy guam leaf", expectedQtyPerHour: 34.5 },
+      { name: "Grimy ranarr weed", expectedQtyPerHour: 14.76 },
+      { name: "Grimy irit leaf", expectedQtyPerHour: 13.26 },
+      { name: "Grimy avantoe", expectedQtyPerHour: 14.94 },
+      { name: "Grimy kwuarm", expectedQtyPerHour: 19.62 },
+      { name: "Grimy snapdragon", expectedQtyPerHour: 12.42 },
+      { name: "Grimy cadantine", expectedQtyPerHour: 20.46 },
+      { name: "Grimy lantadyme", expectedQtyPerHour: 19.62 },
+      { name: "Grimy dwarf weed", expectedQtyPerHour: 16.86 },
+      { name: "Grimy torstol", expectedQtyPerHour: 13.56 },
+      { name: "Numulite", expectedQtyPerHour: 802 },
+    ],
     intensity: "medium",
     notes:
-      "Bone Voyage + 31 Herblore. Magic secateurs + herb sack + stamina. ~60 catches/hr focused. Herb value scales with Herblore level. Herbi pet 1/6,500.",
+      "Live GE on herbs + numulite − stamina. Wiki assumes 99 Herblore + magic secateurs; lower Herblore sees fewer high-tier herbs.",
   },
 ];
 
@@ -383,9 +453,26 @@ export function activitiesForSkill(skillKey: string): ActivityMethod[] {
   }
 }
 
-export function activityMethodItemNames(methods: ActivityMethod[]): string[] {
+export function activityMethodItemNames(methods?: ActivityMethod[]): string[] {
+  const list =
+    methods ??
+    [
+      ...WINTERTODT_METHODS,
+      ...TEMPOROSS_METHODS,
+      ...GOTR_METHODS,
+      ...GIANTS_FOUNDRY_METHODS,
+      ...MAHOGANY_HOMES_METHODS,
+      ...MOTHERLODE_METHODS,
+      ...VOLCANIC_MINE_METHODS,
+      ...BLAST_MINE_METHODS,
+      ...SHOOTING_STARS_METHODS,
+      ...PYRAMID_PLUNDER_METHODS,
+      ...STEALING_ARTEFACTS_METHODS,
+      ...MTA_METHODS,
+      ...HERBIBOAR_METHODS,
+    ];
   const names = new Set<string>();
-  for (const m of methods) {
+  for (const m of list) {
     for (const p of m.consumables) names.add(p.name);
     for (const r of m.rewards) names.add(r.name);
   }
