@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { xpForLevel, clampSkillLevel, xpRemainingToLevel, MAX_SKILL_LEVEL } from "@/lib/osrs-xp";
-import { compactNum } from "@/lib/format";
 
 export type MethodsMetricView = "rate" | "goal";
 
@@ -85,9 +84,6 @@ export function MethodsGoalBar({
   onCurrentLevelChange,
   targetLevel,
   onTargetLevelChange,
-  currentXp,
-  xpRemaining,
-  usingExactXp,
   skillLabel,
 }: {
   view: MethodsMetricView;
@@ -96,9 +92,6 @@ export function MethodsGoalBar({
   onCurrentLevelChange: (n: number) => void;
   targetLevel: number;
   onTargetLevelChange: (n: number) => void;
-  currentXp: number;
-  xpRemaining: number;
-  usingExactXp: boolean;
   skillLabel: string;
 }) {
   return (
@@ -154,21 +147,6 @@ export function MethodsGoalBar({
         </label>
       </div>
 
-      {view === "goal" && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          {xpRemaining <= 0 ? (
-            <>
-              Already at or past {skillLabel} {targetLevel}.
-            </>
-          ) : (
-            <>
-              {compactNum(Math.round(xpRemaining))} XP to {skillLabel} {targetLevel}
-              {usingExactXp ? " (hiscores XP)" : ` from lvl ${currentLevel}`}. Hours and total GP
-              assume this method the whole way.
-            </>
-          )}
-        </p>
-      )}
     </div>
   );
 }
