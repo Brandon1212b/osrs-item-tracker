@@ -21,7 +21,6 @@ export function CookingMethodsPanel({
       title="Cooking methods"
       skillKey="cooking"
       skillLabel="Cooking"
-      description="Wine, fish and 1-tick Karambwan. Rates from wiki focused values. Sorted by what each XP costs you."
       methods={COOKING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}

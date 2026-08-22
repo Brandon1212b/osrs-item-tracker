@@ -22,7 +22,6 @@ export function SmithingMethodsPanel({
       title="Smithing methods"
       skillKey="smithing"
       skillLabel="Smithing"
-      description="Blast Furnace, anvil, cannonballs, and Giants' Foundry. BF coal is already halved. Sorted by what each XP costs you."
       methods={SMITHING_METHODS}
       activities={activitiesForSkill("smithing")}
       rowsByName={rowsByName}

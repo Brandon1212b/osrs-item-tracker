@@ -21,7 +21,6 @@ export function FarmingMethodsPanel({
       title="Farming methods"
       skillKey="farming"
       skillLabel="Farming"
-      description="Herb runs, trees, fruit trees, hardwood and specialty patches. Tree/fruit APH reflects realistic run throughput. Sorted by what each XP costs you."
       methods={FARMING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}
