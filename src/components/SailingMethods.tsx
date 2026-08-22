@@ -1,6 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { SAILING_METHODS } from "@/lib/sailing-methods";
-import { SAILING_ACTIVITY_METHODS } from "@/lib/activity-methods";
+import { SAILING_ACTIVITY_METHODS } from "@/lib/sailing-activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 

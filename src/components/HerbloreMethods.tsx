@@ -1,6 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { HERBLORE_METHODS } from "@/lib/herblore-methods";
-import { MIXOLOGY_METHODS } from "@/lib/activity-methods";
+import { MIXOLOGY_METHODS } from "@/lib/mixology-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
