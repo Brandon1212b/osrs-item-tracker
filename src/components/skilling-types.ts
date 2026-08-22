@@ -33,4 +33,6 @@ export type RankedMethod = {
   intensity?: "low" | "medium" | "high" | null;
   rateBandLevel?: number | null;
   category: string;
+  hoursToTarget?: number | null;
+  totalGp?: number | null;
 };
