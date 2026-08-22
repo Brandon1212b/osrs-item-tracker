@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { fetchPlayerStats, fetchItemRequirements } from "@/lib/osrs.functions";
-import { PLAYER_STORAGE_KEY, type PlayerSkills } from "@/lib/player-stats";
+import { PLAYER_STORAGE_KEY, type PlayerSkills, type PlayerXp } from "@/lib/player-stats";
 
 /**
  * RSN input state, localStorage persistence, and player/item-req queries.
@@ -34,6 +34,7 @@ export function usePlayerLookup() {
   });
 
   const playerSkills: PlayerSkills | null = playerQuery.data?.skills ?? null;
+  const playerXp: PlayerXp | null = playerQuery.data?.xp ?? null;
 
   const itemReqsQuery = useQuery({
     queryKey: ["osrs-item-reqs"],
@@ -71,6 +72,7 @@ export function usePlayerLookup() {
     activeRsn,
     playerQuery,
     playerSkills,
+    playerXp,
     itemReqs,
     loadRsn,
     clearRsn,

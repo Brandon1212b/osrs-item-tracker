@@ -69,6 +69,13 @@ export function formatCost(v: number | null): string {
   return compactNum(v);
 }
 
+/** Hours to a skill target. Always one decimal, e.g. "12.4h". */
+export function formatHours(h: number | null | undefined): string {
+  if (h == null || !Number.isFinite(h)) return "—";
+  const n = Math.max(0, h);
+  return `${n.toFixed(1)}h`;
+}
+
 export type Signal = {
   label: string;
   token: "deal" | "fair" | "steep";
