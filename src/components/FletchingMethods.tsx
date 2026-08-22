@@ -21,7 +21,6 @@ export function FletchingMethodsPanel({
       title="Fletching methods"
       skillKey="fletching"
       skillLabel="Fletching"
-      description="Longbows (u + string), broad/amethyst arrows and dragon darts. Rates from wiki training."
       methods={FLETCHING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}

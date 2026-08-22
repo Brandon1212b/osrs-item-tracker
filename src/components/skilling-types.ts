@@ -12,6 +12,8 @@ export type SkillingMethod = {
   output: MethodPart | null;
   outputs?: MethodPart[];
   intensity?: "low" | "medium" | "high";
+  /** Optional Magic level (e.g. ensouled heads, offering spells) */
+  magicLevel?: number;
 };
 
 export type RankedMethod = {

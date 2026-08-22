@@ -22,7 +22,6 @@ export function HerbloreMethodsPanel({
       title="Herblore methods"
       skillKey="herblore"
       skillLabel="Herblore"
-      description="Prayer / super potions, super combat, divine potions, herb cleaning, and Mastering Mixology."
       methods={HERBLORE_METHODS}
       activities={MIXOLOGY_METHODS}
       rowsByName={rowsByName}

@@ -83,14 +83,10 @@ function readSkillLevel(skills: PlayerSkills | null | undefined, skillKey: strin
 
 type Ranked = RankedMethod;
 
-const DEFAULT_DESCRIPTION =
-  "XP rates from OSRS Wiki focused training guides (static). GP values update live from the Grand Exchange. Your cost = supplies + opportunity cost vs your money-making rate — lower is better.";
-
 export function SkillingMethodsPanel({
   title,
   skillKey,
   skillLabel,
-  description,
   methods,
   activities = [],
   rowsByName,
@@ -102,7 +98,6 @@ export function SkillingMethodsPanel({
   title: string;
   skillKey: string;
   skillLabel: string;
-  description?: string;
   methods: SkillingMethod[];
   activities?: ActivityMethod[];
   rowsByName: Map<string, PriceRow>;
@@ -114,9 +109,10 @@ export function SkillingMethodsPanel({
   const [sort, setSort] = useState<CraftSort>(DEFAULT_SORT);
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const skillLevel = readSkillLevel(playerSkills, skillKey);
+  const magicLevel = readSkillLevel(playerSkills, "magic");
   const { playerXp } = usePlayerLookup();
   const hiscoreXp = playerXp?.[skillKey] ?? playerXp?.[skillKey.toLowerCase()];
   const goal = useMethodsGoal(skillLevel, hiscoreXp);
@@ -207,7 +203,17 @@ export function SkillingMethodsPanel({
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, moneyPerHour);
 
-      const locked = skillLevel != null && skillLevel < method.level;
+      let locked = skillLevel != null && skillLevel < method.level;
+      if (
+        !locked &&
+        method.magicLevel != null &&
+        magicLevel != null &&
+        magicLevel < method.magicLevel
+      ) {
+        locked = true;
+      }
+      const secondaryLine =
+        method.magicLevel != null ? `Magic ${method.magicLevel}` : null;
       const hoursToTarget = hoursToXp(goal.xpRemaining, xpPerHour);
       const totalGp =
         gpPerHour == null || hoursToTarget == null ? null : Math.round(gpPerHour * hoursToTarget);
@@ -227,6 +233,7 @@ export function SkillingMethodsPanel({
         missing,
         locked,
         method,
+        secondaryLine,
         intensity: deriveIntensity(method),
         category: getActivityType(skillKey, method),
       };
@@ -303,6 +310,7 @@ export function SkillingMethodsPanel({
     trendsById,
     moneyPerHour,
     skillLevel,
+    magicLevel,
     sort,
     amulet,
     isHerblore,
@@ -318,9 +326,9 @@ export function SkillingMethodsPanel({
   }, [ranked]);
 
   const filtered = useMemo(() => {
-    if (selectedCategories.size === 0) return ranked;
-    return ranked.filter((r) => selectedCategories.has(r.category));
-  }, [ranked, selectedCategories]);
+    if (selectedCategory === "all") return ranked;
+    return ranked.filter((r) => r.category === selectedCategory);
+  }, [ranked, selectedCategory]);
 
   const compared = useMemo(() => ranked.filter((r) => compareIds.has(r.id)), [ranked, compareIds]);
   const toggleCompare = (id: string) => {
@@ -334,22 +342,12 @@ export function SkillingMethodsPanel({
   };
   const clearCompare = () => setCompareIds(new Set());
 
-  const toggleCategory = (cat: string) => {
-    setSelectedCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat);
-      else next.add(cat);
-      return next;
-    });
-  };
-
   const g = clampG(moneyPerHour);
 
   return (
     <section className="space-y-4">
       <div className="space-y-1">
         <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description ?? DEFAULT_DESCRIPTION}</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -369,34 +367,19 @@ export function SkillingMethodsPanel({
           </Select>
 
           {categories.length > 1 && (
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => {
-                const active = selectedCategories.has(cat);
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => toggleCategory(cat)}
-                    className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
-                      active
-                        ? "border-primary/70 bg-primary/15 text-primary"
-                        : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="h-8 w-[12rem] text-xs">
+                <SelectValue placeholder="Activity type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
                     {cat}
-                  </button>
-                );
-              })}
-              {selectedCategories.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategories(new Set())}
-                  className="text-[11px] text-muted-foreground hover:text-foreground"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </div>
 
@@ -407,9 +390,6 @@ export function SkillingMethodsPanel({
           onCurrentLevelChange={goal.setCurrentLevel}
           targetLevel={goal.targetLevel}
           onTargetLevelChange={goal.setTargetLevel}
-          currentXp={goal.currentXp}
-          xpRemaining={goal.xpRemaining}
-          usingExactXp={goal.usingExactXp}
           skillLabel={skillLabel}
         />
 
@@ -441,11 +421,6 @@ export function SkillingMethodsPanel({
         )}
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground/80">Your cost</span> = supply cost + opportunity
-          cost of not making {gp(g)}/h instead, per XP. Lower is better; negative means the method beats
-          your money-making rate.
-        </p>
       </div>
 
       {compared.length > 0 && (

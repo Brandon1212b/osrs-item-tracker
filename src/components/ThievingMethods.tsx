@@ -22,7 +22,6 @@ export function ThievingMethodsPanel({
       title="Thieving methods"
       skillKey="thieving"
       skillLabel="Thieving"
-      description="Stalls, pickpocketing, Pyramid Plunder, and Stealing artefacts. Sorted by what each XP costs you."
       methods={THIEVING_METHODS}
       activities={activitiesForSkill("thieving")}
       rowsByName={rowsByName}

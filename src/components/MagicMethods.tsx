@@ -22,7 +22,6 @@ export function MagicMethodsPanel({
       title="Magic methods"
       skillKey="magic"
       skillLabel="Magic"
-      description="High/Low Alchemy, jewellery enchanting, Plank Make, Superheat, and Mage Training Arena. Sorted by what each XP costs you."
       methods={MAGIC_METHODS}
       activities={activitiesForSkill("magic")}
       rowsByName={rowsByName}

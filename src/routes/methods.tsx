@@ -165,24 +165,6 @@ function MethodsPage() {
     });
   };
 
-  const skillBarEntries = useMemo(() => {
-    if (!playerSkills) return [];
-    const keys = selected ? [selected.key] : METHOD_SKILLS.map((s) => s.key);
-    return keys
-      .map((key) => {
-        const level = playerSkills[key];
-        if (level == null) return null;
-        const meta = METHOD_SKILLS.find((s) => s.key === key);
-        return {
-          key,
-          icon: meta?.wikiIcon ?? `${key}_icon.png`,
-          label: meta?.label ?? key,
-          level,
-        };
-      })
-      .filter((x): x is NonNullable<typeof x> => x != null);
-  }, [playerSkills, selected]);
-
   return (
     <main className="mx-auto max-w-6xl px-3 pb-16 pt-3 sm:px-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -239,20 +221,6 @@ function MethodsPage() {
           {playerQuery.isError && (
             <p className="text-[11px] text-destructive">Player not found on hiscores.</p>
           )}
-          {playerSkills && skillBarEntries.length > 0 && (
-            <div className="flex max-w-full flex-wrap items-center gap-1.5">
-              {skillBarEntries.map((s) => (
-                <span
-                  key={s.key}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-secondary/30 px-2 py-0.5 text-[11px]"
-                  title={s.label}
-                >
-                  <WikiImage icon={s.icon} alt="" width={14} height={14} className="size-3.5" />
-                  <span className="font-semibold text-foreground/90">{s.level}</span>
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -264,6 +232,7 @@ function MethodsPage() {
             onClick={() => patchSearch({ skill: skill === s.key ? "" : s.key })}
             label={s.label}
             wikiIcon={s.wikiIcon}
+            level={playerSkills?.[s.key]}
           />
         ))}
       </div>
@@ -308,20 +277,23 @@ function WikiIconTab({
   onClick,
   label,
   wikiIcon,
+  level,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
   wikiIcon: string;
+  level?: number;
 }) {
+  const title = level != null ? `${label} ${level}` : label;
   return (
     <button
       type="button"
       onClick={onClick}
-      title={label}
-      aria-label={label}
+      title={title}
+      aria-label={title}
       aria-pressed={active}
-      className={`inline-flex size-8 items-center justify-center rounded-full border transition-colors ${
+      className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-full border px-1.5 transition-colors ${
         active
           ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
           : "border-border/60 bg-secondary/30 hover:bg-secondary/50"
@@ -333,9 +305,12 @@ function WikiIconTab({
         width={20}
         height={20}
         lazy={false}
-        className="size-5"
+        className="size-5 shrink-0"
         draggable={false}
       />
+      {level != null && (
+        <span className="pr-0.5 text-[11px] font-semibold tabular-nums text-foreground/90">{level}</span>
+      )}
     </button>
   );
 }

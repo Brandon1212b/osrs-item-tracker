@@ -22,7 +22,6 @@ export function FiremakingMethodsPanel({
       title="Firemaking methods"
       skillKey="firemaking"
       skillLabel="Firemaking"
-      description="Log burning at GE rates (~1485 logs/hr) plus Wintertodt. Sorted by what each XP costs you."
       methods={FIREMAKING_METHODS}
       activities={activitiesForSkill("firemaking")}
       rowsByName={rowsByName}

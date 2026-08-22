@@ -21,7 +21,6 @@ export function CraftingMethodsPanel({
       title="Crafting methods"
       skillKey="crafting"
       skillLabel="Crafting"
-      description="Glass, jewellery, battlestaves, d'hide, amethyst and Golem Crafting (Wyrmscraig). Sorted by what each XP costs you."
       methods={CRAFTING_METHODS}
       rowsByName={rowsByName}
       trendsById={trendsById}

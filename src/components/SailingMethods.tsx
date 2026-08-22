@@ -22,7 +22,6 @@ export function SailingMethodsPanel({
       title="Sailing methods"
       skillKey="sailing"
       skillLabel="Sailing"
-      description="Barracuda Trials (fastest XP), courier loops, sea charting, and AFK salvaging. Salvage gp/hr tracks live GE on major loot; residual EV covers coins/rares. Requires Pandemonium."
       methods={SAILING_METHODS}
       activities={SAILING_ACTIVITY_METHODS}
       rowsByName={rowsByName}
