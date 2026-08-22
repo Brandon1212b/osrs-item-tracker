@@ -582,7 +582,7 @@ function Stat({
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div
         className={`font-semibold ${emphasis ? "text-sm text-foreground" : ""}`}
-        style={tone ? { color: `var(--${tone})` : undefined}
+        style={tone ? { color: `var(--${tone})` } : undefined}
       >
         {value}
       </div>
