@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { xpForLevel, clampSkillLevel, xpRemainingToLevel, MAX_SKILL_LEVEL } from "@/lib/osrs-xp";
 
 export type MethodsMetricView = "rate" | "goal";
 
 const VIEW_KEY = "ge-watch-methods-metric";
-const TARGET_KEY = "ge-watch-methods-target-level";
 
 function readStoredView(): MethodsMetricView {
   try {
@@ -14,25 +14,15 @@ function readStoredView(): MethodsMetricView {
   }
 }
 
-function readStoredTarget(): number {
-  try {
-    const n = Number(localStorage.getItem(TARGET_KEY));
-    if (Number.isFinite(n)) return clampSkillLevel(n, 2, MAX_SKILL_LEVEL);
-  } catch {
-    /* private mode */
-  }
-  return 99;
-}
-
 export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
   const [view, setView] = useState<MethodsMetricView>("rate");
-  const [targetLevel, setTargetLevel] = useState<number>(99);
+  const [targetLevel, setTargetLevelState] = useState<number>(2);
   const [manualLevel, setManualLevel] = useState<number | null>(null);
+  const [targetTouched, setTargetTouched] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setView(readStoredView());
-    setTargetLevel(readStoredTarget());
     setHydrated(true);
   }, []);
 
@@ -45,36 +35,96 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
     }
   }, [view, hydrated]);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(TARGET_KEY, String(targetLevel));
-    } catch {
-      /* private mode */
-    }
-  }, [targetLevel, hydrated]);
-
-  // New hiscores load replaces a previous manual override.
+  // New hiscores load replaces a previous manual override and re-defaults target.
   useEffect(() => {
     setManualLevel(null);
+    setTargetTouched(false);
   }, [hiscoreLevel, hiscoreXp]);
 
   const currentLevel = manualLevel ?? (hiscoreLevel != null ? clampSkillLevel(hiscoreLevel) : 1);
   const usingExactXp = manualLevel == null && hiscoreXp != null && Number.isFinite(hiscoreXp);
   const currentXp = usingExactXp ? Math.max(0, hiscoreXp!) : xpForLevel(currentLevel);
-  const xpRemaining = xpRemainingToLevel(currentXp, targetLevel);
+
+  // Default target to the next level above current unless the user set it themselves.
+  useEffect(() => {
+    if (targetTouched) return;
+    const next = clampSkillLevel(currentLevel + 1, 2, MAX_SKILL_LEVEL);
+    setTargetLevelState(next);
+  }, [currentLevel, targetTouched]);
+
+  const targetLevelClamped = clampSkillLevel(targetLevel, 2, MAX_SKILL_LEVEL);
+  const xpRemaining = xpRemainingToLevel(currentXp, targetLevelClamped);
+
+  const setTargetLevel = (n: number) => {
+    setTargetTouched(true);
+    setTargetLevelState(clampSkillLevel(n, 2, MAX_SKILL_LEVEL));
+  };
 
   return {
     view,
     setView,
-    targetLevel,
-    setTargetLevel: (n: number) => setTargetLevel(clampSkillLevel(n, 2, MAX_SKILL_LEVEL)),
+    targetLevel: targetLevelClamped,
+    setTargetLevel,
     currentLevel,
-    setCurrentLevel: (n: number) => setManualLevel(clampSkillLevel(n, 1, MAX_SKILL_LEVEL)),
+    setCurrentLevel: (n: number) => {
+      setManualLevel(clampSkillLevel(n, 1, MAX_SKILL_LEVEL));
+      // Changing "Now" re-defaults target to next level.
+      setTargetTouched(false);
+    },
     currentXp,
     xpRemaining,
     usingExactXp,
   };
+}
+
+function StepperInput({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+  ariaLabel,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (n: number) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <div className="inline-flex h-8 items-center gap-0.5 rounded-full border border-border/60 bg-secondary/30 pl-2.5 pr-0.5 text-[11px] text-muted-foreground">
+      <span className="pr-0.5">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(value - 1)}
+        disabled={value <= min}
+        className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        aria-label={`Decrease ${ariaLabel}`}
+      >
+        <Minus className="size-3.5" />
+      </button>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-6 w-9 rounded-md border border-border/50 bg-background px-0.5 text-center text-xs font-semibold tabular-nums text-foreground"
+        aria-label={ariaLabel}
+      />
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        disabled={value >= max}
+        className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        aria-label={`Increase ${ariaLabel}`}
+      >
+        <Plus className="size-3.5" />
+      </button>
+    </div>
+  );
 }
 
 export function MethodsGoalBar({
@@ -122,33 +172,23 @@ export function MethodsGoalBar({
           </button>
         </div>
 
-        <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/30 px-2.5 text-[11px] text-muted-foreground">
-          Now
-          <input
-            type="number"
-            min={1}
-            max={99}
-            inputMode="numeric"
-            value={currentLevel}
-            onChange={(e) => onCurrentLevelChange(Number(e.target.value))}
-            className="h-6 w-10 rounded-md border border-border/50 bg-background px-1 text-center text-xs font-semibold tabular-nums text-foreground"
-            aria-label={`Current ${skillLabel} level`}
-          />
-        </label>
+        <StepperInput
+          label="Now"
+          value={currentLevel}
+          min={1}
+          max={MAX_SKILL_LEVEL}
+          onChange={onCurrentLevelChange}
+          ariaLabel={`Current ${skillLabel} level`}
+        />
 
-        <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/30 px-2.5 text-[11px] text-muted-foreground">
-          Target
-          <input
-            type="number"
-            min={2}
-            max={99}
-            inputMode="numeric"
-            value={targetLevel}
-            onChange={(e) => onTargetLevelChange(Number(e.target.value))}
-            className="h-6 w-10 rounded-md border border-border/50 bg-background px-1 text-center text-xs font-semibold tabular-nums text-foreground"
-            aria-label="Target skill level"
-          />
-        </label>
+        <StepperInput
+          label="Target"
+          value={targetLevel}
+          min={2}
+          max={MAX_SKILL_LEVEL}
+          onChange={onTargetLevelChange}
+          ariaLabel="Target skill level"
+        />
       </div>
     </div>
   );

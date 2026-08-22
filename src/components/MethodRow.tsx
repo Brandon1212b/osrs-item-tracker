@@ -55,6 +55,7 @@ export function MethodRow({
   onToggleCompare,
   onWatchInputs,
   metricView = "rate",
+  xpRemaining = 0,
 }: RankedMethod & {
   rank: number;
   rowsByName: Map<string, PriceRow>;
@@ -63,8 +64,16 @@ export function MethodRow({
   onToggleCompare?: () => void;
   onWatchInputs?: () => void;
   metricView?: MethodsMetricView;
+  /** XP still needed to target — used to scale supply totals in goal view */
+  xpRemaining?: number;
 }) {
   const isActivity = activity != null;
+  /** Actions needed if training this method the whole way to the target. */
+  const goalActions =
+    metricView === "goal" && method && method.xp > 0 && xpRemaining > 0
+      ? xpRemaining / method.xp
+      : null;
+  const scaleQty = (qty: number) => (goalActions == null ? qty : qty * goalActions);
   const titlePart = method
     ? (method.outputs && method.outputs.length > 0 ? method.outputs[0] : method.output) ??
       method.inputs[0]
@@ -195,9 +204,10 @@ export function MethodRow({
               {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
               <PartChip
                 name={part.name}
-                qty={part.qty}
+                qty={scaleQty(part.qty)}
                 row={part.name === "Coins" ? undefined : rowsByName.get(part.name)}
                 kind="input"
+                total={goalActions != null}
               />
             </span>
           ))}
@@ -220,9 +230,10 @@ export function MethodRow({
                     {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
                     <PartChip
                       name={part.name}
-                      qty={part.qty}
+                      qty={scaleQty(part.qty)}
                       row={part.name === "Coins" ? undefined : rowsByName.get(part.name)}
                       kind="output"
+                      total={goalActions != null}
                     />
                   </span>
                 ))}
@@ -232,19 +243,33 @@ export function MethodRow({
           {profitPerCraft != null && (
             <span
               className="ml-auto inline-flex shrink-0 items-center gap-1 tabular-nums"
-              title="Net vs 30-day average component prices"
+              title={
+                goalActions != null
+                  ? "Total net if you train only this method to the target"
+                  : "Net vs 30-day average component prices"
+              }
             >
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 Net
               </span>
               <span
                 className="font-bold"
-                style={{ color: profitPerCraft >= 0 ? "var(--deal)" : "var(--steep)" }}
+                style={{
+                  color:
+                    (goalActions != null ? profitPerCraft * goalActions : profitPerCraft) >= 0
+                      ? "var(--deal)"
+                      : "var(--steep)",
+                }}
               >
-                {profitPerCraft > 0 ? "+" : ""}
-                {gp(profitPerCraft)}
+                {(() => {
+                  const net =
+                    goalActions != null
+                      ? Math.round(profitPerCraft * goalActions)
+                      : profitPerCraft;
+                  return `${net > 0 ? "+" : ""}${gp(net)}`;
+                })()}
               </span>
-              {netChangePct != null && (
+              {netChangePct != null && goalActions == null && (
                 <span
                   className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
                   style={{
@@ -348,16 +373,19 @@ function PartChip({
   qty,
   row,
   kind,
+  total = false,
 }: {
   name: string;
   qty: number;
   row: PriceRow | undefined;
   kind: "input" | "output";
+  /** When true, qty is a total-to-target figure (may be large) */
+  total?: boolean;
 }) {
   const unit = name === "Coins" ? 1 : kind === "input" ? buyPrice(row) : sellPrice(row);
   const price = unit == null ? null : unit * qty;
-  const qtyLabel = formatQty(qty);
-  const showQty = qty !== 1;
+  const qtyLabel = total ? compactNum(Math.round(qty)) : formatQty(qty);
+  const showQty = total || qty !== 1;
   const inner = (
     <>
       <span className="relative inline-flex size-6 shrink-0 items-center justify-center">
@@ -381,7 +409,13 @@ function PartChip({
         to="/item/$id"
         params={{ id: String(row.id) }}
         className={className}
-        title={showQty && unit != null ? `${name} x ${qtyLabel} @ ${gp(unit)} each` : name}
+        title={
+          showQty && unit != null
+            ? total
+              ? `${name} × ${qtyLabel} total @ ${gp(unit)} each`
+              : `${name} x ${qtyLabel} @ ${gp(unit)} each`
+            : name
+        }
         aria-label={`View ${name} price history`}
         onClick={saveScroll}
       >
