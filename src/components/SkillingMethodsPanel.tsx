@@ -112,6 +112,7 @@ export function SkillingMethodsPanel({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const skillLevel = readSkillLevel(playerSkills, skillKey);
+  const magicLevel = readSkillLevel(playerSkills, "magic");
   const { playerXp } = usePlayerLookup();
   const hiscoreXp = playerXp?.[skillKey] ?? playerXp?.[skillKey.toLowerCase()];
   const goal = useMethodsGoal(skillLevel, hiscoreXp);
@@ -202,7 +203,17 @@ export function SkillingMethodsPanel({
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, moneyPerHour);
 
-      const locked = skillLevel != null && skillLevel < method.level;
+      let locked = skillLevel != null && skillLevel < method.level;
+      if (
+        !locked &&
+        method.magicLevel != null &&
+        magicLevel != null &&
+        magicLevel < method.magicLevel
+      ) {
+        locked = true;
+      }
+      const secondaryLine =
+        method.magicLevel != null ? `Magic ${method.magicLevel}` : null;
       const hoursToTarget = hoursToXp(goal.xpRemaining, xpPerHour);
       const totalGp =
         gpPerHour == null || hoursToTarget == null ? null : Math.round(gpPerHour * hoursToTarget);
@@ -222,6 +233,7 @@ export function SkillingMethodsPanel({
         missing,
         locked,
         method,
+        secondaryLine,
         intensity: deriveIntensity(method),
         category: getActivityType(skillKey, method),
       };
@@ -298,6 +310,7 @@ export function SkillingMethodsPanel({
     trendsById,
     moneyPerHour,
     skillLevel,
+    magicLevel,
     sort,
     amulet,
     isHerblore,
