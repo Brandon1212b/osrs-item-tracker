@@ -7,7 +7,7 @@ import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { resolveActivityBand } from "@/lib/activity-methods";
-import { gp, compactNum, formatCost } from "@/lib/format";
+import { gp, compactNum, formatCost, formatHours } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/select";
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
+import { MethodsGoalBar, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { hoursToXp } from "@/lib/osrs-xp";
+import { usePlayerLookup } from "@/hooks/usePlayerLookup";
 export type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 import type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 
@@ -114,6 +117,9 @@ export function SkillingMethodsPanel({
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const skillLevel = readSkillLevel(playerSkills, skillKey);
+  const { playerXp } = usePlayerLookup();
+  const hiscoreXp = playerXp?.[skillKey] ?? playerXp?.[skillKey.toLowerCase()];
+  const goal = useMethodsGoal(skillLevel, hiscoreXp);
   const isHerblore = skillKey === "herblore";
   const { addMany } = useWatchlistMutations();
 
@@ -163,7 +169,6 @@ export function SkillingMethodsPanel({
       const gpPerHour =
         profitPerCraft == null ? null : Math.round(profitPerCraft * method.actionsPerHour);
 
-      // Net vs 30d avg
       let baselineIn = 0;
       let baselineOut = 0;
       let hasBaseline = true;
@@ -203,6 +208,9 @@ export function SkillingMethodsPanel({
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, moneyPerHour);
 
       const locked = skillLevel != null && skillLevel < method.level;
+      const hoursToTarget = hoursToXp(goal.xpRemaining, xpPerHour);
+      const totalGp =
+        gpPerHour == null || hoursToTarget == null ? null : Math.round(gpPerHour * hoursToTarget);
 
       return {
         id: method.id,
@@ -210,6 +218,8 @@ export function SkillingMethodsPanel({
         level: method.level,
         xpPerHour,
         gpPerHour,
+        hoursToTarget,
+        totalGp,
         profitPerCraft,
         netChangePct,
         costPerXp,
@@ -225,13 +235,15 @@ export function SkillingMethodsPanel({
     for (const activity of activities) {
       const band = resolveActivityBand(activity, skillLevel ?? 1);
       const xpPerHour = band.xpPerHour;
-      // activity GP from expected rewards — approximate from band if present
       const gpPerHour = band.gpPerHour ?? null;
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, moneyPerHour);
       const locked = skillLevel != null && skillLevel < activity.level;
       const secondaryLine =
         band.label && band.label !== activity.label ? band.label : null;
+      const hoursToTarget = hoursToXp(goal.xpRemaining, xpPerHour);
+      const totalGp =
+        gpPerHour == null || hoursToTarget == null ? null : Math.round(gpPerHour * hoursToTarget);
 
       list.push({
         id: activity.id,
@@ -239,6 +251,8 @@ export function SkillingMethodsPanel({
         level: activity.level,
         xpPerHour,
         gpPerHour,
+        hoursToTarget,
+        totalGp,
         profitPerCraft: null,
         netChangePct: null,
         costPerXp,
@@ -254,21 +268,25 @@ export function SkillingMethodsPanel({
       });
     }
 
-    // sort locked to bottom when skill known
-    const unlocked = list.filter((r) => !r.locked);
-    const refPool = unlocked.length > 0 ? unlocked : list;
-
     list.sort((a, b) => {
       if (skillLevel != null && a.locked !== b.locked) return a.locked ? 1 : -1;
       switch (sort) {
         case "gp_desc":
-          return nullsLast(b.gpPerHour, a.gpPerHour, 1);
+          return goal.view === "goal"
+            ? nullsLast(b.totalGp ?? null, a.totalGp ?? null, 1)
+            : nullsLast(b.gpPerHour, a.gpPerHour, 1);
         case "gp_asc":
-          return nullsLast(a.gpPerHour, b.gpPerHour, 1);
+          return goal.view === "goal"
+            ? nullsLast(a.totalGp ?? null, b.totalGp ?? null, 1)
+            : nullsLast(a.gpPerHour, b.gpPerHour, 1);
         case "xp_desc":
-          return b.xpPerHour - a.xpPerHour;
+          return goal.view === "goal"
+            ? nullsLast(a.hoursToTarget ?? null, b.hoursToTarget ?? null, 1)
+            : b.xpPerHour - a.xpPerHour;
         case "xp_asc":
-          return a.xpPerHour - b.xpPerHour;
+          return goal.view === "goal"
+            ? nullsLast(b.hoursToTarget ?? null, a.hoursToTarget ?? null, 1)
+            : a.xpPerHour - b.xpPerHour;
         case "cost_desc":
           return nullsLast(b.costPerXp, a.costPerXp, 1);
         case "cost_asc":
@@ -289,6 +307,8 @@ export function SkillingMethodsPanel({
     amulet,
     isHerblore,
     skillKey,
+    goal.view,
+    goal.xpRemaining,
   ]);
 
   const categories = useMemo(() => {
@@ -341,10 +361,10 @@ export function SkillingMethodsPanel({
             <SelectContent>
               <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
               <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-              <SelectItem value="gp_desc">GP/h ↓</SelectItem>
-              <SelectItem value="gp_asc">GP/h ↑</SelectItem>
-              <SelectItem value="xp_desc">XP/h ↓</SelectItem>
-              <SelectItem value="xp_asc">XP/h ↑</SelectItem>
+              <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+              <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+              <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+              <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -379,6 +399,19 @@ export function SkillingMethodsPanel({
             </div>
           )}
         </div>
+
+        <MethodsGoalBar
+          view={goal.view}
+          onViewChange={goal.setView}
+          currentLevel={goal.currentLevel}
+          onCurrentLevelChange={goal.setCurrentLevel}
+          targetLevel={goal.targetLevel}
+          onTargetLevelChange={goal.setTargetLevel}
+          currentXp={goal.currentXp}
+          xpRemaining={goal.xpRemaining}
+          usingExactXp={goal.usingExactXp}
+          skillLabel={skillLabel}
+        />
 
         {isHerblore && (
           <div className="flex flex-wrap items-center gap-2">
@@ -435,8 +468,20 @@ export function SkillingMethodsPanel({
                   </button>
                 </div>
                 <div className="mt-2 grid grid-cols-3 gap-1 tabular-nums">
-                  <div><div className="text-[9px] uppercase text-muted-foreground">XP/h</div><div className="font-semibold">{compactNum(Math.round(r.xpPerHour))}</div></div>
-                  <div><div className="text-[9px] uppercase text-muted-foreground">GP/h</div><div className="font-semibold">{r.gpPerHour == null ? "-" : `${r.gpPerHour > 0 ? "+" : ""}${gp(r.gpPerHour)}`}</div></div>
+                  <div>
+                    <div className="text-[9px] uppercase text-muted-foreground">{goal.view === "goal" ? "Time" : "XP/h"}</div>
+                    <div className="font-semibold">
+                      {goal.view === "goal" ? formatHours(r.hoursToTarget) : compactNum(Math.round(r.xpPerHour))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] uppercase text-muted-foreground">{goal.view === "goal" ? "Total" : "GP/h"}</div>
+                    <div className="font-semibold">
+                      {goal.view === "goal"
+                        ? r.totalGp == null ? "-" : `${r.totalGp > 0 ? "+" : ""}${gp(r.totalGp)}`
+                        : r.gpPerHour == null ? "-" : `${r.gpPerHour > 0 ? "+" : ""}${gp(r.gpPerHour)}`}
+                    </div>
+                  </div>
                   <div><div className="text-[9px] uppercase text-muted-foreground">Cost</div><div className="font-semibold">{r.costPerXp == null ? "-" : formatCost(r.costPerXp)}</div></div>
                 </div>
               </div>
@@ -452,6 +497,7 @@ export function SkillingMethodsPanel({
             rank={i + 1}
             rowsByName={rowsByName}
             skillLabel={skillLabel}
+            metricView={goal.view}
             comparing={compareIds.has(r.id)}
             onToggleCompare={() => toggleCompare(r.id)}
             onWatchInputs={() => {
