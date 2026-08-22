@@ -22,7 +22,6 @@ export function HunterMethodsPanel({
       title="Hunter methods"
       skillKey="hunter"
       skillLabel="Hunter"
-      description="Chinchompas, salamanders, sunlight/moonlight antelopes, birdhouse runs (effective rates), and Herbiboar. Sorted by what each XP costs you."
       methods={HUNTER_METHODS}
       activities={activitiesForSkill("hunter")}
       rowsByName={rowsByName}

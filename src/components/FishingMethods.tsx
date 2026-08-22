@@ -22,7 +22,6 @@ export function FishingMethodsPanel({
       title="Fishing methods"
       skillKey="fishing"
       skillLabel="Fishing"
-      description="Core fish, barbarian, karambwan, minnows, eels, Leechfin (high-intensity), and Drift net. Tempoross lives under Activities. Rates from wiki focused values."
       methods={FISHING_METHODS}
       activities={activitiesForSkill("fishing")}
       rowsByName={rowsByName}

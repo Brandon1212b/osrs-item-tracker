@@ -22,7 +22,6 @@ export function RunecraftMethodsPanel({
       title="Runecraft methods"
       skillKey="runecraft"
       skillLabel="Runecraft"
-      description="Abyss combination runes, Ourania/ZMI, standard altars, True Blood/Soul, and GOTR. Sorted by what each XP costs you."
       methods={RUNECRAFT_METHODS}
       activities={activitiesForSkill("runecraft")}
       rowsByName={rowsByName}
