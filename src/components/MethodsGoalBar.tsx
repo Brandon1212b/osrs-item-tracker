@@ -93,6 +93,10 @@ export function MethodsGoalBar({
   targetLevel: number;
   onTargetLevelChange: (n: number) => void;
   skillLabel: string;
+  /** @deprecated unused — kept optional for older call sites during rollout */
+  currentXp?: number;
+  xpRemaining?: number;
+  usingExactXp?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -146,7 +150,6 @@ export function MethodsGoalBar({
           />
         </label>
       </div>
-
     </div>
   );
 }
