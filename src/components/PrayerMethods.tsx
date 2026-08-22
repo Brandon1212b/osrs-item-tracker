@@ -220,16 +220,6 @@ export function PrayerMethodsPanel({
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold">Prayer methods</h2>
-            <p className="text-xs text-muted-foreground">
-              Sorted by what each XP costs <em>you</em> — supplies plus the gold you could have made
-              instead. Lower cost is better. Bones, ashes, and heads are consumed. Chaos altar averages 50% bone save.
-              {prayerLevel != null && (
-                <>
-                  {" "}
-                  Methods above your Prayer level ({prayerLevel}) are greyed out.
-                </>
-              )}
-            </p>
           </div>
           <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
             <SelectTrigger className="h-9 w-[9.5rem] shrink-0 text-xs" aria-label="Sort methods">
@@ -592,7 +582,7 @@ function Stat({
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div
         className={`font-semibold ${emphasis ? "text-sm text-foreground" : ""}`}
-        style={tone ? { color: `var(--${tone})` } : undefined}
+        style={tone ? { color: `var(--${tone})` : undefined}
       >
         {value}
       </div>
