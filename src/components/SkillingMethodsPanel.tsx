@@ -408,11 +408,6 @@ export function SkillingMethodsPanel({
         )}
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground/80">Your cost</span> = supply cost + opportunity
-          cost of not making {gp(g)}/h instead, per XP. Lower is better; negative means the method beats
-          your money-making rate.
-        </p>
       </div>
 
       {compared.length > 0 && (
