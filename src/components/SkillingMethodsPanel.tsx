@@ -473,6 +473,7 @@ export function SkillingMethodsPanel({
             rowsByName={rowsByName}
             skillLabel={skillLabel}
             metricView={goal.view}
+            xpRemaining={goal.xpRemaining}
             comparing={compareIds.has(r.id)}
             onToggleCompare={() => toggleCompare(r.id)}
             onWatchInputs={() => {
