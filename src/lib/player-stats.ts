@@ -1,9 +1,13 @@
 /** Player skill levels from OSRS Hiscores. Keys are lowercase skill names. */
 export type PlayerSkills = Record<string, number>;
 
+/** Total experience per skill from hiscores. Keys are lowercase skill names. */
+export type PlayerXp = Record<string, number>;
+
 export type PlayerStats = {
   name: string;
   skills: PlayerSkills;
+  xp: PlayerXp;
 };
 
 export const PLAYER_STORAGE_KEY = "ge-watch-player-rsn";

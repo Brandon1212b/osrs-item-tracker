@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { CircleHelp, Pin, Star } from "lucide-react";
 import type { PriceRow } from "@/lib/osrs.server";
-import { gp, compactNum, formatCost } from "@/lib/format";
+import { gp, compactNum, formatCost, formatHours } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { intensityClass } from "@/components/methods-ux";
 import type { RankedMethod, SkillingMethod, MethodPart } from "@/components/skilling-types";
+import type { MethodsMetricView } from "@/components/MethodsGoalBar";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -48,9 +49,12 @@ export function MethodRow({
   notes,
   intensity,
   rateBandLevel,
+  hoursToTarget,
+  totalGp,
   comparing,
   onToggleCompare,
   onWatchInputs,
+  metricView = "rate",
 }: RankedMethod & {
   rank: number;
   rowsByName: Map<string, PriceRow>;
@@ -58,6 +62,7 @@ export function MethodRow({
   comparing?: boolean;
   onToggleCompare?: () => void;
   onWatchInputs?: () => void;
+  metricView?: MethodsMetricView;
 }) {
   const isActivity = activity != null;
   const titlePart = method
@@ -126,12 +131,29 @@ export function MethodRow({
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
-          <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
-          <Stat
-            label="GP/h"
-            value={gpPerHour == null ? "-" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
-            tone={gpPerHour == null ? undefined : gpPerHour >= 0 ? "deal" : "steep"}
-          />
+          {metricView === "goal" ? (
+            <Stat
+              label="Time"
+              value={formatHours(hoursToTarget)}
+              title="Hours at this method's XP/h from your current XP to the target level"
+            />
+          ) : (
+            <Stat label="XP/h" value={compactNum(Math.round(xpPerHour))} />
+          )}
+          {metricView === "goal" ? (
+            <Stat
+              label="Total"
+              value={totalGp == null ? "-" : `${totalGp > 0 ? "+" : ""}${gp(totalGp)}`}
+              tone={totalGp == null ? undefined : totalGp >= 0 ? "deal" : "steep"}
+              title="GP earned or spent if you train only this method to the target"
+            />
+          ) : (
+            <Stat
+              label="GP/h"
+              value={gpPerHour == null ? "-" : `${gpPerHour > 0 ? "+" : ""}${gp(gpPerHour)}`}
+              tone={gpPerHour == null ? undefined : gpPerHour >= 0 ? "deal" : "steep"}
+            />
+          )}
           <Stat
             label="Your cost"
             value={costPerXp == null ? "-" : `${formatCost(costPerXp)} gp/xp`}

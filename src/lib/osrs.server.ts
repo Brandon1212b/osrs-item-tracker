@@ -371,6 +371,7 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
 export type PlayerStatsResult = {
   name: string;
   skills: Record<string, number>;
+  xp: Record<string, number>;
 };
 
 /** Fetch skill levels from the official OSRS Hiscores JSON endpoint. */
@@ -393,16 +394,19 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   if (!data.skills?.length) throw new Error("Player not found on the hiscores");
 
   const skills: Record<string, number> = {};
+  const xp: Record<string, number> = {};
   for (const s of data.skills) {
     if (s.id === 0) continue; // Overall
     const key = s.name.toLowerCase();
     // rank -1 means unranked / level 1 with 0 xp on some endpoints
     skills[key] = Math.max(1, s.level || 1);
+    xp[key] = Math.max(0, s.xp || 0);
   }
 
   return {
     name: data.name ?? trimmed,
     skills,
+    xp,
   };
 }
 
