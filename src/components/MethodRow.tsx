@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { intensityClass } from "@/components/methods-ux";
 import type { RankedMethod, SkillingMethod, MethodPart } from "@/components/skilling-types";
 import type { MethodsMetricView } from "@/components/MethodsGoalBar";
+import { methodWikiLink } from "@/lib/method-wiki";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -31,6 +32,7 @@ function saveScroll() {
 }
 
 export function MethodRow({
+  id,
   rank,
   method,
   activity,
@@ -38,6 +40,7 @@ export function MethodRow({
   level,
   rowsByName,
   skillLabel,
+  skillKey,
   xpPerHour,
   gpPerHour,
   profitPerCraft,
@@ -60,15 +63,14 @@ export function MethodRow({
   rank: number;
   rowsByName: Map<string, PriceRow>;
   skillLabel: string;
+  skillKey?: string;
   comparing?: boolean;
   onToggleCompare?: () => void;
   onWatchInputs?: () => void;
   metricView?: MethodsMetricView;
-  /** XP still needed to target — used to scale supply totals in goal view */
   xpRemaining?: number;
 }) {
   const isActivity = activity != null;
-  /** Actions needed if training this method the whole way to the target. */
   const goalActions =
     metricView === "goal" && method && method.xp > 0 && xpRemaining > 0
       ? xpRemaining / method.xp
@@ -112,7 +114,13 @@ export function MethodRow({
                   {intensity}
                 </span>
               )}
-              <RateSourceHelp isActivity={isActivity} notes={notes} method={method} />
+              <RateSourceHelp
+                methodId={id}
+                skillKey={skillKey}
+                isActivity={isActivity}
+                notes={notes}
+                method={method}
+              />
               {onToggleCompare && (
                 <button type="button" onClick={onToggleCompare} aria-pressed={comparing} title={comparing ? "Unpin" : "Pin to compare"}
                   className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full ${comparing ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
@@ -306,14 +314,19 @@ export function MethodRow({
 }
 
 function RateSourceHelp({
+  methodId,
+  skillKey,
   isActivity,
   notes,
   method,
 }: {
+  methodId: string;
+  skillKey?: string;
   isActivity: boolean;
   notes?: string | null;
   method?: SkillingMethod;
 }) {
+  const wiki = methodWikiLink(methodId, skillKey);
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -347,6 +360,15 @@ function RateSourceHelp({
             method GP/h) ÷ XP/h. Lower is better; negative means the method beats your rate.
           </li>
         </ul>
+        <a
+          href={wiki.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-secondary/40 px-2.5 py-2 font-medium text-foreground hover:border-primary/50 hover:bg-primary/10"
+        >
+          <span className="min-w-0 truncate">Wiki: {wiki.title}</span>
+          <span className="shrink-0 text-[11px] text-muted-foreground">↗</span>
+        </a>
         {isActivity && notes && (
           <p className="border-t border-border/60 pt-2 text-muted-foreground">
             <span className="font-medium text-foreground">This method:</span> {notes}
@@ -379,7 +401,6 @@ function PartChip({
   qty: number;
   row: PriceRow | undefined;
   kind: "input" | "output";
-  /** When true, qty is a total-to-target figure (may be large) */
   total?: boolean;
 }) {
   const unit = name === "Coins" ? 1 : kind === "input" ? buyPrice(row) : sellPrice(row);
