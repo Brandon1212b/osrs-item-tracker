@@ -9,12 +9,11 @@
  * Pages checked against oldschool.runescape.wiki (Aug 2026).
  */
 
-import wikiPages from "./method-wiki-pages.json";
+import wikiPagesA from "./method-wiki-pages-a.json";
+import wikiPagesB from "./method-wiki-pages-b.json";
 
 export type WikiRef = {
-  /** Wiki page title (spaces OK; turned into /w/Title) */
   page: string;
-  /** Short label shown in the ? popover */
   title: string;
 };
 
@@ -24,16 +23,17 @@ export function wikiHref(page: string): string {
   return WIKI_ORIGIN + page.replace(/ /g, "_");
 }
 
-type WikiMaps = {
+type WikiMapsA = {
   skillTraining: Record<string, WikiRef>;
   bySkillId: Record<string, WikiRef>;
   byId: Record<string, WikiRef>;
 };
 
-const pages = wikiPages as WikiMaps;
-const SKILL_TRAINING = pages.skillTraining;
-const BY_SKILL_ID = pages.bySkillId;
-const BY_ID = pages.byId;
+const pagesA = wikiPagesA as WikiMapsA;
+const pagesB = wikiPagesB as { byId: Record<string, WikiRef> };
+const SKILL_TRAINING = pagesA.skillTraining;
+const BY_SKILL_ID = pagesA.bySkillId;
+const BY_ID: Record<string, WikiRef> = { ...pagesA.byId, ...pagesB.byId };
 
 type PrefixRule = { match: (id: string) => boolean; ref: WikiRef };
 
