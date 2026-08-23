@@ -116,7 +116,7 @@ export function MethodRow({
               )}
               <RateSourceHelp
                 methodId={id}
-                skillKey={skillKey}
+                skillKey={skillKey ?? skillLabel.toLowerCase()}
                 isActivity={isActivity}
                 notes={notes}
                 method={method}
