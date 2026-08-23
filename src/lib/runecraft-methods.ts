@@ -20,7 +20,6 @@ export type RunecraftMethod = {
 };
 
 export const RUNECRAFT_METHODS: RunecraftMethod[] = [
-  // ── Combination / Abyss ──────────────────────────────────────────────────
   {
     id: "lava-runes-abyss",
     label: "Lava runes (Abyss)",
@@ -54,21 +53,15 @@ export const RUNECRAFT_METHODS: RunecraftMethod[] = [
     inputs: [{ name: "Pure essence", qty: 1 }],
     output: { name: "Nature rune", qty: 1 },
   },
-
-  // ── Ourania / ZMI ────────────────────────────────────────────────────────
-  // ~1.7× XP, ~4700 essence/h focused with colossal pouch. Random runes;
-  // use Nature as representative output for economic scoring.
   {
     id: "zmi-ourania",
     label: "Ourania altar (ZMI)",
     level: 1,
-    xp: 15, // approx average at mid–high level
+    xp: 15,
     actionsPerHour: 4700,
     inputs: [{ name: "Pure essence", qty: 1 }],
     output: { name: "Nature rune", qty: 1 },
   },
-
-  // ── Standard altars ──────────────────────────────────────────────────────
   {
     id: "air-runes",
     label: "Air runes",
@@ -158,6 +151,118 @@ export const RUNECRAFT_METHODS: RunecraftMethod[] = [
     actionsPerHour: 5000,
     inputs: [{ name: "Pure essence", qty: 1 }],
     output: { name: "Wrath rune", qty: 1 },
+  },
+  {
+    id: "sunfire-runes",
+    label: "Sunfire runes (Shrine of Ralos)",
+    level: 98,
+    xp: 9,
+    actionsPerHour: 3410,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Fire rune", qty: 1 },
+      { name: "Sunfire splinters", qty: 1 },
+    ],
+    output: { name: "Sunfire rune", qty: 4.8 },
+  },
+  {
+    id: "nature-runes-double-diary",
+    label: "Double nature runes (Diary cape)",
+    level: 91,
+    xp: 9,
+    actionsPerHour: 7260,
+    inputs: [{ name: "Pure essence", qty: 1 }],
+    output: { name: "Nature rune", qty: 3.4 },
+  },
+  {
+    id: "aether-runes",
+    label: "Aether runes",
+    level: 90,
+    xp: 8,
+    actionsPerHour: 4650,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Aether catalyst", qty: 1.6 },
+      { name: "Binding necklace", qty: 0.003 },
+    ],
+    output: { name: "Aether rune", qty: 1.7 },
+  },
+  {
+    id: "mud-runes",
+    label: "Mud runes (combo)",
+    level: 13,
+    xp: 9.5,
+    actionsPerHour: 10400,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Water rune", qty: 1 },
+    ],
+    output: { name: "Mud rune", qty: 1.6 },
+  },
+  {
+    id: "astral-runes",
+    label: "Astral runes (Lunar)",
+    level: 82,
+    xp: 8.7,
+    actionsPerHour: 5016,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Stamina potion(4)", qty: 7.6 / 5016 },
+    ],
+    output: { name: "Astral rune", qty: 3.4 },
+  },
+  {
+    id: "blood-runes-abyss",
+    label: "Blood runes (Abyss)",
+    level: 77,
+    xp: 10.5,
+    actionsPerHour: 3630,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Blood essence", qty: 1.82 / 3630 },
+      { name: "Stamina potion(4)", qty: 4.4 / 3630 },
+    ],
+    output: { name: "Blood rune", qty: 1.93 },
+  },
+  {
+    id: "death-runes-abyss",
+    label: "Death runes (Abyss)",
+    level: 65,
+    xp: 10,
+    actionsPerHour: 3350,
+    inputs: [
+      { name: "Pure essence", qty: 1 },
+      { name: "Stamina potion(4)", qty: 4 / 3350 },
+    ],
+    output: { name: "Death rune", qty: 3.4 },
+  },
+  {
+    id: "chaos-runes-abyss",
+    label: "Chaos runes (Abyss)",
+    level: 74,
+    xp: 8.5,
+    actionsPerHour: 5000,
+    inputs: [{ name: "Pure essence", qty: 1 }],
+    output: { name: "Chaos rune", qty: 3.2 },
+  },
+  {
+    id: "law-runes-abyss-double",
+    label: "Double law runes (Abyss)",
+    level: 95,
+    xp: 9.5,
+    actionsPerHour: 4500,
+    inputs: [{ name: "Pure essence", qty: 1 }],
+    output: { name: "Law rune", qty: 3.2 },
+  },
+  {
+    id: "cosmic-runes-abyss",
+    label: "Cosmic runes (Abyss)",
+    level: 59,
+    xp: 8,
+    actionsPerHour: 4800,
+    inputs: [{ name: "Pure essence", qty: 1 }],
+    output: { name: "Cosmic rune", qty: 3.2 },
   },
 ];
 
