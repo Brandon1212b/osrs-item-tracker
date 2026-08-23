@@ -30,6 +30,18 @@ export const FIREMAKING_METHODS: FiremakingMethod[] = [
   { id: "campfire-yew", label: "Bonfire / campfire (yew)", level: 60, xp: 222.8, actionsPerHour: 1485, inputs: [{ name: "Yew logs", qty: 1 }], output: null },
   { id: "campfire-magic", label: "Bonfire / campfire (magic)", level: 75, xp: 334.2, actionsPerHour: 1485, inputs: [{ name: "Magic logs", qty: 1 }], output: null },
   { id: "campfire-redwood", label: "Bonfire / campfire (redwood)", level: 90, xp: 385, actionsPerHour: 1485, inputs: [{ name: "Redwood logs", qty: 1 }], output: null },
+  {
+    id: "redwood-pyre",
+    label: "Redwood pyre logs",
+    level: 95,
+    xp: 500,
+    actionsPerHour: 1400,
+    inputs: [
+      { name: "Redwood logs", qty: 1 },
+      { name: "Sacred oil(4)", qty: 0.25 },
+    ],
+    output: { name: "Redwood pyre logs", qty: 1 },
+  },
 ];
 
 export function firemakingMethodItemNames(): string[] {

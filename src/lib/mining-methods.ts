@@ -30,6 +30,9 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "amethyst", label: "Amethyst", level: 92, xp: 240, actionsPerHour: 95, inputs: [], output: { name: "Amethyst", qty: 1 } },
   { id: "lead-ore-deepfin", label: "Lead ore (Deepfin mine)", level: 25, xp: 40.5, actionsPerHour: 1800, inputs: [], output: { name: "Lead ore", qty: 1 } },
   { id: "granite-3tick", label: "Granite (3-tick)", level: 45, xp: 75, actionsPerHour: 1600, inputs: [], output: null },
+  { id: "basalt", label: "Basalt", level: 72, xp: 5, actionsPerHour: 1400, inputs: [], output: { name: "Basalt", qty: 1 } },
+  { id: "zeah-salts", label: "Kourend salts (Te Salt)", level: 70, xp: 5, actionsPerHour: 900, inputs: [], output: { name: "Te salt", qty: 1 } },
+  { id: "infernal-shale", label: "Infernal shale (crush)", level: 78, xp: 32, actionsPerHour: 900, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
 ];
 
 export function miningMethodItemNames(): string[] {
