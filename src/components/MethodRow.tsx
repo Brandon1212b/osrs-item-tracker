@@ -352,8 +352,8 @@ function RateSourceHelp({
           </li>
           <li>
             <span className="font-medium text-foreground">GP/h & Net</span> — Calculated live from
-            current Grand Exchange prices (buy high / sell low). Updates automatically with the
-            price feed.
+            current Grand Exchange prices (buy high / sell low after 2% GE tax, capped at 5M). Updates
+            automatically with the price feed.
           </li>
           <li>
             <span className="font-medium text-foreground">Your cost</span> — (money-making rate −

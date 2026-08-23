@@ -41,6 +41,12 @@ function sellPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
   return row.low ?? row.high ?? null;
 }
+/** GE tax: 2% of sell price (floored), capped at 5,000,000 gp per item. Returns net proceeds after tax. */
+function afterTaxSell(unitPrice: number): number {
+  if (!Number.isFinite(unitPrice) || unitPrice <= 0) return unitPrice;
+  const tax = Math.min(Math.floor(unitPrice * 0.02), 5_000_000);
+  return unitPrice - tax;
+}
 function clampG(n: number) {
   if (!Number.isFinite(n) || n <= 0) return G_MIN;
   return Math.min(G_MAX, Math.max(G_MIN, Math.round(n / G_STEP) * G_STEP));
@@ -157,7 +163,7 @@ export function SkillingMethodsPanel({
           missing = true;
           continue;
         }
-        outputValue += unit * p.qty;
+        outputValue += afterTaxSell(unit) * p.qty;
       }
 
       const profitPerCraft = missing ? null : outputValue - inputCost;
@@ -191,7 +197,7 @@ export function SkillingMethodsPanel({
             hasBaseline = false;
             break;
           }
-          baselineOut += avg * p.qty;
+          baselineOut += afterTaxSell(avg) * p.qty;
         }
       }
       const baselineProfit = hasBaseline ? baselineOut - baselineIn : null;
@@ -242,12 +248,65 @@ export function SkillingMethodsPanel({
     for (const activity of activities) {
       const band = resolveActivityBand(activity, skillLevel ?? 1);
       const xpPerHour = band.xpPerHour;
-      const gpPerHour = band.gpPerHour ?? null;
+
+      // Live GE valuation: Σ(after-tax sell × qty/hr) + residual EV − consumable costs.
+      // Residual (expectedLootGpPerHour) covers uniques / shop packs / level variance that
+      // are not itemized in `rewards`.
+      let rewardValue = 0;
+      let consumableCost = 0;
+      let missing = false;
+
+      for (const r of activity.rewards) {
+        if (r.name === "Coins") {
+          rewardValue += r.expectedQtyPerHour;
+          continue;
+        }
+        const row = rowsByName.get(r.name);
+        const unit = sellPrice(row);
+        if (unit == null) {
+          missing = true;
+          continue;
+        }
+        rewardValue += afterTaxSell(unit) * r.expectedQtyPerHour;
+      }
+
+      for (const c of activity.consumables) {
+        if (c.name === "Coins") {
+          consumableCost += c.qty;
+          continue;
+        }
+        const row = rowsByName.get(c.name);
+        const unit = buyPrice(row);
+        if (unit == null) {
+          missing = true;
+          continue;
+        }
+        consumableCost += unit * c.qty;
+      }
+
+      const residual = band.expectedLootGpPerHour ?? 0;
+      // If we have no itemized rewards and no residual, leave GP unknown.
+      const hasAnyValue =
+        activity.rewards.length > 0 || activity.consumables.length > 0 || residual !== 0;
+      const gpPerHour = !hasAnyValue
+        ? null
+        : Math.round(rewardValue + residual - consumableCost);
+
       const costPerXp =
         gpPerHour == null ? null : effectiveGpPerXp(xpPerHour, gpPerHour, moneyPerHour);
       const locked = skillLevel != null && skillLevel < activity.level;
-      const secondaryLine =
-        band.label && band.label !== activity.label ? band.label : null;
+
+      const secondaryParts: string[] = [];
+      if (activity.secondarySkill) {
+        const secXp = band.secondaryXpPerHour;
+        secondaryParts.push(
+          secXp != null
+            ? `${activity.secondarySkill} ${Math.round(secXp).toLocaleString()} xp/h`
+            : activity.secondarySkill,
+        );
+      }
+      const secondaryLine = secondaryParts.length > 0 ? secondaryParts.join(" · ") : null;
+
       const hoursToTarget = hoursToXp(goal.xpRemaining, xpPerHour);
       const totalGp =
         gpPerHour == null || hoursToTarget == null ? null : Math.round(gpPerHour * hoursToTarget);
@@ -264,7 +323,7 @@ export function SkillingMethodsPanel({
         netChangePct: null,
         costPerXp,
         netValuePerHour: gpPerHour,
-        missing: false,
+        missing,
         locked,
         activity,
         secondaryLine,
