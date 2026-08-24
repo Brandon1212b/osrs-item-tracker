@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkline } from "@/components/Sparkline";
 import { WikiImage } from "@/components/WikiImage";
-import { WatchButton } from "@/components/WatchButton";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import { gp, signalOf } from "@/lib/format";
 
@@ -55,9 +54,6 @@ export function ItemCard({
           {lockReason}
         </div>
       )}
-      <div className="absolute bottom-1 right-1 z-20">
-        <WatchButton itemId={row.id} itemName={row.name} />
-      </div>
       {trend ? (
         <div className="absolute top-1.5 right-1.5 z-20 flex flex-col gap-0.5 text-[9px] tabular-nums leading-none text-right sm:top-2 sm:right-2 sm:text-[10px] sm:gap-1">
           <span className="text-muted-foreground">H <span className="font-medium text-foreground">{gp(trend.high180)}</span></span>

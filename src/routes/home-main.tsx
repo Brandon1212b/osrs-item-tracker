@@ -119,106 +119,84 @@ export function HomeMain({
   gridKey,
 }: HomeMainProps) {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6">
-      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:flex-row sm:items-start sm:px-6 pointer-events-auto isolate">
-        <div className="flex flex-1 flex-wrap gap-2">
-          <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="All" />
-          <Tab
-            active={filter === "gear"}
-            onClick={() => handleFilterChange("gear")}
-            label="Gear"
-            icon={<Shield className="size-3.5" />}
-          />
-          <Tab
-            active={filter === "skilling"}
-            onClick={() => handleFilterChange("skilling")}
-            label="Skilling Items"
-            icon={<Pickaxe className="size-3.5" />}
-          />
-          <Tab
-            active={filter === "supplies"}
-            onClick={() => handleFilterChange("supplies")}
-            label="Supplies"
-            icon={<Package className="size-3.5" />}
-          />
-        </div>
-
-        <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
-          <form
-            className="flex items-center gap-1.5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              loadRsn(rsnDraft);
-            }}
-          >
-            <div className="relative min-w-0 flex-1">
-              <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={rsnDraft}
-                onChange={(e) => setRsnDraft(e.target.value)}
-                placeholder="RSN…"
-                className="h-9 pl-8 pr-8 text-base"
-                aria-label="Old School RuneScape username"
-                autoComplete="username"
-              />
-              {activeRsn && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Clear player"
-                  onClick={clearRsn}
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
-            <button
-              type="submit"
-              disabled={!rsnDraft.trim() || playerQuery.isFetching}
-              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/60 px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+    <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-0 sm:px-6">
+      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+          <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
+            <form
+              className="flex items-center gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                loadRsn(rsnDraft);
+              }}
             >
-              {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
-            </button>
-          </form>
-          {playerQuery.isError && (
-            <p className="text-[11px] text-destructive">
-              {(playerQuery.error as Error)?.message ?? "Lookup failed"}
-            </p>
-          )}
-          {playerSkills && skillBarEntries.length > 0 && (
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="truncate text-[10px] font-medium text-muted-foreground">
-                {playerQuery.data?.name ?? activeRsn}
-              </p>
-              <div
-                className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"
-                title={skillBarEntries.map((s) => `${s.label} ${s.level}`).join(" · ")}
-              >
-                {skillBarEntries.map((s) => (
-                  <span
-                    key={s.key}
-                    className="inline-flex items-center gap-0.5 tabular-nums text-[11px] text-muted-foreground"
-                    title={`${s.label} ${s.level}`}
+              <div className="relative min-w-0 flex-1">
+                <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={rsnDraft}
+                  onChange={(e) => setRsnDraft(e.target.value)}
+                  placeholder="RSN…"
+                  className="h-9 pl-8 pr-8 text-base"
+                  aria-label="Old School RuneScape username"
+                  autoComplete="username"
+                />
+                {activeRsn && (
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Clear player"
+                    onClick={clearRsn}
                   >
-                    <WikiImage
-                      icon={s.icon}
-                      alt=""
-                      width={14}
-                      height={14}
-                      lazy={false}
-                      className="size-3.5 shrink-0"
-                      draggable={false}
-                    />
-                    <span className="font-semibold text-foreground/90">{s.level}</span>
-                  </span>
-                ))}
+                    <X className="size-3.5" />
+                  </button>
+                )}
               </div>
-            </div>
-          )}
-        </div>
+              <button
+                type="submit"
+                disabled={!rsnDraft.trim() || playerQuery.isFetching}
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/60 px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+              >
+                {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
+              </button>
+            </form>
+            {playerQuery.isError && (
+              <p className="text-[11px] text-destructive">
+                {(playerQuery.error as Error)?.message ?? "Lookup failed"}
+              </p>
+            )}
+            {playerSkills && skillBarEntries.length > 0 && (
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <p className="truncate text-[10px] font-medium text-muted-foreground">
+                  {playerQuery.data?.name ?? activeRsn}
+                </p>
+                <div
+                  className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"
+                  title={skillBarEntries.map((s) => `${s.label} ${s.level}`).join(" · ")}
+                >
+                  {skillBarEntries.map((s) => (
+                    <span
+                      key={s.key}
+                      className="inline-flex items-center gap-0.5 tabular-nums text-[11px] text-muted-foreground"
+                      title={`${s.label} ${s.level}`}
+                    >
+                      <WikiImage
+                        icon={s.icon}
+                        alt=""
+                        width={14}
+                        height={14}
+                        lazy={false}
+                        className="size-3.5 shrink-0"
+                        draggable={false}
+                      />
+                      <span className="font-semibold text-foreground/90">{s.level}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-md">
-          <div className="relative">
+          <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
@@ -227,9 +205,35 @@ export function HomeMain({
               className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-2">
+        </div>
+
+        {/* Category + sort + time range filters together */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="All" />
+            <Tab
+              active={filter === "gear"}
+              onClick={() => handleFilterChange("gear")}
+              label="Gear"
+              icon={<Shield className="size-3.5" />}
+            />
+            <Tab
+              active={filter === "skilling"}
+              onClick={() => handleFilterChange("skilling")}
+              label="Skilling Items"
+              icon={<Pickaxe className="size-3.5" />}
+            />
+            <Tab
+              active={filter === "supplies"}
+              onClick={() => handleFilterChange("supplies")}
+              label="Supplies"
+              icon={<Package className="size-3.5" />}
+            />
+          </div>
+
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
-              <SelectTrigger className="h-9 w-[8.5rem] shrink-0 text-xs" aria-label="Sort items">
+              <SelectTrigger className="h-8 w-[8.5rem] shrink-0 text-xs" aria-label="Sort items">
                 <SelectValue placeholder="Sort by…" />
               </SelectTrigger>
               <SelectContent>
@@ -240,7 +244,7 @@ export function HomeMain({
                 <SelectItem value="value">Best value</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex min-w-0 flex-1 flex-wrap gap-1">
+            <div className="flex min-w-0 flex-wrap gap-1">
               {RANGE_OPTIONS.map((r) => (
                 <button
                   key={r.key}

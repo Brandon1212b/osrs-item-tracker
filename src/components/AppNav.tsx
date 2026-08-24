@@ -1,49 +1,67 @@
-import { Link } from "@tanstack/react-router";
-import { Star } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { ChartLine, Home, Pickaxe } from "lucide-react";
+import type { ReactNode } from "react";
 
-const navLinkClass =
-  "inline-flex shrink-0 items-center rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-2.5 sm:text-sm";
-const navInactive = `${navLinkClass} text-muted-foreground hover:bg-accent hover:text-foreground`;
-const navActive = `${navLinkClass} bg-accent text-foreground`;
+const linkBase =
+  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors sm:gap-2 sm:px-3";
+const linkInactive = `${linkBase} text-muted-foreground hover:bg-secondary/60 hover:text-foreground`;
+const linkActive = `${linkBase} bg-primary text-primary-foreground shadow-sm`;
+
+function NavLink({
+  to,
+  label,
+  icon,
+  active,
+}: {
+  to: "/" | "/methods";
+  label: string;
+  icon: ReactNode;
+  active: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      search={{} as never}
+      className={active ? linkActive : linkInactive}
+      aria-current={active ? "page" : undefined}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 export function AppNav() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const onMethods = pathname.startsWith("/methods");
+  // Item Prices covers home grid and individual item pages
+  const onPrices = !onMethods;
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         <Link
           to="/"
           search={{} as never}
-          className="shrink-0 font-display text-sm font-semibold tracking-wide text-foreground sm:text-base"
+          aria-label="Home"
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
         >
-          GE Watch
+          <Home className="size-4" />
         </Link>
-        <div className="flex min-w-0 items-center gap-0.5 overflow-x-auto sm:gap-1.5">
-          <Link
+
+        <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
+          <NavLink
             to="/"
-            search={{} as never}
-            className={navInactive}
-            activeProps={{ className: navActive }}
-            activeOptions={{ exact: true, includeSearch: false }}
-          >
-            Item Prices
-          </Link>
-          <Link
+            label="Item Prices"
+            active={onPrices}
+            icon={<ChartLine className="size-4 shrink-0" aria-hidden />}
+          />
+          <NavLink
             to="/methods"
-            search={{} as never}
-            className={navInactive}
-            activeProps={{ className: navActive }}
-            activeOptions={{ includeSearch: false }}
-          >
-            Skilling Methods
-          </Link>
-          <Link
-            to="/watchlist"
-            className={`${navInactive} gap-1.5`}
-            activeProps={{ className: `${navActive} gap-1.5` }}
-          >
-            <Star className="size-3.5 sm:size-4" />
-            Watchlist
-          </Link>
+            label="Skilling Methods"
+            active={onMethods}
+            icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
+          />
         </div>
       </nav>
     </header>
