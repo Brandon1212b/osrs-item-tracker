@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ChartLine, Pickaxe } from "lucide-react";
+import { ChartLine, Home, Pickaxe } from "lucide-react";
 import type { ReactNode } from "react";
 
 const linkBase =
-  "inline-flex items-center gap-1.5 border-b-2 px-1 py-2.5 text-sm font-medium transition-colors sm:gap-2 sm:px-1.5";
-const linkInactive = `${linkBase} border-transparent text-muted-foreground hover:text-foreground`;
-const linkActive = `${linkBase} border-primary text-foreground`;
+  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors sm:gap-2 sm:px-3";
+const linkInactive = `${linkBase} text-muted-foreground hover:bg-secondary/60 hover:text-foreground`;
+const linkActive = `${linkBase} bg-primary text-primary-foreground shadow-sm`;
 
 function NavLink({
   to,
@@ -35,16 +35,17 @@ function NavLink({
 export function AppNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center gap-4 px-3 sm:gap-6 sm:px-4">
+      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         <Link
           to="/"
           search={{} as never}
-          className="shrink-0 py-2.5 font-display text-sm font-semibold tracking-wide text-foreground sm:text-base"
+          aria-label="Home"
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
         >
-          GE Watch
+          <Home className="size-4" />
         </Link>
 
-        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
           <NavLink
             to="/"
             exact
