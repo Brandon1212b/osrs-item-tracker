@@ -23,7 +23,8 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "mithril-ore", label: "Mithril ore", level: 55, xp: 80, actionsPerHour: 400, inputs: [], output: { name: "Mithril ore", qty: 1 } },
   { id: "adamantite-ore", label: "Adamantite ore", level: 70, xp: 95, actionsPerHour: 280, inputs: [], output: { name: "Adamantite ore", qty: 1 } },
   { id: "runite-ore", label: "Runite ore", level: 85, xp: 125, actionsPerHour: 80, inputs: [], output: { name: "Runite ore", qty: 1 } },
-  { id: "sandstone", label: "Sandstone", level: 35, xp: 60, actionsPerHour: 900, inputs: [], output: { name: "Sandstone (10kg)", qty: 1 } },
+  // Power-mine / drop style — no GE profit (sandstone usually dropped or ground for sand)
+  { id: "sandstone", label: "Sandstone (power-mine)", level: 35, xp: 60, actionsPerHour: 900, inputs: [], output: null },
   { id: "granite", label: "Granite (power-mine)", level: 45, xp: 75, actionsPerHour: 1100, inputs: [], output: null },
   { id: "gem-rock", label: "Gem rocks", level: 40, xp: 65, actionsPerHour: 700, inputs: [], output: null },
   { id: "volcanic-ash", label: "Volcanic ash", level: 22, xp: 10, actionsPerHour: 2500, inputs: [], output: { name: "Volcanic ash", qty: 1 } },
