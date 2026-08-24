@@ -1,15 +1,49 @@
 import { Link } from "@tanstack/react-router";
-import { Star } from "lucide-react";
+import { ChartLine, Pickaxe } from "lucide-react";
 
-const navLinkClass =
-  "inline-flex shrink-0 items-center rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-2.5 sm:text-sm";
-const navInactive = `${navLinkClass} text-muted-foreground hover:bg-accent hover:text-foreground`;
-const navActive = `${navLinkClass} bg-accent text-foreground`;
+function ToolLink({
+  to,
+  title,
+  subtitle,
+  icon,
+  exact,
+}: {
+  to: "/" | "/methods";
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  exact?: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      search={{} as never}
+      className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors sm:px-3 sm:py-2"
+      activeProps={{
+        className:
+          "flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-primary/15 px-2.5 py-1.5 text-left ring-1 ring-primary/40 transition-colors sm:px-3 sm:py-2",
+      }}
+      activeOptions={{ exact: exact ?? false, includeSearch: false }}
+      inactiveProps={{
+        className:
+          "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground sm:px-3 sm:py-2",
+      }}
+    >
+      <span className="hidden shrink-0 text-current sm:inline-flex">{icon}</span>
+      <span className="min-w-0">
+        <span className="block truncate text-xs font-semibold leading-tight sm:text-sm">{title}</span>
+        <span className="mt-0.5 block truncate text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
+          {subtitle}
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 export function AppNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         <Link
           to="/"
           search={{} as never}
@@ -17,33 +51,22 @@ export function AppNav() {
         >
           GE Watch
         </Link>
-        <div className="flex min-w-0 items-center gap-0.5 overflow-x-auto sm:gap-1.5">
-          <Link
+
+        {/* Two distinct tools — segmented switcher */}
+        <div className="flex min-w-0 flex-1 items-stretch gap-0.5 rounded-xl border border-border/60 bg-secondary/25 p-0.5 sm:max-w-md sm:gap-1 sm:p-1">
+          <ToolLink
             to="/"
-            search={{} as never}
-            className={navInactive}
-            activeProps={{ className: navActive }}
-            activeOptions={{ exact: true, includeSearch: false }}
-          >
-            Item Prices
-          </Link>
-          <Link
+            exact
+            title="Item Prices"
+            subtitle="Live GE prices & charts"
+            icon={<ChartLine className="size-4" />}
+          />
+          <ToolLink
             to="/methods"
-            search={{} as never}
-            className={navInactive}
-            activeProps={{ className: navActive }}
-            activeOptions={{ includeSearch: false }}
-          >
-            Skilling Methods
-          </Link>
-          <Link
-            to="/watchlist"
-            className={`${navInactive} gap-1.5`}
-            activeProps={{ className: `${navActive} gap-1.5` }}
-          >
-            <Star className="size-3.5 sm:size-4" />
-            Watchlist
-          </Link>
+            title="Skilling Methods"
+            subtitle="XP/hr · cost vs your rate"
+            icon={<Pickaxe className="size-4" />}
+          />
         </div>
       </nav>
     </header>
