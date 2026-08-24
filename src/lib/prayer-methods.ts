@@ -5,6 +5,8 @@
  * XP/h from wiki focused rates; GP/h is computed live from GE prices.
  * Bones / ashes / heads are consumed (no GE product).
  * Chaos altar: 50% bone-save → model as 0.5 bone input per offer.
+ * Sinister Offering: 1 blood + 1 wrath per cast (3 bones).
+ * Demonic Offering: 1 soul + 1 wrath per cast (3 ashes).
  */
 export type MethodPart = {
   name: string;
@@ -73,7 +75,11 @@ function boneMethods(
       level: prayerLevel,
       xp: sinisterXp,
       actionsPerHour: OFFERING_APH,
-      inputs: [{ name: bone, qty: 3 }],
+      inputs: [
+        { name: bone, qty: 3 },
+        { name: "Blood rune", qty: 1 },
+        { name: "Wrath rune", qty: 1 },
+      ],
       output: null,
       magicLevel: 92,
     },
@@ -126,7 +132,11 @@ export const PRAYER_METHODS: PrayerMethod[] = [
     level: 1,
     xp: 10 * 3 * 3,
     actionsPerHour: OFFERING_APH,
-    inputs: [{ name: "Fiendish ashes", qty: 3 }],
+    inputs: [
+      { name: "Fiendish ashes", qty: 3 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Wrath rune", qty: 1 },
+    ],
     output: null,
     magicLevel: 84,
   },
@@ -136,7 +146,11 @@ export const PRAYER_METHODS: PrayerMethod[] = [
     level: 1,
     xp: 25 * 3 * 3,
     actionsPerHour: OFFERING_APH,
-    inputs: [{ name: "Vile ashes", qty: 3 }],
+    inputs: [
+      { name: "Vile ashes", qty: 3 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Wrath rune", qty: 1 },
+    ],
     output: null,
     magicLevel: 84,
   },
@@ -146,7 +160,11 @@ export const PRAYER_METHODS: PrayerMethod[] = [
     level: 1,
     xp: 65 * 3 * 3,
     actionsPerHour: OFFERING_APH,
-    inputs: [{ name: "Malicious ashes", qty: 3 }],
+    inputs: [
+      { name: "Malicious ashes", qty: 3 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Wrath rune", qty: 1 },
+    ],
     output: null,
     magicLevel: 84,
   },
@@ -156,7 +174,11 @@ export const PRAYER_METHODS: PrayerMethod[] = [
     level: 1,
     xp: 85 * 3 * 3,
     actionsPerHour: OFFERING_APH,
-    inputs: [{ name: "Abyssal ashes", qty: 3 }],
+    inputs: [
+      { name: "Abyssal ashes", qty: 3 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Wrath rune", qty: 1 },
+    ],
     output: null,
     magicLevel: 84,
   },
@@ -166,7 +188,11 @@ export const PRAYER_METHODS: PrayerMethod[] = [
     level: 1,
     xp: 110 * 3 * 3,
     actionsPerHour: OFFERING_APH,
-    inputs: [{ name: "Infernal ashes", qty: 3 }],
+    inputs: [
+      { name: "Infernal ashes", qty: 3 },
+      { name: "Soul rune", qty: 1 },
+      { name: "Wrath rune", qty: 1 },
+    ],
     output: null,
     magicLevel: 84,
   },

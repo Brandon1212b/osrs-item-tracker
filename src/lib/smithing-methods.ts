@@ -8,6 +8,7 @@
  * Anvil / cannonball rates from wiki calculators & money-making pages.
  * XP/h = xp * actionsPerHour. GP/h is computed live from GE prices (not hardcoded).
  * Blast Furnace coal is already halved vs normal furnace.
+ * Official BF worlds: 72,000 gp/hr coffer fee amortized into each bar as Coins.
  */
 export type MethodPart = {
   name: string;
@@ -56,7 +57,10 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     level: 15,
     xp: 12.5,
     actionsPerHour: BF_IRON_APH,
-    inputs: [{ name: "Iron ore", qty: 1 }],
+    inputs: [
+      { name: "Iron ore", qty: 1 },
+      { name: "Coins", qty: 72000 / 6000 }, // BF world coffer ~72k/hr
+    ],
     output: { name: "Iron bar", qty: 1 },
   },
   {
@@ -68,6 +72,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     inputs: [
       { name: "Iron ore", qty: 1 },
       { name: "Coal", qty: 1 }, // BF halves coal
+      { name: "Coins", qty: 72000 / 5400 }, // BF world coffer ~72k/hr
     ],
     output: { name: "Steel bar", qty: 1 },
   },
@@ -77,7 +82,10 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     level: 40,
     xp: 56.2,
     actionsPerHour: BF_GOLD_APH,
-    inputs: [{ name: "Gold ore", qty: 1 }],
+    inputs: [
+      { name: "Gold ore", qty: 1 },
+      { name: "Coins", qty: 72000 / 6200 }, // BF world coffer ~72k/hr
+    ],
     output: { name: "Gold bar", qty: 1 },
   },
   {
@@ -89,6 +97,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     inputs: [
       { name: "Mithril ore", qty: 1 },
       { name: "Coal", qty: 2 },
+      { name: "Coins", qty: 72000 / 3600 }, // BF world coffer ~72k/hr
     ],
     output: { name: "Mithril bar", qty: 1 },
   },
@@ -101,6 +110,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     inputs: [
       { name: "Adamantite ore", qty: 1 },
       { name: "Coal", qty: 3 },
+      { name: "Coins", qty: 72000 / 2700 }, // BF world coffer ~72k/hr
     ],
     output: { name: "Adamantite bar", qty: 1 },
   },
@@ -113,6 +123,7 @@ export const SMITHING_METHODS: SmithingMethod[] = [
     inputs: [
       { name: "Runite ore", qty: 1 },
       { name: "Coal", qty: 4 },
+      { name: "Coins", qty: 72000 / 2160 }, // BF world coffer ~72k/hr
     ],
     output: { name: "Runite bar", qty: 1 },
   },

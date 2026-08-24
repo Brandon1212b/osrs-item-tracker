@@ -133,6 +133,7 @@ export const MAGIC_METHODS: MagicMethod[] = [
   },
 
   // ── Plank Make ───────────────────────────────────────────────────────────
+  // Coin fee is 70% of the sawmill operator charge (wiki: Plank Make).
   {
     id: "plank-make-oak",
     label: "Plank Make (oak)",
@@ -143,6 +144,7 @@ export const MAGIC_METHODS: MagicMethod[] = [
       { name: "Oak logs", qty: 1 },
       { name: "Nature rune", qty: 1 },
       { name: "Astral rune", qty: 2 },
+      { name: "Coins", qty: 175 }, // 70% of sawmill fee (250)
     ],
     output: { name: "Oak plank", qty: 1 },
   },
@@ -156,6 +158,7 @@ export const MAGIC_METHODS: MagicMethod[] = [
       { name: "Teak logs", qty: 1 },
       { name: "Nature rune", qty: 1 },
       { name: "Astral rune", qty: 2 },
+      { name: "Coins", qty: 350 }, // 70% of sawmill fee (500)
     ],
     output: { name: "Teak plank", qty: 1 },
   },
@@ -169,6 +172,7 @@ export const MAGIC_METHODS: MagicMethod[] = [
       { name: "Mahogany logs", qty: 1 },
       { name: "Nature rune", qty: 1 },
       { name: "Astral rune", qty: 2 },
+      { name: "Coins", qty: 1050 }, // 70% of sawmill fee (1500)
     ],
     output: { name: "Mahogany plank", qty: 1 },
   },
