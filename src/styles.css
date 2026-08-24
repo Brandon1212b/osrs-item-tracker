@@ -149,14 +149,15 @@
     font-family: var(--font-display);
     letter-spacing: 0.01em;
   }
+}
 
-  /* Prevent iOS Safari from auto-zooming focused form fields.
-     Safari zooms when computed font-size is < 16px. */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
-  textarea,
-  select {
-    font-size: max(16px, 1em);
-  }
+/* Prevent iOS Safari from auto-zooming focused form fields.
+   Safari zooms when computed font-size is < 16px.
+   !important so Tailwind text-xs / text-sm utilities cannot override. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+textarea,
+select {
+  font-size: max(16px, 1em) !important;
 }
 
 @utility panel {
