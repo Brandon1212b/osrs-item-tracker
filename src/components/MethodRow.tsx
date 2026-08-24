@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CircleHelp, Pin, Star } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 import type { PriceRow } from "@/lib/osrs.server";
 import { gp, compactNum, formatCost, formatHours } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
@@ -54,9 +54,6 @@ export function MethodRow({
   rateBandLevel,
   hoursToTarget,
   totalGp,
-  comparing,
-  onToggleCompare,
-  onWatchInputs,
   metricView = "rate",
   xpRemaining = 0,
 }: RankedMethod & {
@@ -64,9 +61,6 @@ export function MethodRow({
   rowsByName: Map<string, PriceRow>;
   skillLabel: string;
   skillKey?: string;
-  comparing?: boolean;
-  onToggleCompare?: () => void;
-  onWatchInputs?: () => void;
   metricView?: MethodsMetricView;
   xpRemaining?: number;
 }) {
@@ -121,18 +115,6 @@ export function MethodRow({
                 notes={notes}
                 method={method}
               />
-              {onToggleCompare && (
-                <button type="button" onClick={onToggleCompare} aria-pressed={comparing} title={comparing ? "Unpin" : "Pin to compare"}
-                  className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full ${comparing ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
-                  <Pin className="size-3.5" />
-                </button>
-              )}
-              {method && onWatchInputs && (
-                <button type="button" onClick={onWatchInputs} title="Add method inputs to watchlist"
-                  className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground">
-                  <Star className="size-3.5" />
-                </button>
-              )}
             </div>
             <p
               className={`text-[11px] ${
