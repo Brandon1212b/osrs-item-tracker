@@ -111,7 +111,7 @@ function StepperInput({
         inputMode="numeric"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-6 w-9 rounded-md border border-border/50 bg-background px-0.5 text-center text-xs font-semibold tabular-nums text-foreground"
+        className="h-6 w-11 rounded-md border border-border/50 bg-background px-0.5 text-center text-base font-semibold tabular-nums text-foreground"
         aria-label={ariaLabel}
       />
       <button
