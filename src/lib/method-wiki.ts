@@ -124,7 +124,7 @@ const BY_ID: Record<string, WikiRef> = {
   "rogues-castle-hard": { page: "Money making guide/Stealing from Rogues' Castle chests", title: "Rogues' Castle chests (MMG)" },
   blackjacking: { page: "Blackjack", title: "Blackjacking" },
 
-  // Smithing
+  // ── Smithing ──────────────────────────────────────────────────────────
   "bf-iron": { page: "Money making guide/Smelting iron bars at Blast Furnace", title: "Blast Furnace iron (MMG)" },
   "bf-steel": { page: "Money making guide/Smelting steel bars at Blast Furnace", title: "Blast Furnace steel (MMG)" },
   "bf-gold": { page: "Money making guide/Blast Furnace", title: "Blast Furnace (MMG)" },
@@ -146,6 +146,24 @@ const BY_ID: Record<string, WikiRef> = {
   "rune-warhammer": { page: "Money making guide/Smithing rune items", title: "Smithing rune items (MMG)" },
   "rune-dart-tips": { page: "Money making guide/Smithing rune items", title: "Smithing rune items (MMG)" },
   "rune-nails": { page: "Money making guide/Smithing rune items", title: "Smithing rune items (MMG)" },
+
+  // ── Mining ────────────────────────────────────────────────────────────
+  basalt: { page: "Money making guide/Mining basalt", title: "Mining basalt (MMG)" },
+  "iron-ore": { page: "Money making guide/Mining iron ore", title: "Mining iron ore (MMG)" },
+  sandstone: { page: "Sandstone", title: "Sandstone" },
+  granite: { page: "Granite", title: "Granite" },
+  "granite-3tick": { page: "Pay-to-play Mining training", title: "3-tick granite" },
+  "gem-rock": { page: "Gem rocks", title: "Gem rocks" },
+  "lead-ore-deepfin": { page: "Money making guide/Mining lead ore (Deepfin mine)", title: "Deepfin lead ore (MMG)" },
+  "volcanic-ash": { page: "Volcanic ash", title: "Volcanic ash" },
+  "zeah-salts": { page: "Money making guide/Mining salts", title: "Mining salts (MMG)" },
+  "infernal-shale": { page: "Money making guide/Mining and crushing infernal shale (Tick manipulation)", title: "Infernal shale (MMG)" },
+  "copper-ore": { page: "Copper ore", title: "Copper ore" },
+  "tin-ore": { page: "Tin ore", title: "Tin ore" },
+  coal: { page: "Coal", title: "Coal" },
+  "gold-ore": { page: "Gold ore", title: "Gold ore" },
+  "mithril-ore": { page: "Mithril ore", title: "Mithril ore" },
+  "adamantite-ore": { page: "Adamantite ore", title: "Adamantite ore" },
 
   amethyst: { page: "Money making guide/Mining amethyst", title: "Mining amethyst (MMG)" },
   "runite-ore": { page: "Money making guide/Mining runite ore", title: "Mining runite ore (MMG)" },
