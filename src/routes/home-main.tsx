@@ -157,7 +157,7 @@ export function HomeMain({
                 value={rsnDraft}
                 onChange={(e) => setRsnDraft(e.target.value)}
                 placeholder="RSN…"
-                className="h-9 pl-8 pr-8 text-xs"
+                className="h-9 pl-8 pr-8 text-base"
                 aria-label="Old School RuneScape username"
                 autoComplete="username"
               />
