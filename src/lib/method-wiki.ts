@@ -153,7 +153,7 @@ const BY_ID: Record<string, WikiRef> = {
   sandstone: { page: "Sandstone", title: "Sandstone" },
   granite: { page: "Granite", title: "Granite" },
   "granite-3tick": { page: "Pay-to-play Mining training", title: "3-tick granite" },
-  "gem-rock": { page: "Gem rocks", title: "Gem rocks" },
+  "gem-rock": { page: "Money making guide/Mining gemstones", title: "Mining gemstones (MMG)" },
   "lead-ore-deepfin": { page: "Money making guide/Mining lead ore (Deepfin mine)", title: "Deepfin lead ore (MMG)" },
   "volcanic-ash": { page: "Volcanic ash", title: "Volcanic ash" },
   "zeah-salts": { page: "Money making guide/Mining salts", title: "Mining salts (MMG)" },
