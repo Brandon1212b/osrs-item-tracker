@@ -166,60 +166,54 @@ function MethodsPage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-3 pb-16 pt-3 sm:px-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-          Skilling methods
-        </h1>
-
-        <div className="flex flex-col gap-2 sm:items-end">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <User className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={rsnDraft}
-                onChange={(e) => setRsnDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") loadRsn(rsnDraft);
-                }}
-                placeholder="RSN"
-                className="h-8 w-36 pl-7 text-base sm:w-44"
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
+    <main className="mx-auto max-w-6xl px-3 pb-16 pt-0 sm:px-4">
+      <div className="flex flex-col gap-2 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <User className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={rsnDraft}
+              onChange={(e) => setRsnDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") loadRsn(rsnDraft);
+              }}
+              placeholder="RSN"
+              className="h-8 w-36 pl-7 text-base sm:w-44"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => loadRsn(rsnDraft)}
+            className="h-8 rounded-md border border-border/60 bg-secondary/40 px-2.5 text-xs font-medium hover:bg-secondary/60"
+          >
+            Load
+          </button>
+          {activeRsn && (
             <button
               type="button"
-              onClick={() => loadRsn(rsnDraft)}
-              className="h-8 rounded-md border border-border/60 bg-secondary/40 px-2.5 text-xs font-medium hover:bg-secondary/60"
+              onClick={clearRsn}
+              className="inline-flex size-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:bg-secondary/50"
+              title="Clear RSN"
             >
-              Load
+              <X className="size-3.5" />
             </button>
-            {activeRsn && (
-              <button
-                type="button"
-                onClick={clearRsn}
-                className="inline-flex size-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:bg-secondary/50"
-                title="Clear RSN"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {playerQuery.isFetching && (
-            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
-              Looking up hiscores…
-            </p>
-          )}
-          {playerQuery.isError && (
-            <p className="text-[11px] text-destructive">Player not found on hiscores.</p>
           )}
         </div>
+
+        {playerQuery.isFetching && (
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Loader2 className="size-3 animate-spin" />
+            Looking up hiscores…
+          </p>
+        )}
+        {playerQuery.isError && (
+          <p className="text-[11px] text-destructive">Player not found on hiscores.</p>
+        )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {METHOD_SKILLS.map((s) => (
           <WikiIconTab
             key={s.key}
