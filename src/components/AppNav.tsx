@@ -2,16 +2,19 @@ import { Link } from "@tanstack/react-router";
 import { ChartLine, Pickaxe } from "lucide-react";
 import type { ReactNode } from "react";
 
-function ToolLink({
+const linkBase =
+  "inline-flex items-center gap-1.5 border-b-2 px-1 py-2.5 text-sm font-medium transition-colors sm:gap-2 sm:px-1.5";
+const linkInactive = `${linkBase} border-transparent text-muted-foreground hover:text-foreground`;
+const linkActive = `${linkBase} border-primary text-foreground`;
+
+function NavLink({
   to,
-  title,
-  subtitle,
+  label,
   icon,
   exact,
 }: {
   to: "/" | "/methods";
-  title: string;
-  subtitle: string;
+  label: string;
   icon: ReactNode;
   exact?: boolean;
 }) {
@@ -19,24 +22,12 @@ function ToolLink({
     <Link
       to={to}
       search={{} as never}
-      className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-colors sm:px-3 sm:py-2"
-      activeProps={{
-        className:
-          "flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-primary/15 px-2.5 py-1.5 text-left ring-1 ring-primary/40 transition-colors sm:px-3 sm:py-2",
-      }}
+      className={linkInactive}
+      activeProps={{ className: linkActive }}
       activeOptions={{ exact: exact ?? false, includeSearch: false }}
-      inactiveProps={{
-        className:
-          "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground sm:px-3 sm:py-2",
-      }}
     >
-      <span className="hidden shrink-0 text-current sm:inline-flex">{icon}</span>
-      <span className="min-w-0">
-        <span className="block truncate text-xs font-semibold leading-tight sm:text-sm">{title}</span>
-        <span className="mt-0.5 block truncate text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
-          {subtitle}
-        </span>
-      </span>
+      {icon}
+      <span>{label}</span>
     </Link>
   );
 }
@@ -44,29 +35,26 @@ function ToolLink({
 export function AppNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+      <nav className="mx-auto flex max-w-7xl items-center gap-4 px-3 sm:gap-6 sm:px-4">
         <Link
           to="/"
           search={{} as never}
-          className="shrink-0 font-display text-sm font-semibold tracking-wide text-foreground sm:text-base"
+          className="shrink-0 py-2.5 font-display text-sm font-semibold tracking-wide text-foreground sm:text-base"
         >
           GE Watch
         </Link>
 
-        {/* Two distinct tools — segmented switcher */}
-        <div className="flex min-w-0 flex-1 items-stretch gap-0.5 rounded-xl border border-border/60 bg-secondary/25 p-0.5 sm:max-w-md sm:gap-1 sm:p-1">
-          <ToolLink
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+          <NavLink
             to="/"
             exact
-            title="Item Prices"
-            subtitle="Live GE prices & charts"
-            icon={<ChartLine className="size-4" />}
+            label="Item Prices"
+            icon={<ChartLine className="size-4 shrink-0" aria-hidden />}
           />
-          <ToolLink
+          <NavLink
             to="/methods"
-            title="Skilling Methods"
-            subtitle="XP/hr · cost vs your rate"
-            icon={<Pickaxe className="size-4" />}
+            label="Skilling Methods"
+            icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
           />
         </div>
       </nav>
