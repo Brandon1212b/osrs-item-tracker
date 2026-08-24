@@ -87,7 +87,7 @@ function WatchlistPage() {
             value={rsnDraft}
             onChange={(e) => setRsnDraft(e.target.value)}
             placeholder="Your RSN"
-            className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-sm text-foreground"
+            className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-base text-foreground"
           />
         </label>
         <button
@@ -194,7 +194,7 @@ function WatchRow({
             onChange={(e) => setTarget(e.target.value.replace(/[^0-9]/g, ""))}
             onBlur={() => onUpdate({ target_price: target ? Number(target) : null })}
             placeholder="—"
-            className="mt-1 w-24 rounded-md border border-input bg-background px-2 py-1 text-sm tabular-nums text-foreground"
+            className="mt-1 w-28 rounded-md border border-input bg-background px-2 py-1 text-base tabular-nums text-foreground"
           />
         </label>
         <label className="text-[11px] font-medium text-muted-foreground">
@@ -205,7 +205,7 @@ function WatchRow({
             onChange={(e) => setDrop(e.target.value.replace(/[^0-9]/g, ""))}
             onBlur={() => onUpdate({ drop_pct: drop ? Number(drop) : null })}
             placeholder="—"
-            className="mt-1 w-16 rounded-md border border-input bg-background px-2 py-1 text-sm tabular-nums text-foreground"
+            className="mt-1 w-16 rounded-md border border-input bg-background px-2 py-1 text-base tabular-nums text-foreground"
           />
         </label>
         <button
