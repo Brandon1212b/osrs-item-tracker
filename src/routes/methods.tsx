@@ -188,7 +188,7 @@ function MethodsPage() {
                   if (e.key === "Enter") loadRsn(rsnDraft);
                 }}
                 placeholder="RSN"
-                className="h-8 w-36 pl-7 text-xs sm:w-44"
+                className="h-8 w-36 pl-7 text-base sm:w-44"
                 autoComplete="off"
                 spellCheck={false}
               />
