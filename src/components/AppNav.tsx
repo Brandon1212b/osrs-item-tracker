@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ChartLine, Home, Pickaxe } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -11,20 +11,19 @@ function NavLink({
   to,
   label,
   icon,
-  exact,
+  active,
 }: {
   to: "/" | "/methods";
   label: string;
   icon: ReactNode;
-  exact?: boolean;
+  active: boolean;
 }) {
   return (
     <Link
       to={to}
       search={{} as never}
-      className={linkInactive}
-      activeProps={{ className: linkActive }}
-      activeOptions={{ exact: exact ?? false, includeSearch: false }}
+      className={active ? linkActive : linkInactive}
+      aria-current={active ? "page" : undefined}
     >
       {icon}
       <span>{label}</span>
@@ -33,6 +32,11 @@ function NavLink({
 }
 
 export function AppNav() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const onMethods = pathname.startsWith("/methods");
+  // Item Prices covers home grid and individual item pages
+  const onPrices = !onMethods;
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
@@ -48,13 +52,14 @@ export function AppNav() {
         <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
           <NavLink
             to="/"
-            exact
             label="Item Prices"
+            active={onPrices}
             icon={<ChartLine className="size-4 shrink-0" aria-hidden />}
           />
           <NavLink
             to="/methods"
             label="Skilling Methods"
+            active={onMethods}
             icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
           />
         </div>
