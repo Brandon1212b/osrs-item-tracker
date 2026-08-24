@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChartLine, Pickaxe } from "lucide-react";
+import type { ReactNode } from "react";
 
 function ToolLink({
   to,
@@ -11,7 +12,7 @@ function ToolLink({
   to: "/" | "/methods";
   title: string;
   subtitle: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   exact?: boolean;
 }) {
   return (
