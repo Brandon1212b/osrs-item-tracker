@@ -168,14 +168,9 @@ function MethodsPage() {
   return (
     <main className="mx-auto max-w-6xl px-3 pb-16 pt-3 sm:px-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-            Skilling methods
-          </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-            Live GE prices · XP/hr · cost vs your money-making rate
-          </p>
-        </div>
+        <h1 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+          Skilling methods
+        </h1>
 
         <div className="flex flex-col gap-2 sm:items-end">
           <div className="flex items-center gap-2">
