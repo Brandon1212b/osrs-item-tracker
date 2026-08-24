@@ -77,15 +77,13 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
   };
 }
 
-function StepperInput({
-  label,
+function MiniStepper({
   value,
   min,
   max,
   onChange,
   ariaLabel,
 }: {
-  label: string;
   value: number;
   min: number;
   max: number;
@@ -93,16 +91,15 @@ function StepperInput({
   ariaLabel: string;
 }) {
   return (
-    <div className="inline-flex h-8 items-center gap-0.5 rounded-full border border-border/60 bg-secondary/30 pl-2.5 pr-0.5 text-[11px] text-muted-foreground">
-      <span className="pr-0.5">{label}</span>
+    <span className="inline-flex items-center gap-0.5">
       <button
         type="button"
         onClick={() => onChange(value - 1)}
         disabled={value <= min}
-        className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
         aria-label={`Decrease ${ariaLabel}`}
       >
-        <Minus className="size-3.5" />
+        <Minus className="size-3" />
       </button>
       <input
         type="number"
@@ -111,22 +108,23 @@ function StepperInput({
         inputMode="numeric"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-6 w-11 rounded-md border border-border/50 bg-background px-0.5 text-center text-base font-semibold tabular-nums text-foreground"
+        className="h-6 w-9 rounded-md border border-border/50 bg-background px-0.5 text-center text-xs font-semibold tabular-nums text-foreground"
         aria-label={ariaLabel}
       />
       <button
         type="button"
         onClick={() => onChange(value + 1)}
         disabled={value >= max}
-        className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30"
+        className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
         aria-label={`Increase ${ariaLabel}`}
       >
-        <Plus className="size-3.5" />
+        <Plus className="size-3" />
       </button>
-    </div>
+    </span>
   );
 }
 
+/** Compact "train to X" strip under skill icons. */
 export function MethodsGoalBar({
   view,
   onViewChange,
@@ -143,53 +141,54 @@ export function MethodsGoalBar({
   targetLevel: number;
   onTargetLevelChange: (n: number) => void;
   skillLabel: string;
-  /** @deprecated unused — kept optional for older call sites during rollout */
   currentXp?: number;
   xpRemaining?: number;
   usingExactXp?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex h-8 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
-          <button
-            type="button"
-            onClick={() => onViewChange("rate")}
-            className={`h-7 rounded-full px-3 text-[11px] font-medium ${
-              view === "rate" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            XP/h
-          </button>
-          <button
-            type="button"
-            onClick={() => onViewChange("goal")}
-            className={`h-7 rounded-full px-3 text-[11px] font-medium ${
-              view === "goal" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            To {targetLevel}
-          </button>
-        </div>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
+      <div className="inline-flex h-7 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
+        <button
+          type="button"
+          onClick={() => onViewChange("rate")}
+          className={`h-6 rounded-full px-2.5 text-[11px] font-medium ${
+            view === "rate" ? "bg-primary/15 text-primary" : "hover:text-foreground"
+          }`}
+        >
+          XP/h
+        </button>
+        <button
+          type="button"
+          onClick={() => onViewChange("goal")}
+          className={`h-6 rounded-full px-2.5 text-[11px] font-medium ${
+            view === "goal" ? "bg-primary/15 text-primary" : "hover:text-foreground"
+          }`}
+        >
+          Train to {targetLevel}
+        </button>
+      </div>
 
-        <StepperInput
-          label="Now"
+      <span className="inline-flex items-center gap-1">
+        <span>Now</span>
+        <MiniStepper
           value={currentLevel}
           min={1}
           max={MAX_SKILL_LEVEL}
           onChange={onCurrentLevelChange}
           ariaLabel={`Current ${skillLabel} level`}
         />
+      </span>
 
-        <StepperInput
-          label="Target"
+      <span className="inline-flex items-center gap-1">
+        <span>Target</span>
+        <MiniStepper
           value={targetLevel}
           min={2}
           max={MAX_SKILL_LEVEL}
           onChange={onTargetLevelChange}
           ariaLabel="Target skill level"
         />
-      </div>
+      </span>
     </div>
   );
 }
