@@ -11,10 +11,10 @@ import { costPerBonus } from "@/lib/item-bonuses";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { useMarketData } from "@/hooks/useMarketData";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
-import type { HomeSearch } from "./index";
+import type { HomeSearch } from "./items";
 import { HomeMain } from "./home-main";
 
-const routeApi = getRouteApi("/");
+const routeApi = getRouteApi("/items");
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
@@ -53,7 +53,7 @@ function uniqueById(rows: PriceRow[]): PriceRow[] {
 }
 
 export function Home() {
-  const navigate = useNavigate({ from: "/" });
+  const navigate = useNavigate({ from: "/items" });
   const search = routeApi.useSearch();
   const {
     filter,
@@ -85,7 +85,7 @@ export function Home() {
       search: (prev: HomeSearch) => {
         const next = { ...prev, ...patch };
         const cleaned: Partial<HomeSearch> = {};
-        if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
+        if (next.filter && next.filter !== "gear") cleaned.filter = next.filter;
         if (next.sort && next.sort !== DEFAULT_SORT) cleaned.sort = next.sort;
         if (next.range && next.range !== DEFAULT_RANGE) cleaned.range = next.range;
         if (next.q) cleaned.q = next.q;
