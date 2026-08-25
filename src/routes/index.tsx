@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+export type { HomeSearch } from "./items";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
