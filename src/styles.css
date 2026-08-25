@@ -4,20 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -173,3 +159,103 @@ select {
   color: transparent;
 }
 
+/* RuneScape login-style stone tiles used on the homepage. */
+.rs-landing {
+  min-height: calc(100dvh - 3.5rem);
+  background-color: #2b2924;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 70, 50, 0.35), transparent 60%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 78px,
+      rgba(0, 0, 0, 0.18) 78px 80px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 78px,
+      rgba(0, 0, 0, 0.18) 78px 80px
+    ),
+    linear-gradient(180deg, #3a362f 0%, #2a2722 55%, #1f1d1a 100%);
+}
+
+.rs-stone-btn {
+  display: block;
+  width: min(46vw, 200px);
+  aspect-ratio: 1;
+  padding: 7px;
+  border-radius: 4px;
+  background:
+    linear-gradient(#8a8a8a, #5a5a5a) padding-box,
+    linear-gradient(180deg, #c8c8c8, #4a4a4a) border-box;
+  border: 3px solid transparent;
+  box-shadow:
+    0 2px 0 #1a1a1a,
+    0 8px 18px rgba(0, 0, 0, 0.45);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.group:hover .rs-stone-btn,
+.group:focus-visible .rs-stone-btn {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.group:active .rs-stone-btn {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+
+.rs-stone-btn-face {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: #4a4338;
+  background-image:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08), transparent 42%),
+    linear-gradient(20deg, rgba(0, 0, 0, 0.28), transparent 45%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 18px,
+      rgba(0, 0, 0, 0.07) 18px 20px
+    ),
+    radial-gradient(circle at 22% 18%, #6a5f50 0 28%, transparent 30%),
+    radial-gradient(circle at 78% 72%, #3a342c 0 24%, transparent 26%),
+    linear-gradient(180deg, #5a5246, #3c362e);
+  box-shadow:
+    inset 0 0 0 1px rgba(20, 16, 12, 0.7),
+    inset 0 0 28px rgba(0, 0, 0, 0.35);
+}
+
+.rs-stone-btn-face::before,
+.rs-stone-btn-face::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 0 0, #9aa0a6 0 3.5px, transparent 4px),
+    radial-gradient(circle at 100% 0, #9aa0a6 0 3.5px, transparent 4px),
+    radial-gradient(circle at 0 100%, #9aa0a6 0 3.5px, transparent 4px),
+    radial-gradient(circle at 100% 100%, #9aa0a6 0 3.5px, transparent 4px),
+    radial-gradient(circle at 50% 0, #8f959b 0 3px, transparent 3.5px),
+    radial-gradient(circle at 50% 100%, #8f959b 0 3px, transparent 3.5px),
+    radial-gradient(circle at 0 50%, #8f959b 0 3px, transparent 3.5px),
+    radial-gradient(circle at 100% 50%, #8f959b 0 3px, transparent 3.5px);
+}
+
+.rs-stone-btn-label {
+  position: relative;
+  z-index: 1;
+  padding: 0 0.75rem;
+  color: #f4f4f4;
+  font-size: clamp(1.05rem, 4.2vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 0 #000, 0 2px 6px rgba(0, 0, 0, 0.7);
+}
