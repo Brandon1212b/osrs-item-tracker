@@ -13,7 +13,7 @@ function NavLink({
   icon,
   active,
 }: {
-  to: "/" | "/methods";
+  to: "/" | "/items" | "/methods";
   label: string;
   icon: ReactNode;
   active: boolean;
@@ -33,9 +33,9 @@ function NavLink({
 
 export function AppNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const onHome = pathname === "/";
   const onMethods = pathname.startsWith("/methods");
-  // Item Prices covers home grid and individual item pages
-  const onPrices = !onMethods;
+  const onPrices = pathname.startsWith("/items") || pathname.startsWith("/item/");
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
@@ -44,14 +44,19 @@ export function AppNav() {
           to="/"
           search={{} as never}
           aria-label="Home"
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+          aria-current={onHome ? "page" : undefined}
+          className={`inline-flex size-9 shrink-0 items-center justify-center rounded-md transition-colors ${
+            onHome
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          }`}
         >
           <Home className="size-4" />
         </Link>
 
         <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
           <NavLink
-            to="/"
+            to="/items"
             label="Item Prices"
             active={onPrices}
             icon={<ChartLine className="size-4 shrink-0" aria-hidden />}
