@@ -7,9 +7,10 @@ type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
 
 const DEFAULT_RANGE: RangeKey = "6m";
 const DEFAULT_SORT: SortKey = "losers";
+const DEFAULT_FILTER = "gear" as const;
 
 const homeSearchSchema = z.object({
-  filter: z.enum(["all", "gear", "skilling", "supplies"]).catch("all"),
+  filter: z.enum(["all", "gear", "skilling", "supplies"]).catch(DEFAULT_FILTER),
   sort: z.enum(["gainers", "losers", "expensive", "cheap", "value"]).catch(DEFAULT_SORT),
   range: z.enum(["1d", "1w", "1m", "3m", "6m", "1y"]).catch(DEFAULT_RANGE),
   q: z.string().catch(""),
