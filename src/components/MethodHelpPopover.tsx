@@ -3,6 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import type { SkillingMethod } from "@/components/skilling-types";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { methodLinkTrio, type WikiSlot } from "@/lib/method-links";
+import { getMethodValidation } from "@/lib/method-validation";
 
 export function MethodHelpPopover({
   methodId,
@@ -24,6 +25,7 @@ export function MethodHelpPopover({
   const links = methodLinkTrio(methodId, skillKey);
   const xpText = describeXp(method, activity, xpPerHour, rateBandLevel);
   const gpText = describeGp(method, activity, gpPerHour);
+  const validation = getMethodValidation(methodId);
 
   return (
     <Popover>
@@ -41,6 +43,7 @@ export function MethodHelpPopover({
         side="bottom"
         className="w-[min(20rem,calc(100vw-2rem))] space-y-3 p-3 text-xs"
       >
+        <ValidationBadge validation={validation} />
         <section>
           <p className="font-semibold text-foreground">XP/hr</p>
           <p className="mt-0.5 text-muted-foreground">{xpText}</p>
@@ -59,6 +62,22 @@ export function MethodHelpPopover({
         </section>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function ValidationBadge({
+  validation,
+}: {
+  validation: ReturnType<typeof getMethodValidation>;
+}) {
+  const color =
+    validation.status === "fresh"
+      ? "text-emerald-400"
+      : validation.status === "stale"
+        ? "text-amber-400"
+        : "text-red-400";
+  return (
+    <p className={`text-[11px] font-medium ${color}`}>{validation.label}</p>
   );
 }
 
@@ -95,10 +114,10 @@ function describeXp(
     if (bands.length > 1) {
       return `${shown} XP/h from the stored level table (band used: lvl ${rateBandLevel ?? bands[bands.length - 1]!.level}). Static — not from the live price API. XP/h rises with your level when you load an RSN.`;
     }
-    return `${shown} XP/h is a stored hourly rate on this activity (not live). Check the Skill guide / Wiki / MMG links; if they disagree, the stored rate needs a fix.`;
+    return `${shown} XP/h is a stored hourly rate on this activity (not live).`;
   }
   if (method) {
-    return `${method.xp} XP per action × ${method.actionsPerHour.toLocaleString()} actions/h = ${shown} XP/h. Static (saved in code). Does not update with GE prices. If the linked guide lists a different XP/h, the stored XP or actions/h is wrong.`;
+    return `${method.xp} XP per action × ${method.actionsPerHour.toLocaleString()} actions/h = ${shown} XP/h. Static (saved in code). Does not update with GE prices.`;
   }
   return `${shown} XP/h is stored in code. Static.`;
 }
@@ -112,13 +131,13 @@ function describeGp(
     const hasItems = activity.rewards.length > 0 || activity.consumables.length > 0;
     const residual = activity.rateBands.some((b) => (b.expectedLootGpPerHour ?? 0) !== 0);
     if (hasItems && residual) {
-      return `Live GE on listed rewards − consumables (buy high / sell low after 2% tax), plus a stored residual EV for loot we have not itemized. The GE part updates with prices. If this is far from the MMG, the residual or the item list needs a fix.`;
+      return `Live GE on listed rewards − consumables (buy high / sell low after 2% tax), plus a stored residual EV for loot we have not itemized. The GE part updates with prices.`;
     }
     if (hasItems) {
-      return `Live GE: sell rewards (low, after 2% tax) − buy consumables (high), using the stored qty/h. Updates with the price feed. If this is far from the MMG, the qty/h list does not match the guide.`;
+      return `Live GE: sell rewards (low, after 2% tax) − buy consumables (high), using the stored qty/h. Updates with the price feed.`;
     }
     if (residual) {
-      return `Stored residual EV only (no itemized GE loot). Static — does not track live prices. If this is far from the MMG, replace the residual with the guide’s item list.`;
+      return `Stored residual EV only (no itemized GE loot). Static — does not track live prices.`;
     }
     return `No GP model — no rewards, consumables, or residual.`;
   }
@@ -133,7 +152,7 @@ function describeGp(
     if (gpPerHour == null) {
       return `Would be live GE (inputs × buy, outputs × sell after tax × actions/h) but a component has no price.`;
     }
-    return `Live GE: (output sell after 2% tax − input buy) × ${method.actionsPerHour.toLocaleString()} actions/h. Updates with the price feed. If this is far from the MMG, the input/output list or actions/h does not match the guide.`;
+    return `Live GE: (output sell after 2% tax − input buy) × ${method.actionsPerHour.toLocaleString()} actions/h. Updates with the price feed.`;
   }
   return `GP/h source unknown.`;
 }
