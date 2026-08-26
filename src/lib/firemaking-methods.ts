@@ -2,12 +2,14 @@
  * Firemaking training methods (P2P).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Firemaking_training
  * https://oldschool.runescape.wiki/w/Forester%27s_Campfire
+ * https://oldschool.runescape.wiki/w/Money_making_guide/Making_redwood_pyre_logs
  *
  * Line burning: wiki assumes 1,485 logs/hr.
  * Forester's campfire: same XP per log as a ground fire, but slower —
  * 665 logs/hr AFK / 975 logs/hr if you tend immediately. We use 975
  * (focused, not 1-tick).
- * Making pyre logs: 5 FM XP per sacred-oil dose; ~1,470/hr without 1-tick.
+ * Making redwood pyre logs: 20 FM XP each (5 XP × 4 oil doses), 1,400/hr max
+ * (MMG; 1,300 realistic with banking). One Sacred oil(4) per log.
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -23,7 +25,7 @@ export type FiremakingMethod = {
 
 const LINE_BURN_PER_HOUR = 1485;
 const CAMPFIRE_TEND_PER_HOUR = 975;
-const PYRE_MAKE_PER_HOUR = 1470;
+const PYRE_MAKE_PER_HOUR = 1400;
 
 export const FIREMAKING_METHODS: FiremakingMethod[] = [
   { id: "burn-logs", label: "Burn logs", level: 1, xp: 40, actionsPerHour: LINE_BURN_PER_HOUR, inputs: [{ name: "Logs", qty: 1 }], output: null },
@@ -45,12 +47,12 @@ export const FIREMAKING_METHODS: FiremakingMethod[] = [
   {
     id: "redwood-pyre",
     label: "Make redwood pyre logs",
-    level: 95,
+    level: 1, // MMG: no skill req (Shades of Mort'ton quest)
     xp: 20, // 5 XP per sacred-oil dose × 4 doses
     actionsPerHour: PYRE_MAKE_PER_HOUR,
     inputs: [
       { name: "Redwood logs", qty: 1 },
-      { name: "Sacred oil(4)", qty: 0.25 },
+      { name: "Sacred oil(4)", qty: 1 }, // one full 4-dose vial per log
     ],
     output: { name: "Redwood pyre logs", qty: 1 },
   },
