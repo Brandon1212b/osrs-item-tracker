@@ -18,13 +18,12 @@ export type AgilityMethod = {
 };
 
 export const AGILITY_METHODS: AgilityMethod[] = [
-  // --- Early / mid rooftops ---
   {
     id: "varrock-rooftop",
     label: "Varrock rooftop",
     level: 30,
     xp: 270,
-    actionsPerHour: 52, // ~14k xp/hr focused
+    actionsPerHour: 52,
     inputs: [],
     output: null,
   },
@@ -33,7 +32,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Canifis rooftop",
     level: 40,
     xp: 240,
-    actionsPerHour: 80, // ~19.2k xp/hr
+    actionsPerHour: 70,
     inputs: [],
     output: null,
   },
@@ -41,8 +40,8 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     id: "falador-rooftop",
     label: "Falador rooftop",
     level: 50,
-    xp: 440, // wiki table lists higher per-obstacle sum; common focused rate uses ~440-586 range — kept practical
-    actionsPerHour: 75, // ~33k xp/hr
+    xp: 440,
+    actionsPerHour: 75,
     inputs: [],
     output: null,
   },
@@ -51,7 +50,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Seers' Village rooftop",
     level: 60,
     xp: 570,
-    actionsPerHour: 80, // ~45.6k base; higher with diary teleport
+    actionsPerHour: 80,
     inputs: [],
     output: null,
   },
@@ -60,7 +59,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Pollnivneach rooftop",
     level: 70,
     xp: 890,
-    actionsPerHour: 60, // ~53.4k; hard diary ~60k with 1016 xp
+    actionsPerHour: 60,
     inputs: [],
     output: null,
   },
@@ -69,7 +68,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Rellekka rooftop",
     level: 80,
     xp: 780,
-    actionsPerHour: 70, // ~54.6k; hard diary higher
+    actionsPerHour: 70,
     inputs: [],
     output: null,
   },
@@ -78,18 +77,16 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Ardougne rooftop",
     level: 90,
     xp: 889,
-    actionsPerHour: 78, // ~69.3k focused (wiki max ~70k)
+    actionsPerHour: 78,
     inputs: [],
     output: null,
   },
-
-  // --- Other major courses ---
   {
     id: "colossal-wyrm-basic",
     label: "Colossal Wyrm (basic)",
     level: 50,
     xp: 504,
-    actionsPerHour: 61, // ~30.7k xp/hr
+    actionsPerHour: 61,
     inputs: [],
     output: null,
   },
@@ -98,7 +95,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Colossal Wyrm (advanced)",
     level: 62,
     xp: 750,
-    actionsPerHour: 57, // ~42.7k xp/hr
+    actionsPerHour: 57,
     inputs: [],
     output: null,
   },
@@ -107,7 +104,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Wilderness Agility Course",
     level: 52,
     xp: 571,
-    actionsPerHour: 85, // ~48.5k course XP; tickets add more but not modelled as GE output
+    actionsPerHour: 85,
     inputs: [],
     output: null,
   },
@@ -116,7 +113,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Werewolf Agility Course",
     level: 60,
     xp: 730,
-    actionsPerHour: 90, // ~65.7k focused (wiki up to ~68-69k)
+    actionsPerHour: 90,
     inputs: [],
     output: null,
   },
@@ -124,8 +121,8 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     id: "prifddinas",
     label: "Prifddinas Agility Course",
     level: 75,
-    xp: 1340, // approx with portals
-    actionsPerHour: 48, // ~64k focused at high level
+    xp: 1340,
+    actionsPerHour: 48,
     inputs: [],
     output: null,
   },
@@ -134,7 +131,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     label: "Ape Atoll Agility Course",
     level: 48,
     xp: 580,
-    actionsPerHour: 90, // ~52k focused at higher levels
+    actionsPerHour: 90,
     inputs: [],
     output: null,
   },
@@ -142,8 +139,8 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     id: "dorgesh-kaan",
     label: "Dorgesh-Kaan Agility Course",
     level: 70,
-    xp: 2375, // full agility route both ways
-    actionsPerHour: 25, // ~59k focused
+    xp: 2375,
+    actionsPerHour: 25,
     inputs: [],
     output: null,
   },
@@ -151,8 +148,8 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     id: "hallowed-sepulchre",
     label: "Hallowed Sepulchre (floor 5)",
     level: 92,
-    xp: 11700, // cumulative floors 1-5
-    actionsPerHour: 8, // ~93.6k focused (wiki ~98k with good practice)
+    xp: 11700,
+    actionsPerHour: 8,
     inputs: [{ name: "Stamina potion(4)", qty: 2 }],
     output: null,
   },
