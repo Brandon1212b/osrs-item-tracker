@@ -262,6 +262,11 @@ export const WILDERNESS_AGILITY_ACTIVITY: ActivityMethod[] = [
   },
 ];
 
+/**
+ * Floor 5 MMG: https://oldschool.runescape.wiki/w/Money_making_guide/Hallowed_Sepulchre_(Floor_5)
+ * ~7 completions/hr, floors 4+5 loot, hallowed tools, mahogany planks.
+ * Hallowed marks valued via GE (sack conversion on wiki).
+ */
 export const SEPULCHRE_ACTIVITY: ActivityMethod[] = [
   {
     id: "sepulchre-floor-3",
@@ -272,7 +277,7 @@ export const SEPULCHRE_ACTIVITY: ActivityMethod[] = [
     consumables: [{ name: "Stamina potion(4)", qty: 2 }],
     rewards: [],
     intensity: "high",
-    notes: "Wiki MMG floor-3 coffer EV as residual.",
+    notes: "Wiki MMG floor-3 coffer EV as residual — not yet itemized.",
   },
   {
     id: "sepulchre-floor-4",
@@ -283,18 +288,45 @@ export const SEPULCHRE_ACTIVITY: ActivityMethod[] = [
     consumables: [{ name: "Stamina potion(4)", qty: 2 }],
     rewards: [],
     intensity: "high",
-    notes: "Wiki MMG floor-4 EV residual.",
+    notes: "Wiki MMG floor-4 EV residual — not yet itemized.",
   },
   {
     id: "sepulchre-floor-5-loot",
-    label: "Hallowed Sepulchre (floor 5 loot)",
+    label: "Hallowed Sepulchre (floor 5)",
     skillKey: "agility",
-    level: 92,
-    rateBands: [{ level: 92, xpPerHour: 88_000, expectedLootGpPerHour: 1_686_000 }],
-    consumables: [{ name: "Stamina potion(4)", qty: 2 }],
-    rewards: [],
+    level: 87,
+    rateBands: [{ level: 87, xpPerHour: 88_060 }],
+    consumables: [
+      { name: "Mahogany plank", qty: 21 },
+      { name: "Rune nails", qty: 52.5 },
+      { name: "Vampyre dust", qty: 7 },
+    ],
+    rewards: [
+      { name: "Hallowed mark", expectedQtyPerHour: 231 },
+      { name: "Ring of endurance (uncharged)", expectedQtyPerHour: 0.035 },
+      { name: "Strange old lockpick (full)", expectedQtyPerHour: 0.76 },
+      { name: "Adamant 2h sword", expectedQtyPerHour: 1.26 },
+      { name: "Adamant platebody", expectedQtyPerHour: 1.26 },
+      { name: "Cosmic rune", expectedQtyPerHour: 101 },
+      { name: "Death rune", expectedQtyPerHour: 101 },
+      { name: "Nature rune", expectedQtyPerHour: 101 },
+      { name: "Adamant bolts", expectedQtyPerHour: 158 },
+      { name: "Monkfish", expectedQtyPerHour: 17.08 },
+      { name: "Prayer potion(4)", expectedQtyPerHour: 1.26 },
+      { name: "Grimy ranarr weed", expectedQtyPerHour: 1.89 },
+      { name: "Coins", expectedQtyPerHour: 89_950 },
+      { name: "Rune 2h sword", expectedQtyPerHour: 3.64 },
+      { name: "Rune platebody", expectedQtyPerHour: 3.64 },
+      { name: "Law rune", expectedQtyPerHour: 728 },
+      { name: "Blood rune", expectedQtyPerHour: 728 },
+      { name: "Soul rune", expectedQtyPerHour: 728 },
+      { name: "Runite bolts", expectedQtyPerHour: 728 },
+      { name: "Sanfew serum(4)", expectedQtyPerHour: 5.46 },
+      { name: "Ranarr seed", expectedQtyPerHour: 5.46 },
+    ],
     intensity: "high",
-    notes: "Wiki MMG ~6-7 runs/hr including grand coffins.",
+    notes:
+      "Live GE from Floor 5 MMG (~7 runs/hr, floors 4+5). Hallowed marks priced as GE tradeables.",
   },
 ];
 
