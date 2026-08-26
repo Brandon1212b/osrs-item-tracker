@@ -152,6 +152,9 @@ export const RUNECRAFT_METHODS: RunecraftMethod[] = [
     inputs: [{ name: "Pure essence", qty: 1 }],
     output: { name: "Wrath rune", qty: 1 },
   },
+  // Wiki MMG: Crafting sunfire runes (lvl 98, 3× base, twisted extracts,
+  // Raiments + abyssal lantern). 3410 essence/hr → 631,191 sunfire runes.
+  // https://oldschool.runescape.wiki/w/Money_making_guide/Crafting_sunfire_runes
   {
     id: "sunfire-runes",
     label: "Sunfire runes (Shrine of Ralos)",
@@ -162,8 +165,11 @@ export const RUNECRAFT_METHODS: RunecraftMethod[] = [
       { name: "Pure essence", qty: 1 },
       { name: "Fire rune", qty: 1 },
       { name: "Sunfire splinters", qty: 1 },
+      { name: "Twisted extract", qty: 3 },
+      { name: "Raw kyatt", qty: 27.5 / 3410 },
     ],
-    output: { name: "Sunfire rune", qty: 4.8 },
+    // 3 base + 180 extract + 1.8 Raiments + 0.3 lantern = 185.1 / essence
+    output: { name: "Sunfire rune", qty: 185.1 },
   },
   {
     id: "nature-runes-double-diary",
