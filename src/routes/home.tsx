@@ -85,7 +85,7 @@ export function Home() {
       search: (prev: HomeSearch) => {
         const next = { ...prev, ...patch };
         const cleaned: Partial<HomeSearch> = {};
-        if (next.filter && next.filter !== "all") cleaned.filter = next.filter;
+        if (next.filter && next.filter !== "gear") cleaned.filter = next.filter;
         if (next.sort && next.sort !== DEFAULT_SORT) cleaned.sort = next.sort;
         if (next.range && next.range !== DEFAULT_RANGE) cleaned.range = next.range;
         if (next.q) cleaned.q = next.q;
