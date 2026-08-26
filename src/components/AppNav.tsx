@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartLine, Home, Pickaxe } from "lucide-react";
+import { ChartLine, CircleHelp, Home, Pickaxe } from "lucide-react";
 import type { ReactNode } from "react";
 
 const linkBase =
@@ -34,8 +34,8 @@ function NavLink({
 export function AppNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onMethods = pathname.startsWith("/methods");
-  // Item Prices covers home grid and individual item pages
-  const onPrices = !onMethods;
+  const onSources = pathname.startsWith("/sources");
+  const onPrices = !onMethods && !onSources;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
@@ -63,6 +63,20 @@ export function AppNav() {
             icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
           />
         </div>
+
+        <Link
+          to="/sources"
+          search={{} as never}
+          aria-label="Method sources"
+          title="Method sources"
+          className={`ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-md transition-colors ${
+            onSources
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          }`}
+        >
+          <CircleHelp className="size-4" />
+        </Link>
       </nav>
     </header>
   );
