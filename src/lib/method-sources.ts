@@ -3,6 +3,11 @@
  *
  * Tags are inferred (conservative: unknown → estimate/red).
  * They are NOT a live scrape of the wiki.
+ *
+ * Green means: our stored model matches the linked page's method
+ * (same inputs / outputs / throughput assumptions), not merely that
+ * a wiki page exists. Live GE only turns green when the recipe itself
+ * is verified against that page (see VERIFIED_MMG_IDS).
  */
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { resolveActivityBand } from "@/lib/activity-methods";
@@ -37,15 +42,27 @@ export type AuditedMethod = {
   link: { href: string; title: string; kind: LinkKind };
 };
 
+/**
+ * Recipe ids whose inputs/outputs/actionsPerHour were checked against the
+ * linked MMG page. Anything else that links to an MMG stays red until added.
+ */
+const VERIFIED_MMG_IDS = new Set<string>([
+  "sunfire-runes", // Crafting sunfire runes MMG (extracts + 98×3 + raiments + lantern)
+]);
+
 function linkKind(title: string): LinkKind {
   if (/\bMMG\b/i.test(title)) return "MMG";
   if (/training/i.test(title)) return "Skill Guide";
   return "Wiki Page";
 }
 
+function isMmg(title: string, page: string): boolean {
+  return /\bMMG\b/i.test(title) || /^Money making guide\//i.test(page);
+}
+
 function wikiSupportsRates(page: string, title: string): boolean {
   if (page === "Money making guide/Skilling") return false;
-  if (/\bMMG\b/i.test(title)) return true;
+  if (isMmg(title, page)) return true;
   if (/training/i.test(title)) return true;
   if (/Strategies/i.test(page) || /Strategies/i.test(title)) return true;
   if (/Forester/i.test(page) || /Wintertodt/i.test(page)) return true;
@@ -68,9 +85,12 @@ function afterTaxSell(unitPrice: number): number {
   return unitPrice - tax;
 }
 
-function recipeXpSource(page: string, title: string): SourceKind {
+function recipeXpSource(id: string, page: string, title: string): SourceKind {
   if (!wikiSupportsRates(page, title)) return "estimate";
-  if (/\bMMG\b/i.test(title)) return "wiki-mmg";
+  if (isMmg(title, page)) {
+    // XP/hr only green when the full MMG recipe was verified (throughput + I/O).
+    return VERIFIED_MMG_IDS.has(id) ? "wiki-mmg" : "estimate";
+  }
   return "wiki-guide";
 }
 
@@ -84,6 +104,8 @@ export function auditRecipe(
   const wiki = methodWikiLink(method.id, skillKey);
   const ref = resolveMethodWiki(method.id, skillKey);
   const xpPerHour = method.xp * method.actionsPerHour;
+  const mmg = isMmg(wiki.title, ref.page);
+  const verifiedMmg = mmg && VERIFIED_MMG_IDS.has(method.id);
 
   let inputCost = 0;
   let outputValue = 0;
@@ -126,10 +148,14 @@ export function auditRecipe(
   const gpParts: GpPart[] = [];
   if (hasIo) {
     const amount = missing ? null : Math.round((outputValue - inputCost) * method.actionsPerHour);
+    // Live GE always shows a bolt (dynamic). Colour is green only when the
+    // underlying recipe matches the linked guide (or there is no MMG claim).
+    const gpSource: SourceKind =
+      mmg && !verifiedMmg ? "estimate" : missing ? "estimate" : "live-ge";
     gpParts.push({
       amount,
       label: "live GE",
-      source: "live-ge",
+      source: gpSource,
       dynamic: true,
       missing,
     });
@@ -144,7 +170,7 @@ export function auditRecipe(
     level: method.level,
     kind: "recipe",
     xpPerHour,
-    xpSource: recipeXpSource(ref.page, wiki.title),
+    xpSource: recipeXpSource(method.id, ref.page, wiki.title),
     xpDynamic: false,
     xpLevelScaled: false,
     gpParts,
@@ -163,10 +189,14 @@ export function auditActivity(
   const ref = resolveMethodWiki(activity.id, skillKey);
   const band = resolveActivityBand(activity, 99);
   const xpSupported = wikiSupportsRates(ref.page, wiki.title);
+  const mmg = isMmg(wiki.title, ref.page);
+  const verifiedMmg = mmg && VERIFIED_MMG_IDS.has(activity.id);
   const xpSource: SourceKind = !xpSupported
     ? "estimate"
-    : /\bMMG\b/i.test(wiki.title)
-      ? "wiki-mmg"
+    : mmg
+      ? verifiedMmg
+        ? "wiki-mmg"
+        : "estimate"
       : "wiki-guide";
 
   let live = 0;
@@ -201,16 +231,20 @@ export function auditActivity(
   const residual = band.expectedLootGpPerHour ?? 0;
   const gpParts: GpPart[] = [];
   if (hasLive) {
+    const gpSource: SourceKind =
+      mmg && !verifiedMmg ? "estimate" : missing ? "estimate" : "live-ge";
     gpParts.push({
       amount: missing ? null : Math.round(live),
       label: "live GE",
-      source: "live-ge",
+      source: gpSource,
       dynamic: true,
       missing,
     });
   }
   if (residual !== 0) {
-    const residualFromMmg = /\bMMG\b/i.test(wiki.title) && !hasLive;
+    // Residual copied as the whole MMG profit (no itemized rewards) is only
+    // green when this activity id is on the verified list.
+    const residualFromMmg = verifiedMmg && !hasLive;
     gpParts.push({
       amount: residual,
       label: "residual",
