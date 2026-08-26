@@ -1,0 +1,40 @@
+import type { ActivityMethod } from "@/lib/activity-methods";
+
+/** https://oldschool.runescape.wiki/w/Money_making_guide/Hallowed_Sepulchre_(Floor_5) */
+export const SEPULCHRE_FLOOR_5: ActivityMethod = {
+  id: "sepulchre-floor-5-loot",
+  label: "Hallowed Sepulchre (floor 5)",
+  skillKey: "agility",
+  level: 87,
+  rateBands: [{ level: 87, xpPerHour: 88_060 }],
+  consumables: [
+    { name: "Mahogany plank", qty: 21 },
+    { name: "Rune nails", qty: 52.5 },
+    { name: "Vampyre dust", qty: 7 },
+  ],
+  rewards: [
+    { name: "Hallowed mark", expectedQtyPerHour: 231 },
+    { name: "Ring of endurance (uncharged)", expectedQtyPerHour: 0.035 },
+    { name: "Strange old lockpick (full)", expectedQtyPerHour: 0.76 },
+    { name: "Adamant 2h sword", expectedQtyPerHour: 1.26 },
+    { name: "Adamant platebody", expectedQtyPerHour: 1.26 },
+    { name: "Cosmic rune", expectedQtyPerHour: 101 },
+    { name: "Death rune", expectedQtyPerHour: 101 },
+    { name: "Nature rune", expectedQtyPerHour: 101 },
+    { name: "Adamant bolts", expectedQtyPerHour: 158 },
+    { name: "Monkfish", expectedQtyPerHour: 17.08 },
+    { name: "Prayer potion(4)", expectedQtyPerHour: 1.26 },
+    { name: "Grimy ranarr weed", expectedQtyPerHour: 1.89 },
+    { name: "Coins", expectedQtyPerHour: 89_950 },
+    { name: "Rune 2h sword", expectedQtyPerHour: 3.64 },
+    { name: "Rune platebody", expectedQtyPerHour: 3.64 },
+    { name: "Law rune", expectedQtyPerHour: 728 },
+    { name: "Blood rune", expectedQtyPerHour: 728 },
+    { name: "Soul rune", expectedQtyPerHour: 728 },
+    { name: "Runite bolts", expectedQtyPerHour: 728 },
+    { name: "Sanfew serum(4)", expectedQtyPerHour: 5.46 },
+    { name: "Ranarr seed", expectedQtyPerHour: 5.46 },
+  ],
+  intensity: "high",
+  notes: "Floor 5 MMG ~7 runs/hr. Live GE on the published loot table.",
+};
