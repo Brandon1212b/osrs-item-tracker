@@ -8,6 +8,8 @@
  * Sources: oldschool.runescape.wiki training + money-making guides (2026).
  */
 
+import { SEPULCHRE_ACTIVITY } from "@/lib/wiki-audit-activities";
+
 export type MethodPart = { name: string; qty: number };
 
 /** Expected GE-traded reward per hour (when itemizable). */
@@ -54,8 +56,6 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 350_000, expectedLootGpPerHour: 70_000, secondaryXpPerHour: 21_000 },
     ],
     consumables: [],
-    // ~30–36 crates/hr mass; pages dominate tradeable EV. Residual = uniques
-    // (tome/pyro pieces sold to Ignisia) + skill-scaled supply table variance.
     rewards: [
       { name: "Burnt page", expectedQtyPerHour: 15 },
       { name: "Magic logs", expectedQtyPerHour: 12 },
@@ -93,7 +93,6 @@ export const TEMPOROSS_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 66_000, expectedLootGpPerHour: 65_000, secondaryXpPerHour: 6_000 },
     ],
     consumables: [],
-    // Wiki MMG ~60 permits/hr, 81+ Fishing. Residual = caskets/soaked pages/uniques/spirit flakes EV.
     rewards: [
       { name: "Raw shark", expectedQtyPerHour: 101 },
       { name: "Raw swordfish", expectedQtyPerHour: 190 },
@@ -131,11 +130,10 @@ export const GOTR_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 68_000, expectedLootGpPerHour: 55_000 },
     ],
     consumables: [
-      { name: "Astral rune", qty: 6 }, // NPC Contact + Magic Imbue ballpark
+      { name: "Astral rune", qty: 6 },
       { name: "Cosmic rune", qty: 12 },
       { name: "Binding necklace", qty: 0.75 },
     ],
-    // Wiki MMG at 85 RC, ~30 pulls/hr. Residual = talismans / intricate pouch / needle variance.
     rewards: [
       { name: "Blood rune", expectedQtyPerHour: 604 },
       { name: "Death rune", expectedQtyPerHour: 604 },
@@ -209,7 +207,6 @@ export const MOTHERLODE_METHODS: ActivityMethod[] = [
     skillKey: "mining",
     level: 30,
     rateBands: [
-      // Residual approximates lower-tier ore mix before full GE list applies cleanly.
       { level: 30, xpPerHour: 13_000, expectedLootGpPerHour: 25_000 },
       { level: 40, xpPerHour: 26_000, expectedLootGpPerHour: 30_000 },
       { level: 50, xpPerHour: 33_000, expectedLootGpPerHour: 40_000 },
@@ -220,8 +217,6 @@ export const MOTHERLODE_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 64_000, expectedLootGpPerHour: 16_500 },
     ],
     consumables: [],
-    // Wiki MMG at 99 / 550 pay-dirt/hr. Residual ≈ golden nugget → soft clay pack EV.
-    // Lower bands use higher residual because runite/addy rates are overstated until 70/85.
     rewards: [
       { name: "Coal", expectedQtyPerHour: 135 },
       { name: "Gold ore", expectedQtyPerHour: 133 },
@@ -272,7 +267,6 @@ export const BLAST_MINE_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 95_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 16_500 },
     ],
     consumables: [{ name: "Dynamite", qty: 330 }],
-    // Wiki MMG assumes 75+ for runite. Lower levels overstated on runite until 75.
     rewards: [
       { name: "Runite ore", expectedQtyPerHour: 44.12 },
       { name: "Adamantite ore", expectedQtyPerHour: 135 },
@@ -286,10 +280,6 @@ export const BLAST_MINE_METHODS: ActivityMethod[] = [
   },
 ];
 
-/**
- * Shooting Stars / crashed stars — ultra-AFK stardust mining.
- * XP from community guides; GP from stardust shop + gem rolls (residual).
- */
 export const SHOOTING_STARS_METHODS: ActivityMethod[] = [
   {
     id: "shooting-stars",
@@ -393,7 +383,6 @@ export const HERBIBOAR_METHODS: ActivityMethod[] = [
       { level: 99, xpPerHour: 150_000, expectedLootGpPerHour: 0, secondaryXpPerHour: 3_300 },
     ],
     consumables: [{ name: "Stamina potion(4)", qty: 7.5 }],
-    // Wiki MMG at 99 Herblore, ~60 catches/hr.
     rewards: [
       { name: "Grimy guam leaf", expectedQtyPerHour: 34.5 },
       { name: "Grimy ranarr weed", expectedQtyPerHour: 14.76 },
@@ -451,6 +440,8 @@ export function activitiesForSkill(skillKey: string): ActivityMethod[] {
       return MTA_METHODS;
     case "hunter":
       return HERBIBOAR_METHODS;
+    case "agility":
+      return SEPULCHRE_ACTIVITY;
     default:
       return [];
   }
@@ -473,6 +464,7 @@ export function activityMethodItemNames(methods?: ActivityMethod[]): string[] {
       ...STEALING_ARTEFACTS_METHODS,
       ...MTA_METHODS,
       ...HERBIBOAR_METHODS,
+      ...SEPULCHRE_ACTIVITY,
     ];
   const names = new Set<string>();
   for (const m of list) {
