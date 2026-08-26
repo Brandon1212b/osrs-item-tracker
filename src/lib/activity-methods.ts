@@ -44,11 +44,14 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
     skillKey: "firemaking",
     level: 50,
     secondarySkill: "woodcutting",
+    // https://oldschool.runescape.wiki/w/Wintertodt/Strategies — mass world, roots only (no fletch)
     rateBands: [
-      { level: 50, xpPerHour: 161_000, expectedLootGpPerHour: 40_000, secondaryXpPerHour: 10_000 },
-      { level: 70, xpPerHour: 226_000, expectedLootGpPerHour: 50_000, secondaryXpPerHour: 15_000 },
-      { level: 90, xpPerHour: 290_000, expectedLootGpPerHour: 60_000, secondaryXpPerHour: 19_000 },
-      { level: 99, xpPerHour: 320_000, expectedLootGpPerHour: 70_000, secondaryXpPerHour: 21_000 },
+      { level: 50, xpPerHour: 177_000, expectedLootGpPerHour: 40_000, secondaryXpPerHour: 11_000 },
+      { level: 60, xpPerHour: 212_000, expectedLootGpPerHour: 45_000, secondaryXpPerHour: 13_000 },
+      { level: 70, xpPerHour: 247_000, expectedLootGpPerHour: 50_000, secondaryXpPerHour: 15_000 },
+      { level: 80, xpPerHour: 283_000, expectedLootGpPerHour: 55_000, secondaryXpPerHour: 17_000 },
+      { level: 90, xpPerHour: 318_000, expectedLootGpPerHour: 60_000, secondaryXpPerHour: 19_000 },
+      { level: 99, xpPerHour: 350_000, expectedLootGpPerHour: 70_000, secondaryXpPerHour: 21_000 },
     ],
     consumables: [],
     // ~30–36 crates/hr mass; pages dominate tradeable EV. Residual = uniques
@@ -71,7 +74,7 @@ export const WINTERTODT_METHODS: ActivityMethod[] = [
     ],
     intensity: "low",
     notes:
-      "Live GE on pages/logs/ores/fish. Residual ~40–70k for tome/pyro EV + herb/seed variance. Mass worlds, roots only (no fletch). Rates scale with Firemaking.",
+      "Live GE on pages/logs/ores/fish. Residual ~40–70k for tome/pyro EV + herb/seed variance. Mass worlds, roots only (no fletch). FM XP from Wintertodt/Strategies table; scales with Firemaking.",
   },
 ];
 

@@ -123,8 +123,9 @@ const BY_ID: Record<string, WikiRef> = {
   "rogues-castle-medium": { page: "Money making guide/Stealing from Rogues' Castle chests", title: "Rogues' Castle chests (MMG)" },
   "rogues-castle-hard": { page: "Money making guide/Stealing from Rogues' Castle chests", title: "Rogues' Castle chests (MMG)" },
   blackjacking: { page: "Blackjack", title: "Blackjacking" },
+  "redwood-pyre": { page: "Money making guide/Making redwood pyre logs", title: "Making redwood pyre logs (MMG)" },
 
-  // ── Smithing ──────────────────────────────────────────────────────────
+  // ── Smithing ─────────────────────────────────────────────────────────
   "bf-iron": { page: "Money making guide/Smelting iron bars at Blast Furnace", title: "Blast Furnace iron (MMG)" },
   "bf-steel": { page: "Money making guide/Smelting steel bars at Blast Furnace", title: "Blast Furnace steel (MMG)" },
   "bf-gold": { page: "Money making guide/Blast Furnace", title: "Blast Furnace (MMG)" },
@@ -196,7 +197,7 @@ const PREFIX_RULES: PrefixRule[] = [
   { match: (id) => id.startsWith("tan-"), ref: { page: "Money making guide/Casting Tan Leather", title: "Tan Leather (MMG)" } },
   { match: (id) => id.startsWith("superheat-"), ref: { page: "Superheat Item", title: "Superheat Item" } },
   { match: (id) => id.startsWith("bf-"), ref: { page: "Blast Furnace", title: "Blast Furnace" } },
-  { match: (id) => id.startsWith("campfire-"), ref: { page: "Bonfire", title: "Bonfire / campfire" } },
+  { match: (id) => id.startsWith("campfire-"), ref: { page: "Forester's Campfire", title: "Forester's Campfire" } },
   { match: (id) => id.startsWith("burn-"), ref: { page: "Pay-to-play Firemaking training", title: "Firemaking training" } },
   { match: (id) => id.startsWith("cut-"), ref: { page: "Crafting#Gems", title: "Cutting gems" } },
   { match: (id) => id.startsWith("golem-"), ref: { page: "Golem crafting", title: "Golem crafting" } },
