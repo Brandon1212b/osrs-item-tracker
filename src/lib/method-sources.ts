@@ -43,11 +43,12 @@ export type AuditedMethod = {
 };
 
 /**
- * Recipe ids whose inputs/outputs/actionsPerHour were checked against the
- * linked MMG page. Anything else that links to an MMG stays red until added.
+ * Method ids whose inputs/outputs/actions were checked against the linked MMG.
+ * Anything else that links to an MMG stays red until added here.
  */
 const VERIFIED_MMG_IDS = new Set<string>([
-  "sunfire-runes", // Crafting sunfire runes MMG (extracts + 98×3 + raiments + lantern)
+  "sunfire-runes", // Crafting sunfire runes MMG
+  "sepulchre-floor-5-loot", // Hallowed Sepulchre (Floor 5) MMG — full loot table
 ]);
 
 function linkKind(title: string): LinkKind {
@@ -88,7 +89,6 @@ function afterTaxSell(unitPrice: number): number {
 function recipeXpSource(id: string, page: string, title: string): SourceKind {
   if (!wikiSupportsRates(page, title)) return "estimate";
   if (isMmg(title, page)) {
-    // XP/hr only green when the full MMG recipe was verified (throughput + I/O).
     return VERIFIED_MMG_IDS.has(id) ? "wiki-mmg" : "estimate";
   }
   return "wiki-guide";
@@ -148,8 +148,6 @@ export function auditRecipe(
   const gpParts: GpPart[] = [];
   if (hasIo) {
     const amount = missing ? null : Math.round((outputValue - inputCost) * method.actionsPerHour);
-    // Live GE always shows a bolt (dynamic). Colour is green only when the
-    // underlying recipe matches the linked guide (or there is no MMG claim).
     const gpSource: SourceKind =
       mmg && !verifiedMmg ? "estimate" : missing ? "estimate" : "live-ge";
     gpParts.push({
@@ -242,8 +240,6 @@ export function auditActivity(
     });
   }
   if (residual !== 0) {
-    // Residual copied as the whole MMG profit (no itemized rewards) is only
-    // green when this activity id is on the verified list.
     const residualFromMmg = verifiedMmg && !hasLive;
     gpParts.push({
       amount: residual,
