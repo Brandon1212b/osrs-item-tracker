@@ -4,6 +4,9 @@
  * Outputs are null (XP training); cost is supplies + opportunity cost.
  * Sources: oldschool.runescape.wiki Agility training / individual course pages.
  * Rates are typical focused rates (not theoretical tick-perfect max).
+ *
+ * Hallowed Sepulchre floor loot is modelled as an activity (see activity-methods +
+ * wiki-audit SEPULCHRE_ACTIVITY) so GP tracks the full MMG loot table.
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -41,7 +44,7 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     id: "falador-rooftop",
     label: "Falador rooftop",
     level: 50,
-    xp: 440, // wiki table lists higher per-obstacle sum; common focused rate uses ~440-586 range — kept practical
+    xp: 440,
     actionsPerHour: 75, // ~33k xp/hr
     inputs: [],
     output: null,
@@ -145,15 +148,6 @@ export const AGILITY_METHODS: AgilityMethod[] = [
     xp: 2375, // full agility route both ways
     actionsPerHour: 25, // ~59k focused
     inputs: [],
-    output: null,
-  },
-  {
-    id: "hallowed-sepulchre",
-    label: "Hallowed Sepulchre (floor 5)",
-    level: 92,
-    xp: 11700, // cumulative floors 1-5
-    actionsPerHour: 8, // ~93.6k focused (wiki ~98k with good practice)
-    inputs: [{ name: "Stamina potion(4)", qty: 2 }],
     output: null,
   },
 ];
