@@ -1,7 +1,8 @@
 /**
  * Cooking training methods (P2P).
- * https://oldschool.runescape.wiki/w/Cooking_training / Pay-to-play_Cooking_training
- * Standard (non 1-tick) rates unless noted. 1-tick Karambwan is a distinct method.
+ * https://oldschool.runescape.wiki/w/Pay-to-play_Cooking_training
+ * Hosidius kitchen 1,365 fish/hr; Rogues' Den karambwan 1,385; 1-tick 5,000.
+ * Wine ~2,400/hr → ~480k XP/h (wiki 470–490k).
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -15,36 +16,36 @@ export type CookingMethod = {
   output: MethodPart;
 };
 
+const HOSIDIUS_FISH_PER_HOUR = 1365;
+
 export const COOKING_METHODS: CookingMethod[] = [
   {
     id: "wine",
     label: "Jug of wine",
     level: 35,
     xp: 200,
-    actionsPerHour: 2000,
+    actionsPerHour: 2400,
     inputs: [
       { name: "Grapes", qty: 1 },
       { name: "Jug of water", qty: 1 },
     ],
     output: { name: "Jug of wine", qty: 1 },
   },
-  // Standard karambwan (no tick manip)
   {
     id: "karambwan",
     label: "Cooked karambwan",
     level: 30,
     xp: 190,
-    actionsPerHour: 1300,
+    actionsPerHour: 1385,
     inputs: [{ name: "Raw karambwan", qty: 1 }],
     output: { name: "Cooked karambwan", qty: 1 },
   },
-  // 1-tick karambwan — distinct high-intensity method
   {
     id: "karambwan-1tick",
     label: "Cooked karambwan (1-tick)",
     level: 30,
     xp: 190,
-    actionsPerHour: 4500, // focused realistic; wiki max ~5000–5470
+    actionsPerHour: 5000,
     inputs: [{ name: "Raw karambwan", qty: 1 }],
     output: { name: "Cooked karambwan", qty: 1 },
   },
@@ -53,7 +54,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Poison karambwan",
     level: 30,
     xp: 80,
-    actionsPerHour: 1300,
+    actionsPerHour: 1385,
     inputs: [{ name: "Raw karambwan", qty: 1 }],
     output: { name: "Poison karambwan", qty: 1 },
   },
@@ -62,7 +63,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked tuna",
     level: 30,
     xp: 100,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw tuna", qty: 1 }],
     output: { name: "Tuna", qty: 1 },
   },
@@ -71,7 +72,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked lobster",
     level: 40,
     xp: 120,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw lobster", qty: 1 }],
     output: { name: "Lobster", qty: 1 },
   },
@@ -80,7 +81,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked swordfish",
     level: 45,
     xp: 140,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw swordfish", qty: 1 }],
     output: { name: "Swordfish", qty: 1 },
   },
@@ -89,7 +90,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked monkfish",
     level: 62,
     xp: 150,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw monkfish", qty: 1 }],
     output: { name: "Monkfish", qty: 1 },
   },
@@ -98,7 +99,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked shark",
     level: 80,
     xp: 210,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw shark", qty: 1 }],
     output: { name: "Shark", qty: 1 },
   },
@@ -107,7 +108,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked anglerfish",
     level: 84,
     xp: 230,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw anglerfish", qty: 1 }],
     output: { name: "Anglerfish", qty: 1 },
   },
@@ -116,7 +117,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked manta ray",
     level: 91,
     xp: 216.2,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw manta ray", qty: 1 }],
     output: { name: "Manta ray", qty: 1 },
   },
@@ -125,7 +126,7 @@ export const COOKING_METHODS: CookingMethod[] = [
     label: "Cooked dark crab",
     level: 90,
     xp: 215,
-    actionsPerHour: 1300,
+    actionsPerHour: HOSIDIUS_FISH_PER_HOUR,
     inputs: [{ name: "Raw dark crab", qty: 1 }],
     output: { name: "Dark crab", qty: 1 },
   },
