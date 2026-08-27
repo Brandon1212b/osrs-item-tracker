@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { WOODCUTTING_METHODS } from "@/lib/woodcutting-methods";
+import { WOODCUTTING_RATE_TABLES } from "@/lib/woodcutting-activities";
 import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
@@ -23,7 +24,7 @@ export function WoodcuttingMethodsPanel({
       skillKey="woodcutting"
       skillLabel="Woodcutting"
       methods={WOODCUTTING_METHODS}
-      activities={activitiesForSkill("woodcutting")}
+      activities={[...activitiesForSkill("woodcutting"), ...WOODCUTTING_RATE_TABLES]}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
