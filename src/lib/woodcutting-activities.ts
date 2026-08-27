@@ -1,9 +1,5 @@
 import type { ActivityMethod } from "@/lib/activity-methods";
 
-/**
- * Teak = wiki no-tick-manipulation table.
- * Sulliusceps = wiki lumberjack table (crystal axe from 71).
- */
 export const WOODCUTTING_RATE_TABLES: ActivityMethod[] = [
   {
     id: "teak-logs",
@@ -21,10 +17,9 @@ export const WOODCUTTING_RATE_TABLES: ActivityMethod[] = [
       { level: 99, xpPerHour: 93_000 },
     ],
     consumables: [],
-    rewards: [{ name: "Teak logs", expectedQtyPerHour: 1 }],
+    rewards: [{ name: "Teak logs", expectedQtyPerHour: 1094 }],
     intensity: "medium",
-    notes:
-      "XP/h is the wiki no-tick teak table (regular → dragon felling → crystal felling). Not 1.5-tick or 2-tick. Forestry can add ~20k. Live GE logs/h = XP/h ÷ 85.",
+    notes: "Wiki no-tick teak table. Not 1.5-tick or 2-tick. Logs/h at 99 = 93k/85.",
   },
   {
     id: "sulliusceps",
@@ -41,7 +36,73 @@ export const WOODCUTTING_RATE_TABLES: ActivityMethod[] = [
     consumables: [],
     rewards: [],
     intensity: "medium",
-    notes:
-      "Wiki sulliuscep table with lumberjack. Dragon axe at 65; crystal from 71. Fungi not modelled.",
+    notes: "Wiki sulliuscep lumberjack table, crystal axe from 71.",
+  },
+  {
+    id: "blisterwood",
+    label: "Blisterwood logs",
+    skillKey: "woodcutting",
+    level: 62,
+    rateBands: [
+      { level: 62, xpPerHour: 69_000 },
+      { level: 90, xpPerHour: 86_000 },
+    ],
+    consumables: [],
+    rewards: [{ name: "Blisterwood logs", expectedQtyPerHour: 1132 }],
+    intensity: "low",
+    notes: "Wiki: ~69k before 90; ~86k with crystal felling + rations.",
+  },
+  {
+    id: "ironwood-logs",
+    label: "Ironwood logs",
+    skillKey: "woodcutting",
+    level: 80,
+    rateBands: [
+      { level: 80, xpPerHour: 80_000 },
+      { level: 90, xpPerHour: 110_000 },
+    ],
+    consumables: [],
+    rewards: [{ name: "Ironwood logs", expectedQtyPerHour: 629 }],
+    intensity: "low",
+    notes: "Wiki Sunbleak: ~80k dragon axe, 110k+ crystal felling + rations.",
+  },
+  {
+    id: "redwood-logs",
+    label: "Redwood logs",
+    skillKey: "woodcutting",
+    level: 90,
+    rateBands: [
+      { level: 90, xpPerHour: 57_500 },
+      { level: 99, xpPerHour: 65_000 },
+    ],
+    consumables: [],
+    rewards: [{ name: "Redwood logs", expectedQtyPerHour: 171 }],
+    intensity: "low",
+    notes: "Wiki Guild drop rates: 55–60k at 90 dragon/infernal, 65k at 99. Crystal 70–75k not used.",
+  },
+  {
+    id: "rosewood-logs",
+    label: "Rosewood logs",
+    skillKey: "woodcutting",
+    level: 92,
+    rateBands: [{ level: 92, xpPerHour: 87_500 }],
+    consumables: [],
+    rewards: [{ name: "Rosewood logs", expectedQtyPerHour: 412 }],
+    intensity: "low",
+    notes: "Wiki Drumstick drop 85–90k. Mid 87.5k / 212.5 XP.",
+  },
+  {
+    id: "bloodwood",
+    label: "Bloodwood trees",
+    skillKey: "woodcutting",
+    level: 77,
+    rateBands: [
+      { level: 77, xpPerHour: 130_000 },
+      { level: 90, xpPerHour: 210_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes: "Wiki 130–210k dragon felling three trees. Crystal is higher. No log output modelled.",
   },
 ];
