@@ -12,6 +12,7 @@ const VALIDATED_PREFIXES: { prefix: string; except?: string[] }[] = [
   { prefix: "clean-" },
   { prefix: "degrime-" },
   { prefix: "bf-" },
+  { prefix: "cut-" },
 ];
 
 const VALIDATED_IDS = [
