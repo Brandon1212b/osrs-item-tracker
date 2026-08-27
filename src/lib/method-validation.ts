@@ -50,6 +50,11 @@ const VALIDATED_IDS = [
   "drift-net",
   "teak-logs",
   "sulliusceps",
+  "blisterwood",
+  "ironwood-logs",
+  "redwood-logs",
+  "rosewood-logs",
+  "bloodwood",
   "red-chins",
   "black-chins",
   "herbiboar",
@@ -78,6 +83,11 @@ const VALIDATED_IDS = [
   "super-combat",
   "mahogany-table",
   "mythical-cape",
+  "gotr-mass",
+  "motherlode-mine",
+  "blast-mine",
+  "volcanic-mine",
+  "shooting-stars",
 ] as const;
 
 const VALIDATED: Record<string, MethodValidation> = Object.fromEntries(
