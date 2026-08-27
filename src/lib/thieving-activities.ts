@@ -2,6 +2,22 @@ import type { ActivityMethod } from "@/lib/activity-methods";
 
 export const THIEVING_RATE_TABLES: ActivityMethod[] = [
   {
+    id: "pyramid-plunder",
+    label: "Pyramid Plunder",
+    skillKey: "thieving",
+    level: 21,
+    rateBands: [
+      { level: 21, xpPerHour: 40_000, expectedLootGpPerHour: 20_000 },
+      { level: 71, xpPerHour: 125_000, expectedLootGpPerHour: 80_000 },
+      { level: 81, xpPerHour: 190_000, expectedLootGpPerHour: 150_000 },
+      { level: 91, xpPerHour: 270_000, expectedLootGpPerHour: 220_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes: "Wiki 71–80 125k, 81–90 190k, 91+ 270k. Pre-71 is a low estimate.",
+  },
+  {
     id: "blackjacking",
     label: "Blackjacking (Pollnivneach, wines)",
     skillKey: "thieving",
@@ -58,7 +74,7 @@ export const THIEVING_RATE_TABLES: ActivityMethod[] = [
     consumables: [],
     rewards: [{ name: "Coins", expectedQtyPerHour: 198_100 }],
     intensity: "high",
-    notes: "MMG: 401 successes/h at 85, 566 at 99 (197,848 XP/h). Loot GP is 99-rate coins proxy.",
+    notes: "MMG: 401 successes/h at 85, 566 at 99 (197,848 XP/h).",
   },
   {
     id: "vyres",
@@ -86,6 +102,6 @@ export const THIEVING_RATE_TABLES: ActivityMethod[] = [
     consumables: [],
     rewards: [],
     intensity: "medium",
-    notes: "MMG 3,000 pickpockets/h at 94+ = 129k XP. Level 38 band is 1,800/h until the MMG setup.",
+    notes: "MMG 3,000 pickpockets/h at 94+ = 129k. Level 38 band is 1,800/h until that setup.",
   },
 ];
