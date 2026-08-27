@@ -1,6 +1,6 @@
 /**
- * Last time we checked stored XP against the linked wiki training / MMG page.
- * Only listed ids/prefixes get green. Everything else: Not validated as of SWEEP_DATE.
+ * Green only when the stored XP/h table (or single rate) matches the wiki
+ * at the levels we show — not a headline max applied to every level.
  */
 
 export type MethodValidation = {
@@ -14,8 +14,6 @@ const VALIDATED_PREFIXES: { prefix: string; except?: string[] }[] = [
   { prefix: "campfire-", except: ["campfire-rosewood", "campfire-ironwood"] },
   { prefix: "clean-" },
   { prefix: "degrime-" },
-  { prefix: "birdhouse-" },
-  { prefix: "divine-" },
 ];
 
 const VALIDATED_IDS = [
@@ -37,7 +35,6 @@ const VALIDATED_IDS = [
   "prifddinas",
   "ape-atoll",
   "wine",
-  "karambwan",
   "karambwan-1tick",
   "shark",
   "anglerfish",
@@ -45,41 +42,10 @@ const VALIDATED_IDS = [
   "lobster",
   "swordfish",
   "monkfish",
-  "dark-crab",
   "manta-ray",
-  "shrimp",
-  "trout",
-  "salmon",
-  "leechfin",
-  "minnows",
-  "sacred-eel",
-  "infernal-eel",
-  "barbarian-fishing",
-  "drift-net",
-  "iron-ore",
-  "amethyst",
-  "granite-3tick",
-  "gem-rock",
-  "infernal-shale",
   "teak-logs",
   "sulliusceps",
-  "blisterwood",
-  "bloodwood",
-  "engorged-bloodwood",
-  "redwood-logs",
-  "rosewood-logs",
   "stealing-artefacts",
-  "pyramid-plunder",
-  "blackjacking",
-  "elves",
-  "vyres",
-  "master-farmers",
-  "rogues-castle-medium",
-  "rogues-castle-hard",
-  "grey-chins",
-  "red-chins",
-  "black-chins",
-  "herbiboar",
   "guthix-rest",
   "prayer-potion",
   "super-attack",
@@ -94,12 +60,6 @@ const VALIDATED_IDS = [
   "super-combat",
   "mahogany-table",
   "mythical-cape",
-  "oak-larder",
-  "gotr-mass",
-  "motherlode-mine",
-  "blast-mine",
-  "volcanic-mine",
-  "shooting-stars",
 ] as const;
 
 const VALIDATED: Record<string, MethodValidation> = Object.fromEntries(
