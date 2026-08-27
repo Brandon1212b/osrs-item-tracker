@@ -1,5 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { FISHING_METHODS } from "@/lib/fishing-methods";
+import { FISHING_RATE_TABLES } from "@/lib/fishing-activities";
 import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
@@ -23,7 +24,7 @@ export function FishingMethodsPanel({
       skillKey="fishing"
       skillLabel="Fishing"
       methods={FISHING_METHODS}
-      activities={activitiesForSkill("fishing")}
+      activities={[...activitiesForSkill("fishing"), ...FISHING_RATE_TABLES]}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

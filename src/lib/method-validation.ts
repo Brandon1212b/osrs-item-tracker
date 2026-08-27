@@ -1,7 +1,4 @@
-/**
- * Green only when the stored XP/h table (or single rate) matches the wiki
- * at the levels we show — not a headline max applied to every level.
- */
+/** Green only when stored XP matches a wiki table or a cited single rate. */
 
 export type MethodValidation = {
   checkedAt: string;
@@ -43,9 +40,30 @@ const VALIDATED_IDS = [
   "swordfish",
   "monkfish",
   "manta-ray",
+  "dark-crab",
+  "fly-fishing-afk",
+  "barbarian-fishing",
+  "karambwan",
+  "infernal-eel",
+  "minnows",
+  "sacred-eel",
+  "drift-net",
   "teak-logs",
   "sulliusceps",
+  "red-chins",
+  "black-chins",
+  "herbiboar",
+  "iron-ore",
+  "gem-rock",
+  "granite-3tick",
+  "amethyst",
+  "blackjacking",
+  "ardougne-knights",
+  "elves",
+  "vyres",
+  "master-farmers",
   "stealing-artefacts",
+  "pyramid-plunder",
   "guthix-rest",
   "prayer-potion",
   "super-attack",
