@@ -1,7 +1,6 @@
 /**
- * Last time we checked stored XP/GP against the linked wiki/MMG.
- * Only `VALIDATED` ids get a green/yellow date.
- * Every other method was attempted in the 2026-08-26 sweep and stays red.
+ * Last time we checked stored XP against the linked wiki training / MMG page.
+ * Only listed ids/prefixes get green. Everything else: Not validated as of SWEEP_DATE.
  */
 
 export type MethodValidation = {
@@ -10,49 +9,102 @@ export type MethodValidation = {
 
 const SWEEP_DATE = "2026-08-26";
 
-/** Prefixes whose XP/action and actions/h match the named training page. */
 const VALIDATED_PREFIXES: { prefix: string; except?: string[] }[] = [
   { prefix: "burn-", except: ["burn-rosewood", "burn-ironwood"] },
   { prefix: "campfire-", except: ["campfire-rosewood", "campfire-ironwood"] },
+  { prefix: "clean-" },
+  { prefix: "degrime-" },
+  { prefix: "birdhouse-" },
+  { prefix: "divine-" },
 ];
 
-/**
- * Successful match (or fix-then-match) against the linked guide.
- * GP/h that is live GE is validated on the *model* (inputs/outputs/actions),
- * not on today's gold number.
- */
-const VALIDATED: Record<string, MethodValidation> = {
-  "redwood-pyre": { checkedAt: SWEEP_DATE },
-  "wintertodt-mass": { checkedAt: SWEEP_DATE },
-  "sunfire-runes": { checkedAt: SWEEP_DATE },
-  "sepulchre-floor-5-loot": { checkedAt: SWEEP_DATE },
+const VALIDATED_IDS = [
+  "redwood-pyre",
+  "wintertodt-mass",
+  "sunfire-runes",
+  "sepulchre-floor-5-loot",
+  "varrock-rooftop",
+  "canifis-rooftop",
+  "falador-rooftop",
+  "seers-rooftop",
+  "pollnivneach-rooftop",
+  "relekka-rooftop",
+  "ardougne-rooftop",
+  "colossal-wyrm-basic",
+  "colossal-wyrm-advanced",
+  "wilderness-agility",
+  "werewolf",
+  "prifddinas",
+  "ape-atoll",
+  "wine",
+  "karambwan",
+  "karambwan-1tick",
+  "shark",
+  "anglerfish",
+  "tuna",
+  "lobster",
+  "swordfish",
+  "monkfish",
+  "dark-crab",
+  "manta-ray",
+  "shrimp",
+  "trout",
+  "salmon",
+  "leechfin",
+  "minnows",
+  "sacred-eel",
+  "infernal-eel",
+  "barbarian-fishing",
+  "drift-net",
+  "iron-ore",
+  "amethyst",
+  "granite-3tick",
+  "gem-rock",
+  "infernal-shale",
+  "teak-logs",
+  "sulliusceps",
+  "blisterwood",
+  "bloodwood",
+  "engorged-bloodwood",
+  "redwood-logs",
+  "rosewood-logs",
+  "stealing-artefacts",
+  "pyramid-plunder",
+  "blackjacking",
+  "elves",
+  "vyres",
+  "master-farmers",
+  "rogues-castle-medium",
+  "rogues-castle-hard",
+  "grey-chins",
+  "red-chins",
+  "black-chins",
+  "herbiboar",
+  "guthix-rest",
+  "prayer-potion",
+  "super-attack",
+  "super-energy",
+  "super-strength",
+  "super-restore",
+  "super-defence",
+  "ranging-potion",
+  "magic-potion",
+  "stamina-potion",
+  "saradomin-brew",
+  "super-combat",
+  "mahogany-table",
+  "mythical-cape",
+  "oak-larder",
+  "gotr-mass",
+  "motherlode-mine",
+  "blast-mine",
+  "volcanic-mine",
+  "shooting-stars",
+] as const;
 
-  "varrock-rooftop": { checkedAt: SWEEP_DATE },
-  "canifis-rooftop": { checkedAt: SWEEP_DATE },
-  "falador-rooftop": { checkedAt: SWEEP_DATE },
-  "seers-rooftop": { checkedAt: SWEEP_DATE },
-  "pollnivneach-rooftop": { checkedAt: SWEEP_DATE },
-  "relekka-rooftop": { checkedAt: SWEEP_DATE },
-  "ardougne-rooftop": { checkedAt: SWEEP_DATE },
-  "colossal-wyrm-basic": { checkedAt: SWEEP_DATE },
-  "colossal-wyrm-advanced": { checkedAt: SWEEP_DATE },
-  "wilderness-agility": { checkedAt: SWEEP_DATE },
-  "werewolf": { checkedAt: SWEEP_DATE },
-  "prifddinas": { checkedAt: SWEEP_DATE },
-  "ape-atoll": { checkedAt: SWEEP_DATE },
-
-  wine: { checkedAt: SWEEP_DATE },
-  karambwan: { checkedAt: SWEEP_DATE },
-  "karambwan-1tick": { checkedAt: SWEEP_DATE },
-  shark: { checkedAt: SWEEP_DATE },
-  anglerfish: { checkedAt: SWEEP_DATE },
-  tuna: { checkedAt: SWEEP_DATE },
-  lobster: { checkedAt: SWEEP_DATE },
-  swordfish: { checkedAt: SWEEP_DATE },
-  monkfish: { checkedAt: SWEEP_DATE },
-  "dark-crab": { checkedAt: SWEEP_DATE },
-  "manta-ray": { checkedAt: SWEEP_DATE },
-};
+const VALIDATED: Record<string, MethodValidation> = Object.fromEntries(
+  VALIDATED_IDS.map((id) => [id, { checkedAt: SWEEP_DATE }]),
+);
 
 export type ValidationDisplay =
   | { status: "fresh" | "stale"; checkedAt: string; label: string }
