@@ -1,9 +1,7 @@
 /**
  * Crafting training methods (P2P guide rates).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Crafting_training
- * Golem Crafting: Wyrmscraig (post Fallen From Grace), 2026 content.
- *
- * XP/h from wiki assumptions; GP/h is computed live from GE prices.
+ * Gem cutting assumes 2,780 gems/h (Jeweller's chisel is +9–10%, not used).
  */
 export type MethodPart = {
   name: string;
@@ -14,16 +12,15 @@ export type CraftingMethod = {
   id: string;
   label: string;
   level: number;
-  /** XP per action */
   xp: number;
-  /** Actions per hour (wiki / focused rate) */
   actionsPerHour: number;
   inputs: MethodPart[];
   output: MethodPart | null;
 };
 
+const GEM_CUT_APH = 2780;
+
 export const CRAFTING_METHODS: CraftingMethod[] = [
-  // ── Glass ────────────────────────────────────────────────────────────────
   {
     id: "molten-glass",
     label: "Molten glass",
@@ -63,14 +60,12 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Molten glass", qty: 1 }],
     output: { name: "Vial", qty: 1 },
   },
-
-  // ── Gem cutting (existing) ───────────────────────────────────────────────
   {
     id: "cut-sapphire",
     label: "Cut sapphire",
     level: 20,
     xp: 50,
-    actionsPerHour: 2780,
+    actionsPerHour: GEM_CUT_APH,
     inputs: [{ name: "Uncut sapphire", qty: 1 }],
     output: { name: "Sapphire", qty: 1 },
   },
@@ -79,7 +74,7 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     label: "Cut emerald",
     level: 27,
     xp: 67.5,
-    actionsPerHour: 2780,
+    actionsPerHour: GEM_CUT_APH,
     inputs: [{ name: "Uncut emerald", qty: 1 }],
     output: { name: "Emerald", qty: 1 },
   },
@@ -88,7 +83,7 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     label: "Cut ruby",
     level: 34,
     xp: 85,
-    actionsPerHour: 2780,
+    actionsPerHour: GEM_CUT_APH,
     inputs: [{ name: "Uncut ruby", qty: 1 }],
     output: { name: "Ruby", qty: 1 },
   },
@@ -97,12 +92,19 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     label: "Cut diamond",
     level: 43,
     xp: 107.5,
-    actionsPerHour: 2780,
+    actionsPerHour: GEM_CUT_APH,
     inputs: [{ name: "Uncut diamond", qty: 1 }],
     output: { name: "Diamond", qty: 1 },
   },
-
-  // ── Jewellery (gold + gem) ───────────────────────────────────────────────
+  {
+    id: "cut-dragonstone",
+    label: "Cut dragonstone",
+    level: 55,
+    xp: 137.5,
+    actionsPerHour: GEM_CUT_APH,
+    inputs: [{ name: "Uncut dragonstone", qty: 1 }],
+    output: { name: "Dragonstone", qty: 1 },
+  },
   {
     id: "sapphire-ring",
     label: "Sapphire ring",
@@ -199,8 +201,6 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     ],
     output: { name: "Zenyte amulet (u)", qty: 1 },
   },
-
-  // ── Battlestaves (existing) ──────────────────────────────────────────────
   {
     id: "water-battlestaff",
     label: "Water battlestaff",
@@ -249,8 +249,6 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     ],
     output: { name: "Air battlestaff", qty: 1 },
   },
-
-  // ── D'hide bodies (existing) ─────────────────────────────────────────────
   {
     id: "green-dhide-body",
     label: "Green d'hide body",
@@ -287,8 +285,6 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Black dragon leather", qty: 3 }],
     output: { name: "Black d'hide body", qty: 1 },
   },
-
-  // ── Amethyst (existing) ──────────────────────────────────────────────────
   {
     id: "amethyst-bolt-tips",
     label: "Amethyst bolt tips",
@@ -325,15 +321,11 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
     inputs: [{ name: "Amethyst", qty: 1 }],
     output: { name: "Amethyst dart tip", qty: 8 },
   },
-
-  // ── Golem Crafting (Wyrmscraig, 2026) ────────────────────────────────────
-  // Sunstone mined on-site (opportunity cost not GE-purchased). Fur is the GE input.
-  // XP ≈ 1560 golem base + fur bonus. Focused ~55–60 golems/h with banked furs.
   {
     id: "golem-dark-kebbit",
     label: "Golem crafting (dark kebbit fur)",
     level: 60,
-    xp: 2700, // 1560 + 1140
+    xp: 2700,
     actionsPerHour: 55,
     inputs: [{ name: "Dark kebbit fur", qty: 1 }],
     output: null,
@@ -367,7 +359,6 @@ export const CRAFTING_METHODS: CraftingMethod[] = [
   },
 ];
 
-/** All GE item names referenced by crafting methods (for price snapshot). */
 export function craftingMethodItemNames(): string[] {
   const names = new Set<string>();
   for (const m of CRAFTING_METHODS) {

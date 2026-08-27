@@ -1,13 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { CircleHelp } from "lucide-react";
 import type { PriceRow } from "@/lib/osrs.server";
 import { gp, compactNum, formatCost, formatHours } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { intensityClass } from "@/components/methods-ux";
-import type { RankedMethod, SkillingMethod, MethodPart } from "@/components/skilling-types";
+import type { RankedMethod } from "@/components/skilling-types";
 import type { MethodsMetricView } from "@/components/MethodsGoalBar";
-import { methodWikiLink } from "@/lib/method-wiki";
+import { MethodHelpPopover } from "@/components/MethodHelpPopover";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -108,12 +106,14 @@ export function MethodRow({
                   {intensity}
                 </span>
               )}
-              <RateSourceHelp
+              <MethodHelpPopover
                 methodId={id}
                 skillKey={skillKey ?? skillLabel.toLowerCase()}
-                isActivity={isActivity}
-                notes={notes}
                 method={method}
+                activity={activity}
+                xpPerHour={xpPerHour}
+                gpPerHour={gpPerHour}
+                rateBandLevel={rateBandLevel}
               />
             </div>
             <p
@@ -292,78 +292,6 @@ export function MethodRow({
         </div>
       ) : null}
     </article>
-  );
-}
-
-function RateSourceHelp({
-  methodId,
-  skillKey,
-  isActivity,
-  notes,
-  method,
-}: {
-  methodId: string;
-  skillKey?: string;
-  isActivity: boolean;
-  notes?: string | null;
-  method?: SkillingMethod;
-}) {
-  const wiki = methodWikiLink(methodId, skillKey);
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          aria-label="Where do these rates come from?"
-        >
-          <CircleHelp className="size-3.5" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        side="bottom"
-        className="w-[min(18rem,calc(100vw-2rem))] space-y-2 p-3 text-xs"
-      >
-        <p className="font-semibold text-foreground">Where these numbers come from</p>
-        <ul className="space-y-1.5 text-muted-foreground">
-          <li>
-            <span className="font-medium text-foreground">XP/h</span> — Focused rates from the OSRS
-            Wiki training guides (static). Assumes attentive play and normal banking; not max
-            tick-perfect unless the method says so.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">GP/h & Net</span> — Calculated live from
-            current Grand Exchange prices (buy high / sell low after 2% GE tax, capped at 5M). Updates
-            automatically with the price feed.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Your cost</span> — (money-making rate −
-            method GP/h) ÷ XP/h. Lower is better; negative means the method beats your rate.
-          </li>
-        </ul>
-        <a
-          href={wiki.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-secondary/40 px-2.5 py-2 font-medium text-foreground hover:border-primary/50 hover:bg-primary/10"
-        >
-          <span className="min-w-0 truncate">Wiki: {wiki.title}</span>
-          <span className="shrink-0 text-[11px] text-muted-foreground">↗</span>
-        </a>
-        {isActivity && notes && (
-          <p className="border-t border-border/60 pt-2 text-muted-foreground">
-            <span className="font-medium text-foreground">This method:</span> {notes}
-          </p>
-        )}
-        {!isActivity && method && (
-          <p className="border-t border-border/60 pt-2 text-[11px] text-muted-foreground">
-            {method.xp} XP × {method.actionsPerHour.toLocaleString()} actions/h ={" "}
-            {Math.round(method.xp * method.actionsPerHour).toLocaleString()} XP/h
-          </p>
-        )}
-      </PopoverContent>
-    </Popover>
   );
 }
 

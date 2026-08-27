@@ -1,6 +1,6 @@
 /**
  * Hunter production methods (simple input→output / multi-output).
- * Complex activities (Herbiboar) live in activity-methods.ts.
+ * Complex activities (Herbiboar) live in hunter-activities.ts.
  *
  * Birdhouse runs use effective rates (active-time XP/h from the wiki table).
  * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs + Hunter training (2026).
@@ -125,7 +125,7 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Moonlight antelope",
     level: 91,
     xp: 400,
-    actionsPerHour: 250,
+    actionsPerHour: 225,
     inputs: [],
     output: { name: "Moonlight antelope antler", qty: 1 },
   },

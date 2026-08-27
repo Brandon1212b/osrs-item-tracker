@@ -1,6 +1,6 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { HUNTER_METHODS } from "@/lib/hunter-methods";
-import { activitiesForSkill } from "@/lib/activity-methods";
+import { HUNTER_RATE_TABLES } from "@/lib/hunter-activities";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -22,8 +22,8 @@ export function HunterMethodsPanel({
       title="Hunter methods"
       skillKey="hunter"
       skillLabel="Hunter"
-      methods={HUNTER_METHODS}
-      activities={activitiesForSkill("hunter")}
+      methods={HUNTER_METHODS.filter((m) => !["red-chins", "black-chins"].includes(m.id))}
+      activities={HUNTER_RATE_TABLES}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

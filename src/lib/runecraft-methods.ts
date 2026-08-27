@@ -1,11 +1,6 @@
 /**
  * Runecraft methods (P2P focused rates).
  * https://oldschool.runescape.wiki/w/Pay-to-play_Runecraft_training
- *
- * Ourania/ZMI produces a random mix of runes; modelled with pure essence input
- * and a representative high-value output for cost scoring (not exact mix).
- * Guardians of the Rift is multi-reward activity — excluded from simple model.
- * Lava rune running often uses paid runners; GE model still valid for self-run.
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -162,8 +157,10 @@ export const RUNECRAFT_METHODS: RunecraftMethod[] = [
       { name: "Pure essence", qty: 1 },
       { name: "Fire rune", qty: 1 },
       { name: "Sunfire splinters", qty: 1 },
+      { name: "Twisted extract", qty: 3 },
+      { name: "Raw kyatt", qty: 27.5 / 3410 },
     ],
-    output: { name: "Sunfire rune", qty: 4.8 },
+    output: { name: "Sunfire rune", qty: 185.1 },
   },
   {
     id: "nature-runes-double-diary",
