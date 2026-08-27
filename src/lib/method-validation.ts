@@ -113,8 +113,6 @@ const VALIDATED_IDS = [
   "astral-runes",
   "mud-runes",
   "aether-runes",
-  "blood-runes-true",
-  "nature-runes-double-diary",
 ] as const;
 
 const VALIDATED: Record<string, MethodValidation> = Object.fromEntries(
