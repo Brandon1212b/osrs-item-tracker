@@ -1,4 +1,4 @@
-/** Green only when stored XP matches a wiki table or a cited single rate. */
+/** Green only when stored XP matches a wiki table or a cited MMG rate. */
 
 export type MethodValidation = {
   checkedAt: string;
@@ -55,13 +55,23 @@ const VALIDATED_IDS = [
   "redwood-logs",
   "rosewood-logs",
   "bloodwood",
+  "magic-logs",
   "red-chins",
   "black-chins",
+  "grey-chins",
   "herbiboar",
+  "snowy-knights",
+  "pyre-foxes",
+  "sunlight-antelope",
+  "moonlight-antelope",
   "iron-ore",
   "gem-rock",
   "granite-3tick",
   "amethyst",
+  "lead-ore-deepfin",
+  "basalt",
+  "zeah-salts",
+  "infernal-shale",
   "blackjacking",
   "ardougne-knights",
   "elves",
