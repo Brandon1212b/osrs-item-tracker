@@ -11,6 +11,7 @@ const VALIDATED_PREFIXES: { prefix: string; except?: string[] }[] = [
   { prefix: "campfire-", except: ["campfire-rosewood", "campfire-ironwood"] },
   { prefix: "clean-" },
   { prefix: "degrime-" },
+  { prefix: "bf-" },
 ];
 
 const VALIDATED_IDS = [
@@ -98,6 +99,22 @@ const VALIDATED_IDS = [
   "blast-mine",
   "volcanic-mine",
   "shooting-stars",
+  "cannonballs",
+  "cannonballs-double",
+  "rune-2h",
+  "rune-platelegs",
+  "rune-plateskirt",
+  "rune-kiteshield",
+  "rune-battleaxe",
+  "rune-warhammer",
+  "yew-longbow",
+  "magic-longbow",
+  "maple-longbow",
+  "astral-runes",
+  "mud-runes",
+  "aether-runes",
+  "blood-runes-true",
+  "nature-runes-double-diary",
 ] as const;
 
 const VALIDATED: Record<string, MethodValidation> = Object.fromEntries(
