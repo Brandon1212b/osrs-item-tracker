@@ -1,4 +1,5 @@
-import { Check, CircleHelp } from "lucide-react";
+import { useState } from "react";
+import { Check, CircleHelp, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SkillingMethod } from "@/components/skilling-types";
 import type { ActivityMethod } from "@/lib/activity-methods";
@@ -9,8 +10,10 @@ import {
   getWikiSlotRates,
   wikiGpMatchesSite,
   wikiXpMatchesSite,
+  type WikiPageSnapshot,
   type WikiSlotKey,
 } from "@/lib/wiki-page-rates";
+import { checkWikiPages, type WikiCheckPageResult } from "@/lib/wiki-check.functions";
 import { gp as formatGp } from "@/lib/format";
 
 export function MethodHelpPopover({
@@ -34,6 +37,31 @@ export function MethodHelpPopover({
   const xpText = describeXp(method, activity, xpPerHour, rateBandLevel);
   const gpText = describeGp(method, activity, gpPerHour);
   const validation = getMethodValidation(methodId);
+  const [live, setLive] = useState<Partial<Record<WikiSlotKey, WikiCheckPageResult>> | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
+
+  const pages = ([
+    links.mmg ? { slot: "mmg" as const, href: links.mmg.href } : null,
+    links.skillGuide ? { slot: "skillGuide" as const, href: links.skillGuide.href } : null,
+    links.wiki ? { slot: "wiki" as const, href: links.wiki.href } : null,
+  ].filter(Boolean) as { slot: WikiSlotKey; href: string }[]);
+
+  const runCheck = async () => {
+    if (pages.length === 0 || checking) return;
+    setChecking(true);
+    setCheckError(null);
+    try {
+      const rows = await checkWikiPages({ data: { pages, skillKey } });
+      const next: Partial<Record<WikiSlotKey, WikiCheckPageResult>> = {};
+      for (const row of rows) next[row.slot] = row;
+      setLive(next);
+    } catch (err) {
+      setCheckError(err instanceof Error ? err.message : "Check failed");
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <Popover>
@@ -71,6 +99,7 @@ export function MethodHelpPopover({
               skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
+              live={live?.mmg}
             />
             <LinkBox
               label="Skill guide"
@@ -80,6 +109,7 @@ export function MethodHelpPopover({
               skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
+              live={live?.skillGuide}
             />
             <LinkBox
               label="Wiki"
@@ -89,8 +119,22 @@ export function MethodHelpPopover({
               skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
+              live={live?.wiki}
             />
           </div>
+          <button
+            type="button"
+            onClick={() => void runCheck()}
+            disabled={checking || pages.length === 0}
+            className="mt-2 inline-flex h-7 w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 text-[11px] font-medium hover:bg-secondary/60 disabled:opacity-50"
+          >
+            {checking ? <Loader2 className="size-3 animate-spin" /> : null}
+            {checking ? "Checking wiki…" : live ? "Check wiki again" : "Check wiki now"}
+          </button>
+          {checkError ? <p className="mt-1 text-[11px] text-destructive">{checkError}</p> : null}
+          {live ? (
+            <p className="mt-1 text-[10px] text-muted-foreground">Live read just now. Green check = within 10% of our row.</p>
+          ) : null}
         </section>
       </PopoverContent>
     </Popover>
@@ -118,6 +162,15 @@ function MatchCheck({ ok }: { ok: boolean | null }) {
   return <Check className="size-3 text-emerald-400" aria-label="Within 10% of our rate" />;
 }
 
+function liveToSnap(live: WikiCheckPageResult): WikiPageSnapshot {
+  return {
+    pulledAt: new Date().toISOString().slice(0, 10),
+    xpPerHour: live.xpPerHour,
+    gpPerHour: live.gpPerHour,
+    note: live.error ?? "Live wiki read",
+  };
+}
+
 function LinkBox({
   label,
   slotKey,
@@ -126,6 +179,7 @@ function LinkBox({
   skillKey,
   siteXp,
   siteGp,
+  live,
 }: {
   label: string;
   slotKey: WikiSlotKey;
@@ -134,8 +188,10 @@ function LinkBox({
   skillKey?: string;
   siteXp: number;
   siteGp: number | null;
+  live?: WikiCheckPageResult;
 }) {
-  const snap = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
+  const stored = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
+  const snap = live && !live.error ? liveToSnap(live) : stored;
   const xpLabel = snap ? formatWikiXp(snap) : null;
   const xpOk = snap ? wikiXpMatchesSite(snap, siteXp) : null;
   const gpOk = snap ? wikiGpMatchesSite(snap, siteGp) : null;
@@ -156,6 +212,9 @@ function LinkBox({
       ) : (
         <div className="mt-0.5 text-muted-foreground">—</div>
       )}
+      {live?.error ? (
+        <p className="mt-1 text-[10px] text-destructive">{live.error}</p>
+      ) : null}
       {xpLabel ? (
         <div className="mt-1 flex items-center gap-0.5 text-[10px] text-foreground" title={snap?.note}>
           <span className="text-muted-foreground">XP</span>
