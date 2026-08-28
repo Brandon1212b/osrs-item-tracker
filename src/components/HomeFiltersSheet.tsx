@@ -4,7 +4,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import type { RangeKey } from "@/lib/osrs.server";
 
@@ -59,7 +58,29 @@ function Chip({
   );
 }
 
+export function HomeFiltersButton({
+  onClick,
+  className = "",
+}: {
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Open filters"
+      title="Filters"
+      className={`inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
+    >
+      <SlidersHorizontal className="size-4" />
+    </button>
+  );
+}
+
 export function HomeFiltersSheet({
+  open,
+  onOpenChange,
   filter,
   sort,
   range,
@@ -67,6 +88,8 @@ export function HomeFiltersSheet({
   onSortChange,
   onRangeChange,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   filter: Filter;
   sort: SortKey;
   range: RangeKey;
@@ -79,21 +102,20 @@ export function HomeFiltersSheet({
   const rangeLabel = RANGES.find((r) => r.key === range)?.label ?? range;
 
   return (
-    <Drawer>
+    <Drawer open={open} onOpenChange={onOpenChange}>
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <DrawerTrigger asChild>
-          <button
-            type="button"
-            className="pointer-events-auto mx-auto flex h-11 w-full max-w-md items-center justify-center gap-2 rounded-full border border-border/70 bg-background/95 px-4 text-sm font-medium text-foreground shadow-lg backdrop-blur hover:bg-secondary/60"
-          >
-            <SlidersHorizontal className="size-4 shrink-0" />
-            <span>Filters</span>
-            <span className="text-muted-foreground">·</span>
-            <span className="truncate text-muted-foreground">
-              {categoryLabel} · {sortLabel} · {rangeLabel}
-            </span>
-          </button>
-        </DrawerTrigger>
+        <button
+          type="button"
+          onClick={() => onOpenChange(true)}
+          className="pointer-events-auto mx-auto flex h-11 w-full max-w-md items-center justify-center gap-2 rounded-full border border-border/70 bg-background/95 px-4 text-sm font-medium text-foreground shadow-lg backdrop-blur hover:bg-secondary/60"
+        >
+          <SlidersHorizontal className="size-4 shrink-0" />
+          <span>Filters</span>
+          <span className="text-muted-foreground">·</span>
+          <span className="truncate text-muted-foreground">
+            {categoryLabel} · {sortLabel} · {rangeLabel}
+          </span>
+        </button>
       </div>
       <DrawerContent className="mx-auto max-w-lg">
         <DrawerHeader className="pb-1 text-left">
