@@ -9,11 +9,9 @@ export type WikiSlotKey = "mmg" | "skillGuide" | "wiki";
 
 export type WikiPageSnapshot = {
   pulledAt: string;
-  /** Point XP/h from the page Results table or a specific table cell. */
   xpPerHour?: number;
   xpPerHourMin?: number;
   xpPerHourMax?: number;
-  /** Profit/h after tax from the MMG Results table, when the page lists one. */
   gpPerHour?: number;
   note?: string;
 };
@@ -34,14 +32,12 @@ function point(xp: number, note?: string): WikiPageSnapshot {
   return { pulledAt: D, xpPerHour: xp, ...(note ? { note } : {}) };
 }
 
-/** Per-method snapshots keyed by method id. */
+/** Keys: method id, or `${skillKey}:${id}` when the same id exists in two skills. */
 export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   "sunfire-runes": {
     mmg: mmg(30_690, 4_112_884, "MMG Results: 30,690 XP + 9,075 other; profit 4,112,884 after tax"),
   },
-  "redwood-pyre": {
-    mmg: mmg(28_000, 1_050_000),
-  },
+  "redwood-pyre": { mmg: mmg(28_000, 1_050_000) },
   "sepulchre-floor-5-loot": {
     mmg: mmg(88_060, 1_725_517, "MMG Results agility 88,060; profit 1,725,517 after tax"),
     skillGuide: range(85_800, 98_500, "Agility training: floor 5 85,800 (F4–F5 loot) to 98,500 (grand coffin)"),
@@ -82,7 +78,7 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   basalt: { mmg: mmg(3_500, 739_200) },
   "zeah-salts": { mmg: mmg(5_000, 441_000) },
   "infernal-shale": { mmg: mmg(68_368, 827_840) },
-  amethyst: { mmg: range(19_200, 24_000, "MMG XP 21,600 at mid; 80–100 ore/h × 240 XP") },
+  amethyst: { mmg: mmg(21_600, 250_830, "MMG Results 21,600 XP; 80–100 ore/h") },
   "sunlight-antelope": { mmg: mmg(83_600, 1_270_638) },
   "moonlight-antelope": { mmg: mmg(90_000, 1_223_925) },
   "grey-chins": { mmg: mmg(44_775, 201_219) },
@@ -90,27 +86,26 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   "black-chins": { mmg: mmg(94_500, 925_013) },
   "snowy-knights": { mmg: mmg(22_176, 1_231_702) },
   "pyre-foxes": { mmg: mmg(39_960, 905_603) },
-  "magic-logs": { mmg: mmg(32_500, 138_320) },
-  "redwood-logs": { mmg: mmg(68_400, 148_010) },
-  shark: { mmg: mmg(273_000, 301_600, "Cooking sharks MMG; 1,000–1,300/h") },
-  karambwan: { mmg: mmg(247_000, 200_200, "Cooking karambwan MMG 1,200/h") },
   elves: { mmg: mmg(197_848, 4_305_881) },
   vyres: { mmg: mmg(220_968, 2_488_345) },
+
+  "cooking:shark": { mmg: mmg(273_000, 301_600, "Cooking raw sharks MMG") },
+  "cooking:karambwan": { mmg: mmg(247_000, 200_200, "Cooking raw karambwan MMG 1,200/h") },
+  "cooking:wine": { skillGuide: range(470_000, 490_000, "Cooking training jugs of wine") },
+  wine: { skillGuide: range(470_000, 490_000, "Cooking training jugs of wine") },
+  "karambwan-1tick": { skillGuide: range(464_000, 950_000, "Cooking training 1-tick karambwan table 30–99") },
+  "cooking:anglerfish": { skillGuide: range(305_000, 330_000, "Cooking training Hosidius anglerfish") },
+  "cooking:tuna": { skillGuide: range(85_000, 143_500, "Cooking training tuna") },
+  "cooking:lobster": { skillGuide: range(120_000, 172_000, "Cooking training lobster") },
+  "cooking:swordfish": { skillGuide: range(165_000, 200_900, "Cooking training swordfish") },
+  "cooking:monkfish": { skillGuide: range(165_000, 215_200, "Cooking training monkfish") },
+  "cooking:manta-ray": { skillGuide: range(285_000, 310_000, "Cooking training manta ray") },
 
   "cut-sapphire": { skillGuide: point(139_000, "Crafting training gem table, 2,780/h") },
   "cut-emerald": { skillGuide: point(187_650, "Crafting training gem table, 2,780/h") },
   "cut-ruby": { skillGuide: point(236_300, "Crafting training gem table, 2,780/h") },
   "cut-diamond": { skillGuide: point(298_850, "Crafting training gem table, 2,780/h") },
   "cut-dragonstone": { skillGuide: point(382_250, "Crafting training gem table, 2,780/h") },
-
-  wine: { skillGuide: range(470_000, 490_000, "Cooking training jugs of wine") },
-  "karambwan-1tick": { skillGuide: range(464_000, 950_000, "Cooking training 1-tick karambwan table 30–99") },
-  anglerfish: { skillGuide: range(305_000, 330_000, "Cooking training Hosidius anglerfish") },
-  tuna: { skillGuide: range(85_000, 143_500, "Cooking training tuna") },
-  lobster: { skillGuide: range(120_000, 172_000, "Cooking training lobster") },
-  swordfish: { skillGuide: range(165_000, 200_900, "Cooking training swordfish") },
-  monkfish: { skillGuide: range(165_000, 215_200, "Cooking training monkfish") },
-  "manta-ray": { skillGuide: range(285_000, 310_000, "Cooking training manta ray") },
 
   "varrock-rooftop": { skillGuide: range(11_000, 14_000) },
   "canifis-rooftop": { skillGuide: range(14_000, 17_000) },
@@ -127,13 +122,13 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
 
   "wintertodt-mass": {
     wiki: range(177_000, 350_000, "Wintertodt/Strategies first XP table 50=177k … 99=350k"),
-    skillGuide: range(177_000, 350_000, "Same Strategies table used on Firemaking training discussions"),
+    skillGuide: range(177_000, 350_000, "Wintertodt/Strategies first XP table"),
   },
 
-  "teak-logs": { skillGuide: range(34_000, 93_000, "Woodcutting training teak no-tick 34k–93k (tick methods are higher)") },
+  "teak-logs": { skillGuide: range(34_000, 93_000, "Woodcutting training teak no-tick 34k–93k") },
   "magic-logs": {
     mmg: mmg(32_500, 138_320),
-    skillGuide: range(80_000, 90_000, "Woodcutting training magic 80k–90k with yews/forestry — not the same as the MMG 32.5k AFK cut"),
+    skillGuide: range(80_000, 90_000, "Woodcutting training magic 80k–90k with yews/forestry"),
   },
   "redwood-logs": {
     mmg: mmg(68_400, 148_010),
@@ -146,7 +141,15 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   bloodwood: { skillGuide: range(130_000, 210_000) },
 };
 
-export function getWikiSlotRates(methodId: string, slot: WikiSlotKey): WikiPageSnapshot | undefined {
+export function getWikiSlotRates(
+  methodId: string,
+  slot: WikiSlotKey,
+  skillKey?: string,
+): WikiPageSnapshot | undefined {
+  if (skillKey) {
+    const keyed = WIKI_PAGE_RATES[`${skillKey}:${methodId}`]?.[slot];
+    if (keyed) return keyed;
+  }
   return WIKI_PAGE_RATES[methodId]?.[slot];
 }
 
