@@ -14,48 +14,18 @@ import {
   type WikiSlotKey,
 } from "@/lib/wiki-page-rates";
 import { checkWikiPages, type WikiCheckPageResult } from "@/lib/wiki-check.functions";
+import {
+  SWEEP_EVENT,
+  readLiveCheck,
+  readPageRates,
+  writeLiveCheck,
+  type LiveCheckRecord,
+} from "@/lib/wiki-check-store";
 import { gp as formatGp } from "@/lib/format";
-
-const LIVE_KEY = "ge-watch-wiki-check";
-
-type LiveCheckRecord = {
-  date: string;
-  matched: boolean;
-  hadRates: boolean;
-};
-
-function storageKey(methodId: string, skillKey?: string) {
-  return skillKey ? `${skillKey}:${methodId}` : methodId;
-}
-
-function readLiveCheck(methodId: string, skillKey?: string): LiveCheckRecord | null {
-  try {
-    const raw = localStorage.getItem(LIVE_KEY);
-    if (!raw) return null;
-    const all = JSON.parse(raw) as Record<string, LiveCheckRecord>;
-    return all[storageKey(methodId, skillKey)] ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function writeLiveCheck(methodId: string, skillKey: string | undefined, rec: LiveCheckRecord) {
-  try {
-    const raw = localStorage.getItem(LIVE_KEY);
-    const all = raw ? (JSON.parse(raw) as Record<string, LiveCheckRecord>) : {};
-    all[storageKey(methodId, skillKey)] = rec;
-    localStorage.setItem(LIVE_KEY, JSON.stringify(all));
-  } catch {
-    /* private mode */
-  }
-}
 
 function displayFromLive(rec: LiveCheckRecord): ValidationDisplay {
   if (rec.matched) {
     return { status: "fresh", checkedAt: rec.date, label: `Validated ${rec.date}` };
-  }
-  if (rec.hadRates) {
-    return { status: "none", checkedAt: null, label: `Not validated as of ${rec.date}` };
   }
   return { status: "none", checkedAt: null, label: `Not validated as of ${rec.date}` };
 }
@@ -87,7 +57,10 @@ export function MethodHelpPopover({
   const [checkError, setCheckError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLiveRec(readLiveCheck(methodId, skillKey));
+    const load = () => setLiveRec(readLiveCheck(methodId, skillKey));
+    load();
+    window.addEventListener(SWEEP_EVENT, load);
+    return () => window.removeEventListener(SWEEP_EVENT, load);
   }, [methodId, skillKey]);
 
   const validation = liveRec ? displayFromLive(liveRec) : baked;
@@ -157,36 +130,9 @@ export function MethodHelpPopover({
         <section>
           <p className="mb-1.5 font-semibold text-foreground">Links</p>
           <div className="grid grid-cols-3 gap-1.5">
-            <LinkBox
-              label="MMG"
-              slotKey="mmg"
-              slot={links.mmg}
-              methodId={methodId}
-              skillKey={skillKey}
-              siteXp={xpPerHour}
-              siteGp={gpPerHour}
-              live={live?.mmg}
-            />
-            <LinkBox
-              label="Skill guide"
-              slotKey="skillGuide"
-              slot={links.skillGuide}
-              methodId={methodId}
-              skillKey={skillKey}
-              siteXp={xpPerHour}
-              siteGp={gpPerHour}
-              live={live?.skillGuide}
-            />
-            <LinkBox
-              label="Wiki"
-              slotKey="wiki"
-              slot={links.wiki}
-              methodId={methodId}
-              skillKey={skillKey}
-              siteXp={xpPerHour}
-              siteGp={gpPerHour}
-              live={live?.wiki}
-            />
+            <LinkBox label="MMG" slotKey="mmg" slot={links.mmg} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.mmg} />
+            <LinkBox label="Skill guide" slotKey="skillGuide" slot={links.skillGuide} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.skillGuide} />
+            <LinkBox label="Wiki" slotKey="wiki" slot={links.wiki} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.wiki} />
           </div>
           <button
             type="button"
@@ -198,29 +144,20 @@ export function MethodHelpPopover({
             {checking ? "Checking wiki…" : live || liveRec ? "Check wiki again" : "Check wiki now"}
           </button>
           {checkError ? <p className="mt-1 text-[11px] text-destructive">{checkError}</p> : null}
-          {live ? (
-            <p className="mt-1 text-[10px] text-muted-foreground">Live read just now. Green check = within 10% of our row.</p>
-          ) : null}
         </section>
       </PopoverContent>
     </Popover>
   );
 }
 
-function ValidationBadge({
-  validation,
-}: {
-  validation: ValidationDisplay;
-}) {
+function ValidationBadge({ validation }: { validation: ValidationDisplay }) {
   const color =
     validation.status === "fresh"
       ? "text-emerald-400"
       : validation.status === "stale"
         ? "text-amber-400"
         : "text-red-400";
-  return (
-    <p className={`text-[11px] font-medium ${color}`}>{validation.label}</p>
-  );
+  return <p className={`text-[11px] font-medium ${color}`}>{validation.label}</p>;
 }
 
 function MatchCheck({ ok }: { ok: boolean | null }) {
@@ -256,8 +193,14 @@ function LinkBox({
   siteGp: number | null;
   live?: WikiCheckPageResult;
 }) {
-  const stored = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
-  const snap = live && !live.error ? liveToSnap(live) : stored;
+  const baked = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
+  const swept = slot ? readPageRates()[slot.href] : undefined;
+  const snap =
+    live && !live.error
+      ? liveToSnap(live)
+      : swept && !swept.error
+        ? { pulledAt: swept.date, xpPerHour: swept.xpPerHour, gpPerHour: swept.gpPerHour, note: "Background wiki sweep" }
+        : baked;
   const xpLabel = snap ? formatWikiXp(snap) : null;
   const xpOk = snap ? wikiXpMatchesSite(snap, siteXp) : null;
   const gpOk = snap ? wikiGpMatchesSite(snap, siteGp) : null;
@@ -266,20 +209,14 @@ function LinkBox({
     <div className="rounded-md border border-border/60 bg-secondary/30 px-1.5 py-1.5">
       <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
       {slot ? (
-        <a
-          href={slot.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-0.5 block truncate font-medium text-sky-400 underline-offset-2 hover:underline"
-          title={slot.title}
-        >
+        <a href={slot.href} target="_blank" rel="noopener noreferrer" className="mt-0.5 block truncate font-medium text-sky-400 underline-offset-2 hover:underline" title={slot.title}>
           Open
         </a>
       ) : (
         <div className="mt-0.5 text-muted-foreground">—</div>
       )}
-      {live?.error ? (
-        <p className="mt-1 text-[10px] text-destructive">{live.error}</p>
+      {live?.error || swept?.error ? (
+        <p className="mt-1 text-[10px] text-destructive">{live?.error ?? swept?.error}</p>
       ) : null}
       {xpLabel ? (
         <div className="mt-1 flex items-center gap-0.5 text-[10px] text-foreground" title={snap?.note}>
