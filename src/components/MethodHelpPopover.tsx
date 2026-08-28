@@ -68,6 +68,7 @@ export function MethodHelpPopover({
               slotKey="mmg"
               slot={links.mmg}
               methodId={methodId}
+              skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
             />
@@ -76,6 +77,7 @@ export function MethodHelpPopover({
               slotKey="skillGuide"
               slot={links.skillGuide}
               methodId={methodId}
+              skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
             />
@@ -84,6 +86,7 @@ export function MethodHelpPopover({
               slotKey="wiki"
               slot={links.wiki}
               methodId={methodId}
+              skillKey={skillKey}
               siteXp={xpPerHour}
               siteGp={gpPerHour}
             />
@@ -120,6 +123,7 @@ function LinkBox({
   slotKey,
   slot,
   methodId,
+  skillKey,
   siteXp,
   siteGp,
 }: {
@@ -127,10 +131,11 @@ function LinkBox({
   slotKey: WikiSlotKey;
   slot: WikiSlot;
   methodId: string;
+  skillKey?: string;
   siteXp: number;
   siteGp: number | null;
 }) {
-  const snap = slot ? getWikiSlotRates(methodId, slotKey) : undefined;
+  const snap = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
   const xpLabel = snap ? formatWikiXp(snap) : null;
   const xpOk = snap ? wikiXpMatchesSite(snap, siteXp) : null;
   const gpOk = snap ? wikiGpMatchesSite(snap, siteGp) : null;
