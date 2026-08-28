@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, CircleHelp, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SkillingMethod } from "@/components/skilling-types";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { methodLinkTrio, type WikiSlot } from "@/lib/method-links";
-import { getMethodValidation } from "@/lib/method-validation";
+import { getMethodValidation, type ValidationDisplay } from "@/lib/method-validation";
 import {
   formatWikiXp,
   getWikiSlotRates,
@@ -15,6 +15,50 @@ import {
 } from "@/lib/wiki-page-rates";
 import { checkWikiPages, type WikiCheckPageResult } from "@/lib/wiki-check.functions";
 import { gp as formatGp } from "@/lib/format";
+
+const LIVE_KEY = "ge-watch-wiki-check";
+
+type LiveCheckRecord = {
+  date: string;
+  matched: boolean;
+  hadRates: boolean;
+};
+
+function storageKey(methodId: string, skillKey?: string) {
+  return skillKey ? `${skillKey}:${methodId}` : methodId;
+}
+
+function readLiveCheck(methodId: string, skillKey?: string): LiveCheckRecord | null {
+  try {
+    const raw = localStorage.getItem(LIVE_KEY);
+    if (!raw) return null;
+    const all = JSON.parse(raw) as Record<string, LiveCheckRecord>;
+    return all[storageKey(methodId, skillKey)] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLiveCheck(methodId: string, skillKey: string | undefined, rec: LiveCheckRecord) {
+  try {
+    const raw = localStorage.getItem(LIVE_KEY);
+    const all = raw ? (JSON.parse(raw) as Record<string, LiveCheckRecord>) : {};
+    all[storageKey(methodId, skillKey)] = rec;
+    localStorage.setItem(LIVE_KEY, JSON.stringify(all));
+  } catch {
+    /* private mode */
+  }
+}
+
+function displayFromLive(rec: LiveCheckRecord): ValidationDisplay {
+  if (rec.matched) {
+    return { status: "fresh", checkedAt: rec.date, label: `Validated ${rec.date}` };
+  }
+  if (rec.hadRates) {
+    return { status: "none", checkedAt: null, label: `Not validated as of ${rec.date}` };
+  }
+  return { status: "none", checkedAt: null, label: `Not validated as of ${rec.date}` };
+}
 
 export function MethodHelpPopover({
   methodId,
@@ -36,10 +80,17 @@ export function MethodHelpPopover({
   const links = methodLinkTrio(methodId, skillKey);
   const xpText = describeXp(method, activity, xpPerHour, rateBandLevel);
   const gpText = describeGp(method, activity, gpPerHour);
-  const validation = getMethodValidation(methodId);
+  const baked = getMethodValidation(methodId);
+  const [liveRec, setLiveRec] = useState<LiveCheckRecord | null>(null);
   const [live, setLive] = useState<Partial<Record<WikiSlotKey, WikiCheckPageResult>> | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLiveRec(readLiveCheck(methodId, skillKey));
+  }, [methodId, skillKey]);
+
+  const validation = liveRec ? displayFromLive(liveRec) : baked;
 
   const pages = ([
     links.mmg ? { slot: "mmg" as const, href: links.mmg.href } : null,
@@ -56,6 +107,21 @@ export function MethodHelpPopover({
       const next: Partial<Record<WikiSlotKey, WikiCheckPageResult>> = {};
       for (const row of rows) next[row.slot] = row;
       setLive(next);
+
+      const date = new Date().toISOString().slice(0, 10);
+      let hadRates = false;
+      let matched = false;
+      for (const row of rows) {
+        if (row.error) continue;
+        const snap = liveToSnap(row, date);
+        const xpOk = wikiXpMatchesSite(snap, xpPerHour);
+        const gpOk = wikiGpMatchesSite(snap, gpPerHour);
+        if (snap.xpPerHour != null || snap.gpPerHour != null) hadRates = true;
+        if (xpOk || gpOk) matched = true;
+      }
+      const rec: LiveCheckRecord = { date, matched, hadRates };
+      setLiveRec(rec);
+      writeLiveCheck(methodId, skillKey, rec);
     } catch (err) {
       setCheckError(err instanceof Error ? err.message : "Check failed");
     } finally {
@@ -129,7 +195,7 @@ export function MethodHelpPopover({
             className="mt-2 inline-flex h-7 w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 text-[11px] font-medium hover:bg-secondary/60 disabled:opacity-50"
           >
             {checking ? <Loader2 className="size-3 animate-spin" /> : null}
-            {checking ? "Checking wiki…" : live ? "Check wiki again" : "Check wiki now"}
+            {checking ? "Checking wiki…" : live || liveRec ? "Check wiki again" : "Check wiki now"}
           </button>
           {checkError ? <p className="mt-1 text-[11px] text-destructive">{checkError}</p> : null}
           {live ? (
@@ -144,7 +210,7 @@ export function MethodHelpPopover({
 function ValidationBadge({
   validation,
 }: {
-  validation: ReturnType<typeof getMethodValidation>;
+  validation: ValidationDisplay;
 }) {
   const color =
     validation.status === "fresh"
@@ -162,9 +228,9 @@ function MatchCheck({ ok }: { ok: boolean | null }) {
   return <Check className="size-3 text-emerald-400" aria-label="Within 10% of our rate" />;
 }
 
-function liveToSnap(live: WikiCheckPageResult): WikiPageSnapshot {
+function liveToSnap(live: WikiCheckPageResult, date = new Date().toISOString().slice(0, 10)): WikiPageSnapshot {
   return {
-    pulledAt: new Date().toISOString().slice(0, 10),
+    pulledAt: date,
     xpPerHour: live.xpPerHour,
     gpPerHour: live.gpPerHour,
     note: live.error ?? "Live wiki read",
