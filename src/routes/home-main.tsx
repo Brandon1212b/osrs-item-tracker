@@ -332,10 +332,14 @@ export function HomeMain({
         onOpenChange={setFiltersOpen}
         filter={filter}
         gearCombat={gearCombat}
+        skill={skill}
+        supplyType={supplyType}
         sort={sort}
         range={range}
         onFilterChange={handleFilterChange}
         onCombatChange={(next) => patchSearch({ filter: "gear", combat: next, set: "all" })}
+        onSkillChange={(next) => patchSearch({ filter: "skilling", skill: next })}
+        onSupplyChange={(next) => patchSearch({ filter: "supplies", supply: next })}
         onSortChange={(next) => patchSearch({ sort: next })}
         onRangeChange={(next) => patchSearch({ range: next })}
       />
