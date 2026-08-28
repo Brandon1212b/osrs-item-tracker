@@ -6,9 +6,6 @@ import {
   User,
   X,
   Loader2,
-  Sword,
-  Target,
-  Sparkles,
 } from "lucide-react";
 import {
   GEAR_COMBAT_FILTERS,
@@ -33,13 +30,6 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { gearSetsForTier } from "@/lib/gear-sets";
 import { EquipmentPaperDoll, Tab, SubTab, WikiIconTab } from "./home-ui";
 import type { HomeSearch } from "./index";
-
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Sword,
-  Target,
-  Sparkles,
-  Package,
-};
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
@@ -207,7 +197,6 @@ export function HomeMain({
           </div>
         </div>
 
-        {/* Category + sort + time range filters together */}
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <div className="flex flex-wrap gap-1.5">
             <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="All" />
@@ -273,7 +262,7 @@ export function HomeMain({
               label="All combat"
             />
             {GEAR_COMBAT_FILTERS.map((f) => (
-              <SubTab
+              <WikiIconTab
                 key={f.key}
                 active={gearCombat === f.key}
                 onClick={() =>
@@ -283,7 +272,8 @@ export function HomeMain({
                   })
                 }
                 label={f.label}
-                icon={ICONS[f.icon]}
+                wikiIcon={f.wikiIcon}
+                level={playerSkills?.[f.skillKey]}
               />
             ))}
           </div>
@@ -395,15 +385,6 @@ export function HomeMain({
 
       {!snapshot.isLoading && allRows.length > 0 && (
         <>
-          {showGearSub && totalCost > 0 && (
-            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm">
-              <span className="text-muted-foreground">Total cost of shown items: </span>
-              <span className="font-semibold tabular-nums text-foreground">{formatCompact(totalCost)} gp</span>
-              <span className="ml-1.5 text-xs text-muted-foreground">
-                ({allRows.length} item{allRows.length === 1 ? "" : "s"})
-              </span>
-            </div>
-          )}
           <div
             key={gridKey}
             className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4"
@@ -423,6 +404,15 @@ export function HomeMain({
               );
             })}
           </div>
+          {showGearSub && totalCost > 0 && (
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Total cost of shown items: </span>
+              <span className="font-semibold tabular-nums text-foreground">{formatCompact(totalCost)} gp</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">
+                ({allRows.length} item{allRows.length === 1 ? "" : "s"})
+              </span>
+            </div>
+          )}
         </>
       )}
 
