@@ -1,6 +1,5 @@
 export type CatalogItem = {
   name: string;
-  /** Filter tags for subset navigation. */
   tags: string[];
 };
 
