@@ -13,7 +13,6 @@ import {
 } from "@/lib/osrs-catalog";
 import { formatCompact } from "@/lib/format";
 import { ItemCard } from "@/components/ItemCard";
-import { WikiImage } from "@/components/WikiImage";
 import { HomeFiltersButton, HomeFiltersSheet } from "@/components/HomeFiltersSheet";
 import { Input } from "@/components/ui/input";
 import { meetsRequirements, firstMissingRequirement, type PlayerSkills } from "@/lib/player-stats";
@@ -79,7 +78,6 @@ export function HomeMain({
   playerSkills,
   loadRsn,
   clearRsn,
-  skillBarEntries,
   showGearSub,
   showSkillSub,
   showSupplySub,
@@ -138,36 +136,6 @@ export function HomeMain({
               <p className="text-[11px] text-destructive">
                 {(playerQuery.error as Error)?.message ?? "Lookup failed"}
               </p>
-            )}
-            {playerSkills && skillBarEntries.length > 0 && (
-              <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="truncate text-[10px] font-medium text-muted-foreground">
-                  {playerQuery.data?.name ?? activeRsn}
-                </p>
-                <div
-                  className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5"
-                  title={skillBarEntries.map((s) => `${s.label} ${s.level}`).join(" · ")}
-                >
-                  {skillBarEntries.map((s) => (
-                    <span
-                      key={s.key}
-                      className="inline-flex items-center gap-0.5 tabular-nums text-[11px] text-muted-foreground"
-                      title={`${s.label} ${s.level}`}
-                    >
-                      <WikiImage
-                        icon={s.icon}
-                        alt=""
-                        width={14}
-                        height={14}
-                        lazy={false}
-                        className="size-3.5 shrink-0"
-                        draggable={false}
-                      />
-                      <span className="font-semibold text-foreground/90">{s.level}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
             )}
           </div>
 
