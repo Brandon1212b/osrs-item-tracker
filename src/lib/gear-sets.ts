@@ -3,6 +3,8 @@
  * Extra tradeable PvM items are merged at filter time via extraItemsForSet().
  */
 import { extraItemsForSet } from "./gear-sets-extra";
+import { GEAR_SETS as BASE_GEAR_SETS } from "./gear-sets-data";
+
 export type GearSetDef = {
   key: string;
   label: string;
@@ -10,8 +12,8 @@ export type GearSetDef = {
   combat?: "melee" | "range" | "magic";
   items: readonly string[];
 };
-export { GEAR_SETS } from "./gear-sets-data";
-import { GEAR_SETS } from "./gear-sets-data";
+
+export const GEAR_SETS: GearSetDef[] = BASE_GEAR_SETS;
 
 export function gearSetsForTier(
   tier: string,
