@@ -138,10 +138,7 @@ export function HomeFiltersSheet({
                 <Chip
                   key={c.key}
                   active={filter === c.key && (c.key !== "gear" || gearCombat === "all")}
-                  onClick={() => {
-                    onFilterChange(c.key);
-                    onCombatChange("all");
-                  }}
+                  onClick={() => onFilterChange(c.key)}
                   label={c.label}
                 />
               ))}
@@ -152,10 +149,7 @@ export function HomeFiltersSheet({
                 <Chip
                   key={c.key}
                   active={filter === "gear" && gearCombat === c.key}
-                  onClick={() => {
-                    onFilterChange("gear");
-                    onCombatChange(gearCombat === c.key ? "all" : c.key);
-                  }}
+                  onClick={() => onCombatChange(gearCombat === c.key ? "all" : c.key)}
                   label={c.label}
                 />
               ))}
