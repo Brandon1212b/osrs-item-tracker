@@ -6,7 +6,7 @@ import {
   subscribeWikiSweep,
 } from "@/lib/wiki-sweep";
 
-/** Starts the full-method wiki check on app load; click forces another pass. */
+/** Starts the full-method wiki check when the skilling page mounts; click forces another pass. */
 export function WikiSweepButton() {
   const [tick, setTick] = useState(0);
   useEffect(() => subscribeWikiSweep(() => setTick((n) => n + 1)), []);
@@ -38,7 +38,7 @@ export function WikiSweepButton() {
           ? `Checking wiki pages ${state.done}/${state.total} (${state.methods} methods)`
           : "Fetch XP/GP from every skilling method wiki page and refresh the ? badges"
       }
-      className="ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 px-2 text-[11px] font-medium text-foreground hover:bg-secondary/60 disabled:opacity-60"
+      className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 px-2 text-[11px] font-medium text-foreground hover:bg-secondary/60 disabled:opacity-60"
     >
       {running ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
       <span className="hidden sm:inline">{label}</span>

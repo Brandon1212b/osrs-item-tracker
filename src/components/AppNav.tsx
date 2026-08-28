@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ChartLine, Home, Pickaxe } from "lucide-react";
 import type { ReactNode } from "react";
-import { WikiSweepButton } from "@/components/WikiSweepButton";
 
 const linkBase =
   "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors sm:gap-2 sm:px-3";
@@ -63,8 +62,6 @@ export function AppNav() {
             icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
           />
         </div>
-
-        <WikiSweepButton />
       </nav>
     </header>
   );
