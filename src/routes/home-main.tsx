@@ -1,8 +1,5 @@
 import {
   Search,
-  Shield,
-  Pickaxe,
-  Package,
   User,
   X,
   Loader2,
@@ -16,32 +13,17 @@ import {
 import { formatCompact } from "@/lib/format";
 import { ItemCard } from "@/components/ItemCard";
 import { WikiImage } from "@/components/WikiImage";
+import { HomeFiltersSheet } from "@/components/HomeFiltersSheet";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { meetsRequirements, firstMissingRequirement, type PlayerSkills } from "@/lib/player-stats";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { gearSetsForTier } from "@/lib/gear-sets";
-import { EquipmentPaperDoll, Tab, SubTab, WikiIconTab } from "./home-ui";
+import { EquipmentPaperDoll, SubTab, WikiIconTab } from "./home-ui";
 import type { HomeSearch } from "./index";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
-
-const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
-  { key: "1d", label: "24h" },
-  { key: "1w", label: "1w" },
-  { key: "1m", label: "1m" },
-  { key: "3m", label: "3m" },
-  { key: "6m", label: "6m" },
-  { key: "1y", label: "1y" },
-];
 
 type HomeMainProps = {
   filter: Filter;
@@ -109,7 +91,7 @@ export function HomeMain({
   gridKey,
 }: HomeMainProps) {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-0 sm:px-6">
+    <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-0 sm:px-6">
       <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
           <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
@@ -194,61 +176,6 @@ export function HomeMain({
               placeholder="Search items…"
               className="pl-9"
             />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-          <div className="flex flex-wrap gap-1.5">
-            <Tab active={filter === "all"} onClick={() => handleFilterChange("all")} label="All" />
-            <Tab
-              active={filter === "gear"}
-              onClick={() => handleFilterChange("gear")}
-              label="Gear"
-              icon={<Shield className="size-3.5" />}
-            />
-            <Tab
-              active={filter === "skilling"}
-              onClick={() => handleFilterChange("skilling")}
-              label="Skilling Items"
-              icon={<Pickaxe className="size-3.5" />}
-            />
-            <Tab
-              active={filter === "supplies"}
-              onClick={() => handleFilterChange("supplies")}
-              label="Supplies"
-              icon={<Package className="size-3.5" />}
-            />
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-            <Select value={sort} onValueChange={(v) => patchSearch({ sort: v as SortKey })}>
-              <SelectTrigger className="h-8 w-[8.5rem] shrink-0 text-xs" aria-label="Sort items">
-                <SelectValue placeholder="Sort by…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="gainers">Gainers</SelectItem>
-                <SelectItem value="losers">Losers</SelectItem>
-                <SelectItem value="expensive">Expensive</SelectItem>
-                <SelectItem value="cheap">Cheap</SelectItem>
-                <SelectItem value="value">Best value</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex min-w-0 flex-wrap gap-1">
-              {RANGE_OPTIONS.map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => patchSearch({ range: r.key })}
-                  className={`rounded-md px-1.5 py-1 text-[10px] font-semibold tabular-nums transition-colors sm:px-2 sm:text-xs ${
-                    range === r.key
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary/60 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -425,6 +352,15 @@ export function HomeMain({
       <footer className="mt-16 border-t border-border/60 pt-6 text-xs text-muted-foreground">
         Price data from the OSRS Wiki real-time Grand Exchange API. Not affiliated with Jagex.
       </footer>
+
+      <HomeFiltersSheet
+        filter={filter}
+        sort={sort}
+        range={range}
+        onFilterChange={handleFilterChange}
+        onSortChange={(next) => patchSearch({ sort: next })}
+        onRangeChange={(next) => patchSearch({ range: next })}
+      />
     </main>
   );
 }
