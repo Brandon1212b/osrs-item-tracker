@@ -5,6 +5,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { GEAR_COMBAT_FILTERS } from "@/lib/osrs-catalog";
 import type { RangeKey } from "@/lib/osrs.server";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
@@ -82,22 +83,30 @@ export function HomeFiltersSheet({
   open,
   onOpenChange,
   filter,
+  gearCombat,
   sort,
   range,
   onFilterChange,
+  onCombatChange,
   onSortChange,
   onRangeChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   filter: Filter;
+  gearCombat: string;
   sort: SortKey;
   range: RangeKey;
   onFilterChange: (next: Filter) => void;
+  onCombatChange: (next: string) => void;
   onSortChange: (next: SortKey) => void;
   onRangeChange: (next: RangeKey) => void;
 }) {
-  const categoryLabel = CATEGORIES.find((c) => c.key === filter)?.label ?? "All";
+  const combatLabel =
+    filter === "gear" && gearCombat !== "all"
+      ? GEAR_COMBAT_FILTERS.find((c) => c.key === gearCombat)?.label
+      : null;
+  const categoryLabel = combatLabel ?? CATEGORIES.find((c) => c.key === filter)?.label ?? "All";
   const sortLabel = SORTS.find((s) => s.key === sort)?.label ?? "Sort";
   const rangeLabel = RANGES.find((r) => r.key === range)?.label ?? range;
 
@@ -126,7 +135,29 @@ export function HomeFiltersSheet({
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Category</p>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORIES.map((c) => (
-                <Chip key={c.key} active={filter === c.key} onClick={() => onFilterChange(c.key)} label={c.label} />
+                <Chip
+                  key={c.key}
+                  active={filter === c.key && (c.key !== "gear" || gearCombat === "all")}
+                  onClick={() => {
+                    onFilterChange(c.key);
+                    onCombatChange("all");
+                  }}
+                  label={c.label}
+                />
+              ))}
+            </div>
+            <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Gear style</p>
+            <div className="flex flex-wrap gap-1.5">
+              {GEAR_COMBAT_FILTERS.map((c) => (
+                <Chip
+                  key={c.key}
+                  active={filter === "gear" && gearCombat === c.key}
+                  onClick={() => {
+                    onFilterChange("gear");
+                    onCombatChange(gearCombat === c.key ? "all" : c.key);
+                  }}
+                  label={c.label}
+                />
               ))}
             </div>
           </section>
