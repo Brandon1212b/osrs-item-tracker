@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppNav } from "../components/AppNav";
+import { runWikiSweep } from "../lib/wiki-sweep";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -114,6 +115,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      void runWikiSweep();
+    }, 250);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

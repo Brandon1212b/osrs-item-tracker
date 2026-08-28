@@ -583,9 +583,9 @@ export const CATALOG: CatalogGroup[] = [
 ];
 
 export const GEAR_COMBAT_FILTERS = [
-  { key: "melee", label: "Melee", icon: "Sword" },
-  { key: "range", label: "Range", icon: "Target" },
-  { key: "magic", label: "Magic", icon: "Sparkles" },
+  { key: "melee", label: "Melee", wikiIcon: "Attack_icon.png", skillKey: "attack" },
+  { key: "range", label: "Range", wikiIcon: "Ranged_icon.png", skillKey: "ranged" },
+  { key: "magic", label: "Magic", wikiIcon: "Magic_icon.png", skillKey: "magic" },
 ] as const;
 
 export const GEAR_TIER_FILTERS = [

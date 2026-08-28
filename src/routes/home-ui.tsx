@@ -102,20 +102,23 @@ export function WikiIconTab({
   onClick,
   label,
   wikiIcon,
+  level,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
   wikiIcon: string;
+  level?: number;
 }) {
+  const title = level != null ? `${label} ${level}` : label;
   return (
     <button
       type="button"
       onClick={onClick}
-      title={label}
-      aria-label={label}
+      title={title}
+      aria-label={title}
       aria-pressed={active}
-      className={`inline-flex size-8 items-center justify-center rounded-full border transition-colors ${
+      className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-full border px-1.5 transition-colors ${
         active
           ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
           : "border-border/60 bg-secondary/30 hover:bg-secondary/50"
@@ -130,6 +133,9 @@ export function WikiIconTab({
         className="size-5"
         draggable={false}
       />
+      {level != null && (
+        <span className="pr-0.5 text-[11px] font-semibold tabular-nums text-foreground/90">{level}</span>
+      )}
     </button>
   );
 }

@@ -24,6 +24,7 @@ import { ThievingMethodsPanel } from "@/components/ThievingMethods";
 import { HunterMethodsPanel } from "@/components/HunterMethods";
 import { SailingMethodsPanel } from "@/components/SailingMethods";
 import { WikiImage } from "@/components/WikiImage";
+import { WikiSweepButton } from "@/components/WikiSweepButton";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
@@ -200,6 +201,9 @@ function MethodsPage() {
               <X className="size-3.5" />
             </button>
           )}
+          <div className="ml-auto">
+            <WikiSweepButton />
+          </div>
         </div>
 
         {playerQuery.isFetching && (

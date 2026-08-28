@@ -34,7 +34,6 @@ function NavLink({
 export function AppNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onMethods = pathname.startsWith("/methods");
-  // Item Prices covers home grid and individual item pages
   const onPrices = !onMethods;
 
   return (

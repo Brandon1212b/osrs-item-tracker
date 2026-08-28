@@ -1,9 +1,34 @@
-import { CircleHelp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, CircleHelp, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SkillingMethod } from "@/components/skilling-types";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { methodLinkTrio, type WikiSlot } from "@/lib/method-links";
-import { getMethodValidation } from "@/lib/method-validation";
+import { getMethodValidation, type ValidationDisplay } from "@/lib/method-validation";
+import {
+  formatWikiXp,
+  getWikiSlotRates,
+  wikiGpMatchesSite,
+  wikiXpMatchesSite,
+  type WikiPageSnapshot,
+  type WikiSlotKey,
+} from "@/lib/wiki-page-rates";
+import { checkWikiPages, type WikiCheckPageResult } from "@/lib/wiki-check.functions";
+import {
+  SWEEP_EVENT,
+  readLiveCheck,
+  readPageRates,
+  writeLiveCheck,
+  type LiveCheckRecord,
+} from "@/lib/wiki-check-store";
+import { gp as formatGp } from "@/lib/format";
+
+function displayFromLive(rec: LiveCheckRecord): ValidationDisplay {
+  if (rec.matched) {
+    return { status: "fresh", checkedAt: rec.date, label: `Validated ${rec.date}` };
+  }
+  return { status: "none", checkedAt: null, label: `Not validated as of ${rec.date}` };
+}
 
 export function MethodHelpPopover({
   methodId,
@@ -25,7 +50,57 @@ export function MethodHelpPopover({
   const links = methodLinkTrio(methodId, skillKey);
   const xpText = describeXp(method, activity, xpPerHour, rateBandLevel);
   const gpText = describeGp(method, activity, gpPerHour);
-  const validation = getMethodValidation(methodId);
+  const baked = getMethodValidation(methodId);
+  const [liveRec, setLiveRec] = useState<LiveCheckRecord | null>(null);
+  const [live, setLive] = useState<Partial<Record<WikiSlotKey, WikiCheckPageResult>> | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = () => setLiveRec(readLiveCheck(methodId, skillKey));
+    load();
+    window.addEventListener(SWEEP_EVENT, load);
+    return () => window.removeEventListener(SWEEP_EVENT, load);
+  }, [methodId, skillKey]);
+
+  const validation = liveRec ? displayFromLive(liveRec) : baked;
+
+  const pages = ([
+    links.mmg ? { slot: "mmg" as const, href: links.mmg.href } : null,
+    links.skillGuide ? { slot: "skillGuide" as const, href: links.skillGuide.href } : null,
+    links.wiki ? { slot: "wiki" as const, href: links.wiki.href } : null,
+  ].filter(Boolean) as { slot: WikiSlotKey; href: string }[]);
+
+  const runCheck = async () => {
+    if (pages.length === 0 || checking) return;
+    setChecking(true);
+    setCheckError(null);
+    try {
+      const rows = await checkWikiPages({ data: { pages, skillKey } });
+      const next: Partial<Record<WikiSlotKey, WikiCheckPageResult>> = {};
+      for (const row of rows) next[row.slot] = row;
+      setLive(next);
+
+      const date = new Date().toISOString().slice(0, 10);
+      let hadRates = false;
+      let matched = false;
+      for (const row of rows) {
+        if (row.error) continue;
+        const snap = liveToSnap(row, date);
+        const xpOk = wikiXpMatchesSite(snap, xpPerHour);
+        const gpOk = wikiGpMatchesSite(snap, gpPerHour);
+        if (snap.xpPerHour != null || snap.gpPerHour != null) hadRates = true;
+        if (xpOk || gpOk) matched = true;
+      }
+      const rec: LiveCheckRecord = { date, matched, hadRates };
+      setLiveRec(rec);
+      writeLiveCheck(methodId, skillKey, rec);
+    } catch (err) {
+      setCheckError(err instanceof Error ? err.message : "Check failed");
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <Popover>
@@ -41,7 +116,7 @@ export function MethodHelpPopover({
       <PopoverContent
         align="start"
         side="bottom"
-        className="w-[min(20rem,calc(100vw-2rem))] space-y-3 p-3 text-xs"
+        className="w-[min(22rem,calc(100vw-2rem))] space-y-3 p-3 text-xs"
       >
         <ValidationBadge validation={validation} />
         <section>
@@ -55,49 +130,108 @@ export function MethodHelpPopover({
         <section>
           <p className="mb-1.5 font-semibold text-foreground">Links</p>
           <div className="grid grid-cols-3 gap-1.5">
-            <LinkBox label="MMG" slot={links.mmg} />
-            <LinkBox label="Skill guide" slot={links.skillGuide} />
-            <LinkBox label="Wiki" slot={links.wiki} />
+            <LinkBox label="MMG" slotKey="mmg" slot={links.mmg} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.mmg} />
+            <LinkBox label="Skill guide" slotKey="skillGuide" slot={links.skillGuide} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.skillGuide} />
+            <LinkBox label="Wiki" slotKey="wiki" slot={links.wiki} methodId={methodId} skillKey={skillKey} siteXp={xpPerHour} siteGp={gpPerHour} live={live?.wiki} />
           </div>
+          <button
+            type="button"
+            onClick={() => void runCheck()}
+            disabled={checking || pages.length === 0}
+            className="mt-2 inline-flex h-7 w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 text-[11px] font-medium hover:bg-secondary/60 disabled:opacity-50"
+          >
+            {checking ? <Loader2 className="size-3 animate-spin" /> : null}
+            {checking ? "Checking wiki…" : live || liveRec ? "Check wiki again" : "Check wiki now"}
+          </button>
+          {checkError ? <p className="mt-1 text-[11px] text-destructive">{checkError}</p> : null}
         </section>
       </PopoverContent>
     </Popover>
   );
 }
 
-function ValidationBadge({
-  validation,
-}: {
-  validation: ReturnType<typeof getMethodValidation>;
-}) {
+function ValidationBadge({ validation }: { validation: ValidationDisplay }) {
   const color =
     validation.status === "fresh"
       ? "text-emerald-400"
       : validation.status === "stale"
         ? "text-amber-400"
         : "text-red-400";
-  return (
-    <p className={`text-[11px] font-medium ${color}`}>{validation.label}</p>
-  );
+  return <p className={`text-[11px] font-medium ${color}`}>{validation.label}</p>;
 }
 
-function LinkBox({ label, slot }: { label: string; slot: WikiSlot }) {
+function MatchCheck({ ok }: { ok: boolean | null }) {
+  if (!ok) return null;
+  return <Check className="size-3 text-emerald-400" aria-label="Within 10% of our rate" />;
+}
+
+function liveToSnap(live: WikiCheckPageResult, date = new Date().toISOString().slice(0, 10)): WikiPageSnapshot {
+  return {
+    pulledAt: date,
+    xpPerHour: live.xpPerHour,
+    gpPerHour: live.gpPerHour,
+    note: live.error ?? "Live wiki read",
+  };
+}
+
+function LinkBox({
+  label,
+  slotKey,
+  slot,
+  methodId,
+  skillKey,
+  siteXp,
+  siteGp,
+  live,
+}: {
+  label: string;
+  slotKey: WikiSlotKey;
+  slot: WikiSlot;
+  methodId: string;
+  skillKey?: string;
+  siteXp: number;
+  siteGp: number | null;
+  live?: WikiCheckPageResult;
+}) {
+  const baked = slot ? getWikiSlotRates(methodId, slotKey, skillKey) : undefined;
+  const swept = slot ? readPageRates()[slot.href] : undefined;
+  const snap =
+    live && !live.error
+      ? liveToSnap(live)
+      : swept && !swept.error
+        ? { pulledAt: swept.date, xpPerHour: swept.xpPerHour, gpPerHour: swept.gpPerHour, note: "Background wiki sweep" }
+        : baked;
+  const xpLabel = snap ? formatWikiXp(snap) : null;
+  const xpOk = snap ? wikiXpMatchesSite(snap, siteXp) : null;
+  const gpOk = snap ? wikiGpMatchesSite(snap, siteGp) : null;
+
   return (
     <div className="rounded-md border border-border/60 bg-secondary/30 px-1.5 py-1.5">
       <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
       {slot ? (
-        <a
-          href={slot.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-0.5 block truncate font-medium text-sky-400 underline-offset-2 hover:underline"
-          title={slot.title}
-        >
+        <a href={slot.href} target="_blank" rel="noopener noreferrer" className="mt-0.5 block truncate font-medium text-sky-400 underline-offset-2 hover:underline" title={slot.title}>
           Open
         </a>
       ) : (
         <div className="mt-0.5 text-muted-foreground">—</div>
       )}
+      {live?.error || swept?.error ? (
+        <p className="mt-1 text-[10px] text-destructive">{live?.error ?? swept?.error}</p>
+      ) : null}
+      {xpLabel ? (
+        <div className="mt-1 flex items-center gap-0.5 text-[10px] text-foreground" title={snap?.note}>
+          <span className="text-muted-foreground">XP</span>
+          <span>{xpLabel}</span>
+          <MatchCheck ok={xpOk} />
+        </div>
+      ) : null}
+      {snap?.gpPerHour != null ? (
+        <div className="flex items-center gap-0.5 text-[10px] text-foreground" title={snap.note}>
+          <span className="text-muted-foreground">GP</span>
+          <span>{formatGp(snap.gpPerHour)}</span>
+          <MatchCheck ok={gpOk} />
+        </div>
+      ) : null}
     </div>
   );
 }
