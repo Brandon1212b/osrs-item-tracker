@@ -17,6 +17,14 @@ export type StoredPageRates = {
   error?: string;
 };
 
+export type SweepMeta = {
+  startedAt?: string;
+  finishedAt?: string;
+  pages?: number;
+  methods?: number;
+  status?: "running" | "done" | "error";
+};
+
 export function storageKey(methodId: string, skillKey?: string) {
   return skillKey ? `${skillKey}:${methodId}` : methodId;
 }
@@ -68,6 +76,23 @@ export function writePageRates(pages: Record<string, StoredPageRates>) {
   try {
     const all = { ...readPageRates(), ...pages };
     localStorage.setItem(PAGE_RATES_KEY, JSON.stringify(all));
+  } catch {
+    /* */
+  }
+}
+
+export function readSweepMeta(): SweepMeta | null {
+  try {
+    const raw = localStorage.getItem(SWEEP_META_KEY);
+    return raw ? (JSON.parse(raw) as SweepMeta) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeSweepMeta(meta: SweepMeta) {
+  try {
+    localStorage.setItem(SWEEP_META_KEY, JSON.stringify(meta));
   } catch {
     /* */
   }

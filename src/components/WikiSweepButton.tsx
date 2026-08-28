@@ -6,11 +6,15 @@ import {
   subscribeWikiSweep,
 } from "@/lib/wiki-sweep";
 
+/** Starts the full-method wiki check on app load; click forces another pass. */
 export function WikiSweepButton() {
   const [tick, setTick] = useState(0);
   useEffect(() => subscribeWikiSweep(() => setTick((n) => n + 1)), []);
   useEffect(() => {
-    void runWikiSweep();
+    const id = window.setTimeout(() => {
+      void runWikiSweep();
+    }, 250);
+    return () => window.clearTimeout(id);
   }, []);
   const state = getWikiSweepState();
   void tick;
@@ -20,14 +24,20 @@ export function WikiSweepButton() {
     ? `${state.done}/${state.total}`
     : state.status === "error"
       ? "Retry wiki"
-      : "Check wiki";
+      : state.status === "done"
+        ? "Recheck wiki"
+        : "Check wiki";
 
   return (
     <button
       type="button"
       onClick={() => void runWikiSweep({ force: true })}
       disabled={running}
-      title="Fetch XP/GP from every method's wiki pages and compare to our rates"
+      title={
+        running
+          ? `Checking wiki pages ${state.done}/${state.total} (${state.methods} methods)`
+          : "Fetch XP/GP from every skilling method wiki page and refresh the ? badges"
+      }
       className="ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border/60 bg-secondary/40 px-2 text-[11px] font-medium text-foreground hover:bg-secondary/60 disabled:opacity-60"
     >
       {running ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
