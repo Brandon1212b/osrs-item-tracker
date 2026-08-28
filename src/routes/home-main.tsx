@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Search,
   User,
@@ -13,7 +14,7 @@ import {
 import { formatCompact } from "@/lib/format";
 import { ItemCard } from "@/components/ItemCard";
 import { WikiImage } from "@/components/WikiImage";
-import { HomeFiltersSheet } from "@/components/HomeFiltersSheet";
+import { HomeFiltersButton, HomeFiltersSheet } from "@/components/HomeFiltersSheet";
 import { Input } from "@/components/ui/input";
 import { meetsRequirements, firstMissingRequirement, type PlayerSkills } from "@/lib/player-stats";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
@@ -90,6 +91,8 @@ export function HomeMain({
   totalCost,
   gridKey,
 }: HomeMainProps) {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-0 sm:px-6">
       <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
@@ -168,14 +171,17 @@ export function HomeMain({
             )}
           </div>
 
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => patchSearch({ q: e.target.value })}
-              placeholder="Search items…"
-              className="pl-9"
-            />
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => patchSearch({ q: e.target.value })}
+                placeholder="Search items…"
+                className="pl-9"
+              />
+            </div>
+            <HomeFiltersButton onClick={() => setFiltersOpen(true)} />
           </div>
         </div>
       </div>
@@ -354,6 +360,8 @@ export function HomeMain({
       </footer>
 
       <HomeFiltersSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
         filter={filter}
         sort={sort}
         range={range}
