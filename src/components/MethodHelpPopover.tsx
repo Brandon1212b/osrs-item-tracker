@@ -1,9 +1,17 @@
-import { CircleHelp } from "lucide-react";
+import { Check, CircleHelp } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { SkillingMethod } from "@/components/skilling-types";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { methodLinkTrio, type WikiSlot } from "@/lib/method-links";
 import { getMethodValidation } from "@/lib/method-validation";
+import {
+  formatWikiXp,
+  getWikiSlotRates,
+  wikiGpMatchesSite,
+  wikiXpMatchesSite,
+  type WikiSlotKey,
+} from "@/lib/wiki-page-rates";
+import { gp as formatGp } from "@/lib/format";
 
 export function MethodHelpPopover({
   methodId,
@@ -41,7 +49,7 @@ export function MethodHelpPopover({
       <PopoverContent
         align="start"
         side="bottom"
-        className="w-[min(20rem,calc(100vw-2rem))] space-y-3 p-3 text-xs"
+        className="w-[min(22rem,calc(100vw-2rem))] space-y-3 p-3 text-xs"
       >
         <ValidationBadge validation={validation} />
         <section>
@@ -55,9 +63,30 @@ export function MethodHelpPopover({
         <section>
           <p className="mb-1.5 font-semibold text-foreground">Links</p>
           <div className="grid grid-cols-3 gap-1.5">
-            <LinkBox label="MMG" slot={links.mmg} />
-            <LinkBox label="Skill guide" slot={links.skillGuide} />
-            <LinkBox label="Wiki" slot={links.wiki} />
+            <LinkBox
+              label="MMG"
+              slotKey="mmg"
+              slot={links.mmg}
+              methodId={methodId}
+              siteXp={xpPerHour}
+              siteGp={gpPerHour}
+            />
+            <LinkBox
+              label="Skill guide"
+              slotKey="skillGuide"
+              slot={links.skillGuide}
+              methodId={methodId}
+              siteXp={xpPerHour}
+              siteGp={gpPerHour}
+            />
+            <LinkBox
+              label="Wiki"
+              slotKey="wiki"
+              slot={links.wiki}
+              methodId={methodId}
+              siteXp={xpPerHour}
+              siteGp={gpPerHour}
+            />
           </div>
         </section>
       </PopoverContent>
@@ -81,7 +110,31 @@ function ValidationBadge({
   );
 }
 
-function LinkBox({ label, slot }: { label: string; slot: WikiSlot }) {
+function MatchCheck({ ok }: { ok: boolean | null }) {
+  if (!ok) return null;
+  return <Check className="size-3 text-emerald-400" aria-label="Within 10% of our rate" />;
+}
+
+function LinkBox({
+  label,
+  slotKey,
+  slot,
+  methodId,
+  siteXp,
+  siteGp,
+}: {
+  label: string;
+  slotKey: WikiSlotKey;
+  slot: WikiSlot;
+  methodId: string;
+  siteXp: number;
+  siteGp: number | null;
+}) {
+  const snap = slot ? getWikiSlotRates(methodId, slotKey) : undefined;
+  const xpLabel = snap ? formatWikiXp(snap) : null;
+  const xpOk = snap ? wikiXpMatchesSite(snap, siteXp) : null;
+  const gpOk = snap ? wikiGpMatchesSite(snap, siteGp) : null;
+
   return (
     <div className="rounded-md border border-border/60 bg-secondary/30 px-1.5 py-1.5">
       <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
@@ -98,6 +151,20 @@ function LinkBox({ label, slot }: { label: string; slot: WikiSlot }) {
       ) : (
         <div className="mt-0.5 text-muted-foreground">—</div>
       )}
+      {xpLabel ? (
+        <div className="mt-1 flex items-center gap-0.5 text-[10px] text-foreground" title={snap?.note}>
+          <span className="text-muted-foreground">XP</span>
+          <span>{xpLabel}</span>
+          <MatchCheck ok={xpOk} />
+        </div>
+      ) : null}
+      {snap?.gpPerHour != null ? (
+        <div className="flex items-center gap-0.5 text-[10px] text-foreground" title={snap.note}>
+          <span className="text-muted-foreground">GP</span>
+          <span>{formatGp(snap.gpPerHour)}</span>
+          <MatchCheck ok={gpOk} />
+        </div>
+      ) : null}
     </div>
   );
 }
