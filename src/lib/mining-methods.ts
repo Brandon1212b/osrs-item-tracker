@@ -50,10 +50,17 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "granite-3tick", label: "Granite (3-tick)", level: 45, xp: 75, actionsPerHour: 1620, inputs: [], output: null },
   { id: "basalt", label: "Basalt", level: 72, xp: 5, actionsPerHour: 700, inputs: [], output: { name: "Basalt", qty: 1 } },
   { id: "zeah-salts", label: "Kourend salts (Te Salt)", level: 70, xp: 5, actionsPerHour: 3500, inputs: [], output: { name: "Te salt", qty: 1 } },
-  // Wiki MMG Results: 221 / 806 / 2,080 crushed per hour. XP set so XP/h matches the MMG table.
   { id: "infernal-shale-afk", label: "Infernal shale (AFK)", level: 78, xp: 9860 / 221, actionsPerHour: 221, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
   { id: "infernal-shale-rocks", label: "Infernal shale (medium)", level: 78, xp: 35960 / 806, actionsPerHour: 806, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
-  { id: "infernal-shale", label: "Infernal shale (high)", level: 78, xp: 68368 / 2080, actionsPerHour: 2080, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
+  {
+    id: "infernal-shale",
+    label: "Infernal shale (tick manip)",
+    level: 78,
+    xp: 68368 / 1600,
+    actionsPerHour: 1600,
+    inputs: [],
+    output: { name: "Crushed infernal shale", qty: 1.3 },
+  },
 ];
 
 export function miningMethodItemNames(): string[] {
