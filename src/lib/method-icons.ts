@@ -80,7 +80,7 @@ export const METHOD_ICONS: Record<string, string> = {
   "courier-prifddinas": "Sailing_icon.png",
   leechfin: "Leaping_trout.png",
 
-  oak-larder: "Oak_plank.png",
+  "oak-larder": "Oak_plank.png",
   "oak-dining-table": "Oak_plank.png",
   "teak-armchair": "Teak_plank.png",
   "mythical-cape": "Mythical_cape.png",
