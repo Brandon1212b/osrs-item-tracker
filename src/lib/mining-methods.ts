@@ -50,7 +50,6 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "granite-3tick", label: "Granite (3-tick)", level: 45, xp: 75, actionsPerHour: 1620, inputs: [], output: null },
   { id: "basalt", label: "Basalt", level: 72, xp: 5, actionsPerHour: 700, inputs: [], output: { name: "Basalt", qty: 1 } },
   { id: "zeah-salts", label: "Kourend salts (Te Salt)", level: 70, xp: 5, actionsPerHour: 3500, inputs: [], output: { name: "Te salt", qty: 1 } },
-  { id: "infernal-shale", label: "Infernal shale (crush)", level: 78, xp: 32, actionsPerHour: 2080, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
 ];
 
 export function miningMethodItemNames(): string[] {
