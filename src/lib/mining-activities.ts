@@ -75,4 +75,40 @@ export const MINING_RATE_TABLES: ActivityMethod[] = [
     intensity: "low",
     notes: "Wiki 20–25k amethyst band. Qty at 99 = 25k/240.",
   },
+  {
+    id: "infernal-shale-afk",
+    label: "Infernal shale (AFK deposit)",
+    skillKey: "mining",
+    level: 78,
+    rateBands: [{ level: 78, xpPerHour: 9_860 }],
+    consumables: [],
+    rewards: [{ name: "Crushed infernal shale", expectedQtyPerHour: 221 }],
+    intensity: "low",
+    notes:
+      "Wiki MMG deposit: 140–200 shale/h → ~180–260 crushed (1.3 crush ratio). Results table 221 crushed, 9,860 XP. Chasm of Fire, A Kingdom Divided, 78 Mining.",
+  },
+  {
+    id: "infernal-shale-rocks",
+    label: "Infernal shale (rocks)",
+    skillKey: "mining",
+    level: 78,
+    rateBands: [{ level: 78, xpPerHour: 35_960 }],
+    consumables: [],
+    rewards: [{ name: "Crushed infernal shale", expectedQtyPerHour: 806 }],
+    intensity: "medium",
+    notes:
+      "Wiki MMG rocks (medium intensity). Results table 806 crushed, 35,960 XP. Mine rocks then crush with hammer + chisel.",
+  },
+  {
+    id: "infernal-shale",
+    label: "Infernal shale (tick manip)",
+    skillKey: "mining",
+    level: 78,
+    rateBands: [{ level: 78, xpPerHour: 68_368 }],
+    consumables: [],
+    rewards: [{ name: "Crushed infernal shale", expectedQtyPerHour: 2080 }],
+    intensity: "high",
+    notes:
+      "Wiki MMG tick manipulation (Jim's wet cloth). Results table 2,080 crushed, 68,368 XP. Realistic 1,500–1,700 shale mined / 1,900–2,200 crushed.",
+  },
 ];
