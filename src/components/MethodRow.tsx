@@ -48,7 +48,6 @@ export function MethodRow({
   missing,
   locked,
   secondaryLine,
-  notes,
   intensity,
   rateBandLevel,
   hoursToTarget,
@@ -177,23 +176,8 @@ export function MethodRow({
           />
         </div>
       </div>
-      {isActivity ? (
-        <div className="space-y-1 text-xs">
-          <p className="text-[11px] text-muted-foreground">
-            Activity method — expected reward value (not a single GE output)
-          </p>
-          {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
-          {missing && (
-            <p className="text-[11px] text-muted-foreground">(partial / missing price data)</p>
-          )}
-        </div>
-      ) : method ? (
+      {method ? (
         <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
-          {method.inputs.length === 0 &&
-            !method.output &&
-            !(method.outputs && method.outputs.length > 0) && (
-              <span className="text-[11px] text-muted-foreground">No GE inputs (course XP)</span>
-            )}
           {method.inputs.map((part, idx) => (
             <span key={`in-${part.name}-${idx}`} className="inline-flex shrink-0 items-center gap-1">
               {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
