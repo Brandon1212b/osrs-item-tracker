@@ -6,6 +6,7 @@ import { intensityClass } from "@/components/methods-ux";
 import type { RankedMethod } from "@/components/skilling-types";
 import type { MethodsMetricView } from "@/components/MethodsGoalBar";
 import { MethodHelpPopover } from "@/components/MethodHelpPopover";
+import { methodFallbackIcon } from "@/lib/method-icons";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -71,10 +72,14 @@ export function MethodRow({
   const titlePart = method
     ? (method.outputs && method.outputs.length > 0 ? method.outputs[0] : method.output) ??
       method.inputs[0]
-    : undefined;
+    : activity?.rewards[0]
+      ? { name: activity.rewards[0].name, qty: activity.rewards[0].expectedQtyPerHour }
+      : activity?.consumables[0];
   const titleRow =
     titlePart && titlePart.name !== "Coins" ? rowsByName.get(titlePart.name) : undefined;
-  const titleIcon = titlePart ? chipIcon(titleRow, titlePart.name) : null;
+  const titleIcon = titlePart
+    ? chipIcon(titleRow, titlePart.name)
+    : methodFallbackIcon(id, skillKey ?? skillLabel.toLowerCase());
 
   return (
     <article
@@ -90,7 +95,7 @@ export function MethodRow({
             <span className="flex size-10 shrink-0 items-center justify-center">
               <WikiImage
                 icon={titleIcon}
-                alt={titlePart?.name ?? ""}
+                alt={titlePart?.name ?? label}
                 width={40}
                 height={40}
                 className="size-10 drop-shadow-sm"
