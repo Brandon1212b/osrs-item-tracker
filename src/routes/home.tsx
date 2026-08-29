@@ -6,6 +6,7 @@ import {
   SKILLING_FILTERS,
   type CatalogItem,
 } from "@/lib/osrs-catalog";
+import "@/lib/catalog-pvm-additions";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
 import { costPerBonus } from "@/lib/item-bonuses";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";

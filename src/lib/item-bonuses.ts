@@ -19,7 +19,7 @@ export type OffensiveBonus = {
 };
 
 export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
-  // ── Melee Strength ─────────────────────────────────────
+  // ── Melee Strength ─────────────────────────────────
   "Amulet of strength": { str: 10 },
   "Combat bracelet": { str: 6 },
   "Rune boots": { str: 2 },
@@ -65,6 +65,10 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Abyssal bludgeon": { str: 85 },
   "Dragon warhammer": { str: 85 },
   "Bandos godsword": { str: 132 },
+  "Saradomin godsword": { str: 132 },
+  "Armadyl godsword": { str: 132 },
+  "Zamorak godsword": { str: 132 },
+  "Bellator ring": { str: 6 },
   "Dragon hunter lance": { str: 70 },
   "Voidwaker": { str: 80 },
   "Dragon claws": { str: 56 },
@@ -81,7 +85,7 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Ultor ring": { str: 12 },
   "Avernic treads": { str: 5, rstr: 2, mdmg: 0 },
 
-  // ── Ranged Strength ────────────────────────────────────
+  // ── Ranged Strength ────────────────────────────
   "Antler guard": { rstr: 2 },
   "Odium ward": { rstr: 4 },
   "Necklace of anguish": { rstr: 5 },
@@ -111,7 +115,7 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Magic shortbow": { rstr: 0 },
   "Maple shortbow": { rstr: 0 },
 
-  // ── Magic damage % ─────────────────────────────────────
+  // ── Magic damage % ─────────────────────────────────
   "Occult necklace": { mdmg: 5 },
   "Tormented bracelet": { mdmg: 5 },
   "Ancestral hat": { mdmg: 3 },

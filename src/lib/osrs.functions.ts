@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { CATALOG } from "./osrs-catalog";
+import "./catalog-pvm-additions";
 import { craftingMethodItemNames } from "./crafting-methods";
 import { constructionMethodItemNames } from "./construction-methods";
 import { prayerMethodItemNames } from "./prayer-methods";
