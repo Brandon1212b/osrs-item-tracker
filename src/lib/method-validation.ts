@@ -73,6 +73,8 @@ const VALIDATED_IDS = [
   "lead-ore-deepfin",
   "basalt",
   "zeah-salts",
+  "infernal-shale-afk",
+  "infernal-shale-rocks",
   "infernal-shale",
   "blackjacking",
   "ardougne-knights",
