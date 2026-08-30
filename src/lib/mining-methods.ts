@@ -23,7 +23,7 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "gold-ore", label: "Gold ore", level: 40, xp: 65, actionsPerHour: 550, inputs: [], output: { name: "Gold ore", qty: 1 } },
   { id: "mithril-ore", label: "Mithril ore", level: 55, xp: 80, actionsPerHour: 400, inputs: [], output: { name: "Mithril ore", qty: 1 } },
   { id: "adamantite-ore", label: "Adamantite ore", level: 70, xp: 95, actionsPerHour: 280, inputs: [], output: { name: "Adamantite ore", qty: 1 } },
-  { id: "runite-ore", label: "Runite ore", level: 85, xp: 125, actionsPerHour: 80, inputs: [], output: { name: "Runite ore", qty: 1 } },
+  { id: "runite-ore", label: "Runite ore", level: 85, xp: 125, actionsPerHour: 65, inputs: [], output: { name: "Runite ore", qty: 1 } },
   { id: "sandstone", label: "Sandstone (power-mine)", level: 35, xp: 60, actionsPerHour: 900, inputs: [], output: null },
   { id: "granite", label: "Granite (power-mine)", level: 45, xp: 75, actionsPerHour: 1100, inputs: [], output: null },
   {
@@ -44,12 +44,42 @@ export const MINING_METHODS: MiningMethod[] = [
       { name: "Uncut diamond", qty: 4 / 128 },
     ],
   },
-  { id: "volcanic-ash", label: "Volcanic ash", level: 22, xp: 10, actionsPerHour: 2500, inputs: [], output: { name: "Volcanic ash", qty: 1 } },
-  { id: "amethyst", label: "Amethyst", level: 92, xp: 240, actionsPerHour: 95, inputs: [], output: { name: "Amethyst", qty: 1 } },
+  // MMG Mining volcanic ash: 5,000 XP and 2,000 ash/h.
+  { id: "volcanic-ash", label: "Volcanic ash", level: 22, xp: 5000 / 2000, actionsPerHour: 2000, inputs: [], output: { name: "Volcanic ash", qty: 1 } },
+  // MMG Mining amethyst: 21,600 XP and 90 ore/h (80–100 band midpoint).
+  { id: "amethyst", label: "Amethyst", level: 92, xp: 240, actionsPerHour: 90, inputs: [], output: { name: "Amethyst", qty: 1 } },
   { id: "lead-ore-deepfin", label: "Lead ore (Deepfin mine)", level: 25, xp: 40.5, actionsPerHour: 1800, inputs: [], output: { name: "Lead ore", qty: 1 } },
   { id: "granite-3tick", label: "Granite (3-tick)", level: 45, xp: 75, actionsPerHour: 1620, inputs: [], output: null },
   { id: "basalt", label: "Basalt", level: 72, xp: 5, actionsPerHour: 700, inputs: [], output: { name: "Basalt", qty: 1 } },
-  { id: "zeah-salts", label: "Kourend salts (Te Salt)", level: 70, xp: 5, actionsPerHour: 3500, inputs: [], output: { name: "Te salt", qty: 1 } },
+  // MMG Mining salts: 5,000 XP and 3,500 Efh salt/h.
+  { id: "zeah-salts", label: "Kourend salts (Efh salt)", level: 72, xp: 5000 / 3500, actionsPerHour: 3500, inputs: [], output: { name: "Efh salt", qty: 1 } },
+  {
+    id: "rubium-splinters",
+    label: "Rubium splinters",
+    level: 48,
+    // MMG Mining rubium splinters: 60,000 XP and 4,000 splinters/h (72+ double yield).
+    xp: 60000 / 4000,
+    actionsPerHour: 4000,
+    inputs: [],
+    output: null,
+    outputs: [
+      { name: "Rubium splinters", qty: 1 },
+      { name: "Uncut sapphire", qty: 7.78 / 4000 },
+      { name: "Uncut emerald", qty: 3.89 / 4000 },
+      { name: "Uncut ruby", qty: 1.95 / 4000 },
+      { name: "Uncut diamond", qty: 0.49 / 4000 },
+    ],
+  },
+  {
+    id: "rubium-splinters-afk",
+    label: "Rubium deposits (AFK)",
+    level: 48,
+    // MMG text: deposit method ≈ 10k XP/h and about half the splinters.
+    xp: 10000 / 2000,
+    actionsPerHour: 2000,
+    inputs: [],
+    output: { name: "Rubium splinters", qty: 1 },
+  },
   {
     id: "infernal-shale-afk",
     label: "Infernal shale (AFK)",

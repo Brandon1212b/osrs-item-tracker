@@ -5,6 +5,8 @@ import { activitiesForSkill } from "@/lib/activity-methods";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
+const MOVED = new Set(["leechfin"]);
+
 export function FishingMethodsPanel({
   rowsByName,
   trendsById,
@@ -23,7 +25,7 @@ export function FishingMethodsPanel({
       title="Fishing methods"
       skillKey="fishing"
       skillLabel="Fishing"
-      methods={FISHING_METHODS}
+      methods={FISHING_METHODS.filter((m) => !MOVED.has(m.id))}
       activities={[...activitiesForSkill("fishing"), ...FISHING_RATE_TABLES]}
       rowsByName={rowsByName}
       trendsById={trendsById}
