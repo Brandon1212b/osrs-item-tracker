@@ -10,6 +10,10 @@ export const ITEM_SEARCH_ALIASES: Record<string, string> = {
   "toxic blowpipe (empty)": "blowpipe bp",
   "twisted bow": "tbow",
   "osmumten's fang": "fang",
+  "scorching bow": "scorching synapse demonbane bow",
+  "crystal helm": "crystal armour armor",
+  "crystal body": "crystal armour armor",
+  "crystal legs": "crystal armour armor",
 };
 
 export function itemSearchText(name: string): string {
