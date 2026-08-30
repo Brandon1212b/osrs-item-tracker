@@ -33,5 +33,7 @@ export function gearSetsForTier(
 export function gearSetItemNames(setKey: string): Set<string> | null {
   if (!setKey || setKey === "all") return null;
   const def = GEAR_SETS.find((s) => s.key === setKey);
-  return def ? new Set([...def.items, ...extraItemsForSet(setKey)]) : null;
+  return def
+    ? new Set([...def.items, ...extraItemsForSet(setKey)].map((n) => n.toLowerCase()))
+    : null;
 }

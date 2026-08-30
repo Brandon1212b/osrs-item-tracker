@@ -1,6 +1,8 @@
+import { COMPOSITE_BY_ID, COMPOSITE_ITEMS } from "./composite-items";
+import { geLookupName } from "./ge-name-aliases";
+
 const BASE = "https://prices.runescape.wiki/api/v1/osrs";
 const UA = "OSRS Gear & Skilling Price Tracker - lovable.app";
-/** Per-item equipment stats (osrsreboxed / osrsbox-compatible schema). */
 const ITEM_META_URL = (id: number) =>
   `https://raw.githubusercontent.com/0xNeffarion/osrsreboxed-db/master/docs/items-json/${id}.json`;
 
@@ -39,13 +41,10 @@ export type PriceRow = {
 
 export type Trend = {
   id: number;
-  /** 0-100: where today's price sits within the selected range. */
   percentile: number;
-  /** High / low of the selected range (field names kept for compatibility). */
   low180: number;
   high180: number;
   avg30: number;
-  /** % change over the selected range (first → last). */
   change30: number;
   change90: number;
   series: { t: number; p: number }[];
@@ -96,6 +95,20 @@ async function getMapping(): Promise<MappingEntry[]> {
   return value;
 }
 
+function resolveMapping(
+  name: string,
+  byName: Map<string, MappingEntry>,
+  byNameLower: Map<string, MappingEntry>,
+): MappingEntry | undefined {
+  const lookup = geLookupName(name);
+  return (
+    byName.get(lookup) ??
+    byNameLower.get(lookup.toLowerCase()) ??
+    byName.get(name) ??
+    byNameLower.get(name.toLowerCase())
+  );
+}
+
 export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   if (snapshotCache && Date.now() - snapshotCache.at < 2 * MIN) return snapshotCache.value;
 
@@ -106,10 +119,15 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   ]);
 
   const byName = new Map(mapping.map((m) => [m.name, m]));
+  const byNameLower = new Map(mapping.map((m) => [m.name.toLowerCase(), m]));
+  const wanted = new Set(names.map((n) => n.toLowerCase()));
   const rows: PriceRow[] = [];
+  const seen = new Set<number>();
+
   for (const name of names) {
-    const m = byName.get(name);
-    if (!m) continue;
+    const m = resolveMapping(name, byName, byNameLower);
+    if (!m || seen.has(m.id)) continue;
+    seen.add(m.id);
     const l = latest.data[String(m.id)];
     const v = day.data[String(m.id)];
     rows.push({
@@ -126,8 +144,59 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
       volume: v ? (v.highPriceVolume ?? 0) + (v.lowPriceVolume ?? 0) : null,
     });
   }
+
+  for (const c of COMPOSITE_ITEMS) {
+    if (!wanted.has(c.name.toLowerCase()) || seen.has(c.id)) continue;
+    let high = c.fixedCoins ?? 0;
+    let low = c.fixedCoins ?? 0;
+    let updated: number | null = null;
+    let volume: number | null = c.fixedCoins != null ? 0 : null;
+    let ok = c.fixedCoins != null || c.sources.length > 0;
+    for (const src of c.sources) {
+      const m = resolveMapping(src.name, byName, byNameLower);
+      if (!m) {
+        ok = false;
+        break;
+      }
+      const l = latest.data[String(m.id)];
+      const v = day.data[String(m.id)];
+      high += (l?.high ?? 0) * src.qty;
+      low += (l?.low ?? 0) * src.qty;
+      const t = l?.highTime ?? l?.lowTime ?? null;
+      if (t != null && (updated == null || t > updated)) updated = t;
+      if (v) volume = (volume ?? 0) + (v.highPriceVolume ?? 0) + (v.lowPriceVolume ?? 0);
+    }
+    if (!ok) continue;
+    seen.add(c.id);
+    rows.push({
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+      members: true,
+      limit: null,
+      highalch: null,
+      examine: c.examine,
+      high,
+      low,
+      updated,
+      volume,
+    });
+  }
+
   snapshotCache = { at: Date.now(), value: rows };
   return rows;
+}
+
+function scalePoints(
+  points: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[],
+  qty: number,
+) {
+  if (qty === 1) return points;
+  return points.map((p) => ({
+    timestamp: p.timestamp,
+    avgHighPrice: p.avgHighPrice != null ? p.avgHighPrice * qty : null,
+    avgLowPrice: p.avgLowPrice != null ? p.avgLowPrice * qty : null,
+  }));
 }
 
 function summarise(
@@ -203,6 +272,12 @@ export const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points
   "1y": { step: "24h", points: 365, label: "1 year" },
 };
 
+async function sourceGeId(name: string): Promise<number | null> {
+  const mapping = await getMapping();
+  const hit = mapping.find((m) => m.name.toLowerCase() === geLookupName(name).toLowerCase());
+  return hit?.id ?? null;
+}
+
 export async function getTrends(names: string[], range: RangeKey = "6m"): Promise<Record<number, Trend>> {
   const cached = trendCaches.get(range);
   const ttl = range === "1d" || range === "1w" ? 5 * MIN : 60 * MIN;
@@ -217,10 +292,16 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
     const result: Record<number, Trend> = {};
     await pool(rows, 10, async (row) => {
       try {
+        const comp = COMPOSITE_BY_ID.get(row.id);
+        if (comp && (comp.fixedCoins != null || comp.sources.length === 0)) return;
+        const primary = comp?.sources[0];
+        const fetchId = primary ? await sourceGeId(primary.name) : row.id;
+        if (fetchId == null) return;
         const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
-          `/timeseries?timestep=${cfg.step}&id=${row.id}`,
+          `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
         );
-        const t = summarise(row.id, res.data ?? [], cfg.points);
+        const points = scalePoints(res.data ?? [], primary?.qty ?? 1);
+        const t = summarise(row.id, points, cfg.points);
         if (t) result[row.id] = t;
       } catch {
         /* skip individual failures */
@@ -330,13 +411,20 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   if (!row) throw new Error("Unknown item");
 
   const cfg = RANGES[range];
+  const comp = COMPOSITE_BY_ID.get(id);
+  const primary = comp?.sources[0];
+  const fetchId = primary ? await sourceGeId(primary.name) : comp?.fixedCoins != null ? null : id;
+
   const [res, equipment] = await Promise.all([
-    api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
-      `/timeseries?timestep=${cfg.step}&id=${id}`,
-    ),
+    fetchId != null
+      ? api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+          `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
+        )
+      : Promise.resolve({ data: [] }),
     getEquipmentStats(id),
   ]);
-  const series = (res.data ?? [])
+  const raw = scalePoints(res.data ?? [], primary?.qty ?? 1);
+  const series = raw
     .map((p) => {
       const mid =
         p.avgHighPrice != null && p.avgLowPrice != null
@@ -350,16 +438,16 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   const prices = series.map((s) => s.p);
   const first = prices[0] ?? 0;
   const last = prices[prices.length - 1] ?? 0;
-  const trend = summarise(id, res.data ?? [], Math.max(cfg.points, 180));
+  const trend = series.length ? summarise(id, raw, Math.max(cfg.points, 180)) : null;
 
   const value: ItemDetail = {
     row,
     range,
     rangeLabel: cfg.label,
     series,
-    min: prices.length ? Math.min(...prices) : 0,
-    max: prices.length ? Math.max(...prices) : 0,
-    avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+    min: prices.length ? Math.min(...prices) : row.low ?? 0,
+    max: prices.length ? Math.max(...prices) : row.high ?? 0,
+    avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : row.high ?? 0,
     change: first ? Math.round(((last - first) / first) * 1000) / 10 : 0,
     trend,
     equipment,
@@ -374,7 +462,6 @@ export type PlayerStatsResult = {
   xp: Record<string, number>;
 };
 
-/** Fetch skill levels from the official OSRS Hiscores JSON endpoint. */
 export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   const trimmed = rsn.trim();
   if (!trimmed) throw new Error("Enter a username");
@@ -396,9 +483,8 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   const skills: Record<string, number> = {};
   const xp: Record<string, number> = {};
   for (const s of data.skills) {
-    if (s.id === 0) continue; // Overall
+    if (s.id === 0) continue;
     const key = s.name.toLowerCase();
-    // rank -1 means unranked / level 1 with 0 xp on some endpoints
     skills[key] = Math.max(1, s.level || 1);
     xp[key] = Math.max(0, s.xp || 0);
   }
@@ -410,10 +496,6 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   };
 }
 
-/**
- * Map of item id → equipment skill requirements for all equipable catalog items.
- * Cached 24h; used to grey out gear the player can't equip.
- */
 export async function getItemRequirementsMap(names: string[]): Promise<Record<number, Record<string, number>>> {
   if (requirementsMapCache && Date.now() - requirementsMapCache.at < 24 * 60 * MIN) {
     return requirementsMapCache.value;
@@ -425,7 +507,6 @@ export async function getItemRequirementsMap(names: string[]): Promise<Record<nu
   await pool(rows, 8, async (row) => {
     const eq = await getEquipmentStats(row.id);
     if (eq?.requirements && Object.keys(eq.requirements).length > 0) {
-      // Normalise keys to lowercase
       const norm: Record<string, number> = {};
       for (const [k, v] of Object.entries(eq.requirements)) {
         norm[k.toLowerCase()] = v;

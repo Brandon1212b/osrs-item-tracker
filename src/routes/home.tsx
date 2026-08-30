@@ -8,7 +8,9 @@ import {
 } from "@/lib/osrs-catalog";
 import "@/lib/catalog-pvm-additions";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
+import { geLookupName } from "@/lib/ge-name-aliases";
 import { costPerBonus } from "@/lib/item-bonuses";
+import { itemSearchText } from "@/lib/item-search-aliases";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { useMarketData } from "@/hooks/useMarketData";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
@@ -102,24 +104,32 @@ export function Home() {
     });
   };
 
-  const rowsByName = useMemo(
-    () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
-    [snapshot.data],
-  );
+  const rowsByName = useMemo(() => {
+    const map = new Map<string, PriceRow>();
+    for (const r of snapshot.data ?? []) {
+      map.set(r.name, r);
+      map.set(r.name.toLowerCase(), r);
+    }
+    return map;
+  }, [snapshot.data]);
 
   const itemByName = useMemo(() => {
     const map = new Map<string, CatalogItem>();
+    const setItem = (key: string, item: CatalogItem) => {
+      const existing = map.get(key);
+      if (existing) {
+        map.set(key, {
+          name: item.name,
+          tags: [...new Set([...existing.tags, ...item.tags])],
+        });
+      } else {
+        map.set(key, item);
+      }
+    };
     for (const g of CATALOG) {
       for (const i of g.items) {
-        const existing = map.get(i.name);
-        if (existing) {
-          map.set(i.name, {
-            name: i.name,
-            tags: [...new Set([...existing.tags, ...i.tags])],
-          });
-        } else {
-          map.set(i.name, i);
-        }
+        setItem(i.name.toLowerCase(), i);
+        setItem(geLookupName(i.name).toLowerCase(), i);
       }
     }
     return map;
@@ -144,17 +154,25 @@ export function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((item) => rowsByName.get(item.name))
+          .map((item) => {
+            const geName = geLookupName(item.name);
+            return (
+              rowsByName.get(item.name) ??
+              rowsByName.get(item.name.toLowerCase()) ??
+              rowsByName.get(geName) ??
+              rowsByName.get(geName.toLowerCase())
+            );
+          })
           .filter((r): r is NonNullable<typeof r> => !!r)
-          .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
+          .filter((r) => (q ? itemSearchText(r.name).includes(q) : true))
           .filter((r) => {
-            const tags = itemByName.get(r.name)?.tags ?? [];
+            const tags = itemByName.get(r.name.toLowerCase())?.tags ?? [];
             if (filter === "gear") {
               if (isSuppliesItem(tags)) return false;
               if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
               if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
               if (gearTier !== "all" && !tags.includes(gearTier)) return false;
-              if (setItemNames && !setItemNames.has(r.name)) return false;
+              if (setItemNames && !setItemNames.has(r.name.toLowerCase())) return false;
             }
             if (filter === "skilling") {
               if (skill !== "all" && !tags.includes(skill)) return false;
@@ -197,8 +215,8 @@ export function Home() {
         return cb - ca || a.name.localeCompare(b.name);
       }
       if (sort === "value") {
-        const tagsA = itemByName.get(a.name)?.tags ?? [];
-        const tagsB = itemByName.get(b.name)?.tags ?? [];
+        const tagsA = itemByName.get(a.name.toLowerCase())?.tags ?? [];
+        const tagsB = itemByName.get(b.name.toLowerCase())?.tags ?? [];
         const va = costPerBonus(priceOf(a), a.name, tagsA, gearCombat);
         const vb = costPerBonus(priceOf(b), b.name, tagsB, gearCombat);
         return va - vb || a.name.localeCompare(b.name);
