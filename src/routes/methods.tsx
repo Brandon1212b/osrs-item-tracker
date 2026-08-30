@@ -190,13 +190,6 @@ function MethodsPage() {
     if (bestKey) patchSearch({ skill: bestKey });
   }, [skill, playerSkills]);
 
-  const orderedSkills = useMemo(() => {
-    if (!skill) return METHOD_SKILLS;
-    const active = METHOD_SKILLS.find((s) => s.key === skill);
-    if (!active) return METHOD_SKILLS;
-    return [active, ...METHOD_SKILLS.filter((s) => s.key !== skill)];
-  }, [skill]);
-
   return (
     <main className="mx-auto max-w-6xl px-3 pb-16 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-4">
       <div className="flex flex-col gap-2 py-3">
@@ -249,7 +242,7 @@ function MethodsPage() {
       </div>
 
       <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {orderedSkills.map((s) => (
+        {METHOD_SKILLS.map((s) => (
           <WikiIconTab
             key={s.key}
             active={skill === s.key}
