@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { deriveIntensity, MONEY_PRESETS } from "@/components/methods-ux";
+import { ListFilter } from "lucide-react";
+import { deriveIntensity } from "@/components/methods-ux";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
@@ -115,7 +115,8 @@ export function SkillingMethodsPanel({
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [sectionOpen, setSectionOpen] = useState(true);
+  const [listFiltersOpen, setListFiltersOpen] = useState(false);
   const skillsNav = useMethodSkillsNav();
   const skillLevel = readSkillLevel(playerSkills, skillKey);
   const magicLevel = readSkillLevel(playerSkills, "magic");
@@ -385,93 +386,111 @@ export function SkillingMethodsPanel({
   }, [ranked, selectedCategory]);
 
   const g = clampG(moneyPerHour);
-
-  const filterControls = (
-    <div className="flex min-w-0 flex-1 flex-col gap-2">
-      <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-        <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-          <SelectValue placeholder="Sort" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-          <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-          <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
-          <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
-          <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
-          <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {categories.length > 1 && (
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-            <SelectValue placeholder="Activity type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
-      <MethodsGoalBar
-        view={goal.view}
-        onViewChange={goal.setView}
-        currentLevel={goal.currentLevel}
-        onCurrentLevelChange={goal.setCurrentLevel}
-        targetLevel={goal.targetLevel}
-        onTargetLevelChange={goal.setTargetLevel}
-        skillLabel={skillLabel}
-      />
-
-      {isHerblore && (
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground">Amulet</span>
-            <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
-              <SelectTrigger className="h-8 w-[8.5rem] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="chemistry">Chemistry</SelectItem>
-                <SelectItem value="alchemist">Alchemist</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={goggles}
-              onChange={(e) => setGoggles(e.target.checked)}
-              className="size-3.5 rounded border-border"
-            />
-            Amylase goggles
-          </label>
-        </div>
-      )}
-
-      <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
-    </div>
-  );
+  const filtersActive = sort !== DEFAULT_SORT || selectedCategory !== "all";
 
   return (
     <section className="mt-3 space-y-3">
-      <FilterCollapse title="Skills" open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)}>
-        <div className="flex items-start gap-2.5">
-          {skillsNav && (
-            <SkillsPanel
-              active={skillsNav.active}
-              onSelect={skillsNav.onSelect}
-              levels={skillsNav.levels}
-              enabledKeys={skillsNav.enabledKeys}
-            />
-          )}
-          {filterControls}
+      <FilterCollapse title="Skills" open={sectionOpen} onToggle={() => setSectionOpen((open) => !open)}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-2.5">
+            {skillsNav && (
+              <SkillsPanel
+                active={skillsNav.active}
+                onSelect={skillsNav.onSelect}
+                levels={skillsNav.levels}
+                enabledKeys={skillsNav.enabledKeys}
+              />
+            )}
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div className="flex items-start justify-between gap-2">
+                <MethodsGoalBar
+                  view={goal.view}
+                  onViewChange={goal.setView}
+                  currentLevel={goal.currentLevel}
+                  onCurrentLevelChange={goal.setCurrentLevel}
+                  targetLevel={goal.targetLevel}
+                  onTargetLevelChange={goal.setTargetLevel}
+                  skillLabel={skillLabel}
+                />
+                <button
+                  type="button"
+                  onClick={() => setListFiltersOpen((open) => !open)}
+                  aria-expanded={listFiltersOpen}
+                  className={`inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
+                    listFiltersOpen || filtersActive
+                      ? "border-primary/70 bg-primary/15 text-primary"
+                      : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <ListFilter className="size-3.5" />
+                  Filter
+                </button>
+              </div>
+
+              {listFiltersOpen && (
+                <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-secondary/20 p-2">
+                  <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+                    <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                      <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
+                      <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                      <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+                      <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+                      <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+                      <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {categories.length > 1 && (
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                        <SelectValue placeholder="Activity type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {isHerblore && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-muted-foreground">Amulet</span>
+                        <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                          <SelectTrigger className="h-8 w-[8.5rem] text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="chemistry">Chemistry</SelectItem>
+                            <SelectItem value="alchemist">Alchemist</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={goggles}
+                          onChange={(e) => setGoggles(e.target.checked)}
+                          className="size-3.5 rounded border-border"
+                        />
+                        Amylase goggles
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
         </div>
       </FilterCollapse>
 
@@ -498,54 +517,27 @@ export function SkillingMethodsPanel({
 }
 
 function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="space-y-1.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] text-muted-foreground">Your rate</span>
-        {MONEY_PRESETS.map((p) => (
-          <button
-            key={p.label}
-            type="button"
-            onClick={() => onChange(p.value)}
-            className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
-              value === p.value
-                ? "border-primary/70 bg-primary/15 text-primary"
-                : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-7 items-center gap-0.5 rounded-full border border-border/60 bg-secondary/30 px-2 text-[11px] text-muted-foreground hover:text-foreground"
-        >
-          Adjust
-          {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-        </button>
-      </div>
-      {open && (
-        <div className="space-y-1 rounded-lg border border-border/50 bg-secondary/15 px-2.5 py-2">
-          <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums text-muted-foreground">
-            <span>{gp(value)}/h</span>
-            <span>
-              {gp(G_MIN)} – {gp(G_MAX)}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={G_MIN}
-            max={G_MAX}
-            step={G_STEP}
-            value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="w-full accent-primary"
-          />
+    <div className="w-full space-y-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[12px] font-medium text-foreground">Your rate</p>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            How much you make per hour. Training is scored against this so slower methods that profit can beat faster methods that cost you that time.
+          </p>
         </div>
-      )}
+        <span className="shrink-0 text-[12px] font-semibold tabular-nums text-foreground">{gp(value)}/h</span>
+      </div>
+      <input
+        type="range"
+        min={G_MIN}
+        max={G_MAX}
+        step={G_STEP}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-primary"
+        aria-label="Your money-making rate per hour"
+      />
     </div>
   );
 }
