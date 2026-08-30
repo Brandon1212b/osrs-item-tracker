@@ -129,6 +129,8 @@ export function getActivityType(
       if (id.includes("chinchompa") || label.includes("chin")) return "Chinchompas";
       if (id.includes("herbiboar")) return "Herbiboar";
       if (id.includes("bird") || label.includes("bird")) return "Bird houses";
+      if (id.includes("crab") || label.includes("crab")) return "Crab trapping";
+      if (id.includes("kebbit") || label.includes("falconry")) return "Falconry";
       return "Creatures";
 
     case "farming":

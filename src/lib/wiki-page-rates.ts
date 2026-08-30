@@ -88,6 +88,14 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   "black-chins": { mmg: mmg(94_500, 925_013) },
   "snowy-knights": { mmg: mmg(22_176, 1_231_702) },
   "pyre-foxes": { mmg: mmg(39_960, 905_603) },
+  "rainbow-crabs-4trap": {
+    mmg: mmg(122_000, 517_370, "Wiki 4-trap ~122,000 XP/h and ~517,370 profit (offcuts bought on GE)"),
+    skillGuide: range(122_000, 122_000, "Crab trapping / Hunter training: 4 traps ~122k, static catch rate"),
+  },
+  "rainbow-crabs": {
+    mmg: mmg(155_000, 636_111, "Wiki 5-trap 155,000 XP/h and 636,111 profit. Live MMG table currently models 740 crabs = 159,840 XP"),
+    skillGuide: range(150_000, 160_000, "Crab trapping page: rainbow 150k–160k XP/h"),
+  },
   elves: { mmg: mmg(197_848, 4_305_881) },
   vyres: { mmg: mmg(220_968, 2_488_345) },
 

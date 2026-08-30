@@ -72,6 +72,11 @@ export const METHOD_ICONS: Record<string, string> = {
   "forestry-events": "Anima-infused_bark.png",
   "hunter-rumours": "Hunter_icon.png",
   "hunter-implings": "Magpie_impling_jar.png",
+  "rainbow-crabs": "Rainbow_crab_paste.png",
+  "rainbow-crabs-4trap": "Rainbow_crab_paste.png",
+  "spotted-kebbit": "Spotted_kebbit_fur.png",
+  "dark-kebbit": "Dark_kebbit_fur.png",
+  "dashing-kebbit": "Dashing_kebbit_fur.png",
 
   "courier-early": "Sailing_icon.png",
   "sea-charting": "Sailing_icon.png",
