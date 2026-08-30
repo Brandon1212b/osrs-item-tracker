@@ -8,6 +8,7 @@ import {
 } from "@/lib/osrs-catalog";
 import "@/lib/catalog-pvm-additions";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
+import { geLookupName } from "@/lib/ge-name-aliases";
 import { costPerBonus } from "@/lib/item-bonuses";
 import { itemSearchText } from "@/lib/item-search-aliases";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
@@ -114,18 +115,21 @@ export function Home() {
 
   const itemByName = useMemo(() => {
     const map = new Map<string, CatalogItem>();
+    const setItem = (key: string, item: CatalogItem) => {
+      const existing = map.get(key);
+      if (existing) {
+        map.set(key, {
+          name: item.name,
+          tags: [...new Set([...existing.tags, ...item.tags])],
+        });
+      } else {
+        map.set(key, item);
+      }
+    };
     for (const g of CATALOG) {
       for (const i of g.items) {
-        const key = i.name.toLowerCase();
-        const existing = map.get(key);
-        if (existing) {
-          map.set(key, {
-            name: i.name,
-            tags: [...new Set([...existing.tags, ...i.tags])],
-          });
-        } else {
-          map.set(key, i);
-        }
+        setItem(i.name.toLowerCase(), i);
+        setItem(geLookupName(i.name).toLowerCase(), i);
       }
     }
     return map;
@@ -150,7 +154,15 @@ export function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((item) => rowsByName.get(item.name) ?? rowsByName.get(item.name.toLowerCase()))
+          .map((item) => {
+            const geName = geLookupName(item.name);
+            return (
+              rowsByName.get(item.name) ??
+              rowsByName.get(item.name.toLowerCase()) ??
+              rowsByName.get(geName) ??
+              rowsByName.get(geName.toLowerCase())
+            );
+          })
           .filter((r): r is NonNullable<typeof r> => !!r)
           .filter((r) => (q ? itemSearchText(r.name).includes(q) : true))
           .filter((r) => {
