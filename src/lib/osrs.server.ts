@@ -1,3 +1,5 @@
+import { geLookupName } from "./ge-name-aliases";
+
 const BASE = "https://prices.runescape.wiki/api/v1/osrs";
 const UA = "OSRS Gear & Skilling Price Tracker - lovable.app";
 /** Per-item equipment stats (osrsreboxed / osrsbox-compatible schema). */
@@ -39,13 +41,10 @@ export type PriceRow = {
 
 export type Trend = {
   id: number;
-  /** 0-100: where today's price sits within the selected range. */
   percentile: number;
-  /** High / low of the selected range (field names kept for compatibility). */
   low180: number;
   high180: number;
   avg30: number;
-  /** % change over the selected range (first → last). */
   change30: number;
   change90: number;
   series: { t: number; p: number }[];
@@ -108,9 +107,16 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   const byName = new Map(mapping.map((m) => [m.name, m]));
   const byNameLower = new Map(mapping.map((m) => [m.name.toLowerCase(), m]));
   const rows: PriceRow[] = [];
+  const seen = new Set<number>();
   for (const name of names) {
-    const m = byName.get(name) ?? byNameLower.get(name.toLowerCase());
-    if (!m) continue;
+    const lookup = geLookupName(name);
+    const m =
+      byName.get(lookup) ??
+      byNameLower.get(lookup.toLowerCase()) ??
+      byName.get(name) ??
+      byNameLower.get(name.toLowerCase());
+    if (!m || seen.has(m.id)) continue;
+    seen.add(m.id);
     const l = latest.data[String(m.id)];
     const v = day.data[String(m.id)];
     rows.push({
@@ -375,7 +381,6 @@ export type PlayerStatsResult = {
   xp: Record<string, number>;
 };
 
-/** Fetch skill levels from the official OSRS Hiscores JSON endpoint. */
 export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   const trimmed = rsn.trim();
   if (!trimmed) throw new Error("Enter a username");
@@ -397,9 +402,8 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   const skills: Record<string, number> = {};
   const xp: Record<string, number> = {};
   for (const s of data.skills) {
-    if (s.id === 0) continue; // Overall
+    if (s.id === 0) continue;
     const key = s.name.toLowerCase();
-    // rank -1 means unranked / level 1 with 0 xp on some endpoints
     skills[key] = Math.max(1, s.level || 1);
     xp[key] = Math.max(0, s.xp || 0);
   }
@@ -411,10 +415,6 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
   };
 }
 
-/**
- * Map of item id → equipment skill requirements for all equipable catalog items.
- * Cached 24h; used to grey out gear the player can't equip.
- */
 export async function getItemRequirementsMap(names: string[]): Promise<Record<number, Record<string, number>>> {
   if (requirementsMapCache && Date.now() - requirementsMapCache.at < 24 * 60 * MIN) {
     return requirementsMapCache.value;
@@ -426,7 +426,6 @@ export async function getItemRequirementsMap(names: string[]): Promise<Record<nu
   await pool(rows, 8, async (row) => {
     const eq = await getEquipmentStats(row.id);
     if (eq?.requirements && Object.keys(eq.requirements).length > 0) {
-      // Normalise keys to lowercase
       const norm: Record<string, number> = {};
       for (const [k, v] of Object.entries(eq.requirements)) {
         norm[k.toLowerCase()] = v;
