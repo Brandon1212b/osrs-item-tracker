@@ -45,12 +45,34 @@ export function EquipmentPaperDoll({
   );
 }
 
+const RS_YELLOW =
+  "#ffff00";
+const RS_FONT =
+  '"RuneScape Bold", "Arial Black", "Arial Narrow", Tahoma, sans-serif';
+
 function SkillLevelMark({ level }: { level: number }) {
+  const text = String(level);
   return (
-    <span className="relative block h-[30px] w-[34px] shrink-0 font-[Tahoma,Arial,sans-serif] text-[13px] font-bold leading-none text-[#ffff00] [text-shadow:1px_1px_0_#000]">
-      <span className="absolute left-0 top-0 tabular-nums">{level}</span>
-      <span className="absolute left-[13px] top-[8px] text-[15px] font-semibold">/</span>
-      <span className="absolute bottom-0 right-0 tabular-nums">{level}</span>
+    <span
+      className="relative block h-[28px] w-[30px] shrink-0 select-none"
+      style={{
+        color: RS_YELLOW,
+        fontFamily: RS_FONT,
+        fontWeight: 700,
+        fontSize: 12,
+        lineHeight: 1,
+        letterSpacing: "-0.4px",
+        textShadow: "1px 1px 0 #000",
+      }}
+    >
+      <span className="absolute left-0 top-0 tabular-nums">{text}</span>
+      <span
+        className="absolute left-[11px] top-[7px]"
+        style={{ fontSize: 13, fontWeight: 400 }}
+      >
+        /
+      </span>
+      <span className="absolute bottom-0 right-0 tabular-nums">{text}</span>
     </span>
   );
 }
@@ -70,68 +92,84 @@ export function SkillsPanel({
   const hasLevels = levels != null && Object.keys(levels).length > 0;
 
   return (
-    <div
-      className="mx-auto w-full max-w-[360px] overflow-hidden rounded-sm p-[3px]"
-      style={{
-        background: "linear-gradient(180deg, #6b5428 0%, #3d3016 40%, #2b2216 100%)",
-        boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #8a6d34",
-      }}
-    >
+    <div className="mx-auto" style={{ width: 204 }}>
       <div
-        className="grid grid-cols-3 gap-[3px] p-[4px]"
         style={{
-          backgroundColor: "#4a4a4a",
-          backgroundImage:
-            "radial-gradient(rgba(0,0,0,0.28) 0.6px, transparent 0.7px), linear-gradient(#505050, #3f3f3f)",
-          backgroundSize: "3px 3px, 100% 100%",
+          background: "#3e3529",
+          boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #6a5a3a",
+          padding: 2,
         }}
       >
-        {SKILLS_PANEL.map((s) => {
-          const enabled = !enabledKeys || enabledKeys.has(s.key);
-          const selected = enabled && active === s.key;
-          const raw = levels?.[s.key];
-          const level = raw ?? 1;
-          return (
-            <button
-              key={s.key}
-              type="button"
-              title={s.label}
-              aria-label={`${s.label} ${level}`}
-              aria-pressed={selected}
-              disabled={!enabled}
-              onClick={() => {
-                if (!enabled) return;
-                onSelect(active === s.key ? "all" : s.key);
-              }}
-              className="flex h-[46px] items-center justify-between px-1.5"
-              style={{
-                background: selected ? "#6a5a32" : "#555555",
-                boxShadow: selected
-                  ? "inset 1px 1px 0 #c9a44a, inset -1px -1px 0 #2a220e, 0 0 0 1px #e2c15a"
-                  : "inset 1px 1px 0 #2a2a2a, inset -1px -1px 0 #7a7a7a",
-                opacity: enabled ? 1 : 0.38,
-                cursor: enabled ? "pointer" : "default",
-              }}
-            >
-              <WikiImage
-                icon={s.wikiIcon}
-                alt=""
-                width={26}
-                height={26}
-                lazy={false}
-                className="size-[26px] shrink-0 [image-rendering:pixelated]"
-                draggable={false}
-              />
-              <SkillLevelMark level={level} />
-            </button>
-          );
-        })}
-      </div>
-      <div
-        className="px-2 py-1 text-center font-[Tahoma,Arial,sans-serif] text-[13px] font-bold text-[#ffff00] [text-shadow:1px_1px_0_#000]"
-        style={{ background: "#0b0b0b" }}
-      >
-        Total level: {hasLevels ? total : "—"}
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: "repeat(3, 62px)",
+            gridAutoRows: "32px",
+            gap: 2,
+            background: "#2b2b2b",
+            padding: 2,
+          }}
+        >
+          {SKILLS_PANEL.map((s) => {
+            const enabled = !enabledKeys || enabledKeys.has(s.key);
+            const selected = enabled && active === s.key;
+            const level = levels?.[s.key] ?? 1;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                title={s.label}
+                aria-label={`${s.label} ${level}`}
+                aria-pressed={selected}
+                disabled={!enabled}
+                onClick={() => {
+                  if (!enabled) return;
+                  onSelect(active === s.key ? "all" : s.key);
+                }}
+                className="flex items-center"
+                style={{
+                  width: 62,
+                  height: 32,
+                  padding: "0 2px 0 1px",
+                  background: selected ? "#5a4a28" : "#494949",
+                  boxShadow: selected
+                    ? "inset 1px 1px 0 #d2b15a, inset -1px -1px 0 #2a1e08, 0 0 0 1px #c9a44a"
+                    : "inset 1px 1px 0 #222, inset -1px -1px 0 #6e6e6e",
+                  opacity: enabled ? 1 : 0.38,
+                  cursor: enabled ? "pointer" : "default",
+                }}
+              >
+                <WikiImage
+                  icon={s.wikiIcon}
+                  alt=""
+                  width={25}
+                  height={25}
+                  lazy={false}
+                  className="size-[25px] shrink-0 [image-rendering:pixelated]"
+                  draggable={false}
+                />
+                <SkillLevelMark level={level} />
+              </button>
+            );
+          })}
+        </div>
+        <div
+          className="flex items-center justify-center"
+          style={{
+            height: 32,
+            marginTop: 2,
+            background: "#111",
+            boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
+            color: RS_YELLOW,
+            fontFamily: RS_FONT,
+            fontWeight: 700,
+            fontSize: 13,
+            letterSpacing: "-0.2px",
+            textShadow: "1px 1px 0 #000",
+          }}
+        >
+          Total level: {hasLevels ? total : "—"}
+        </div>
       </div>
     </div>
   );
