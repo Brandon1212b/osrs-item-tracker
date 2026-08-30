@@ -6,6 +6,8 @@ export type MethodSkillsNav = {
   onSelect: (key: string) => void;
   levels?: PlayerSkills | null;
   enabledKeys?: ReadonlySet<string>;
+  sheetOpen: boolean;
+  setSheetOpen: (open: boolean) => void;
 };
 
 const MethodSkillsNavContext = createContext<MethodSkillsNav | null>(null);
