@@ -63,7 +63,7 @@ export function AppSearch() {
   return (
     <>
       {open && (
-        <div className="pointer-events-auto absolute bottom-full mb-2 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-[22px] border border-white/10 bg-card/90 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl">
+        <div className="pointer-events-auto absolute bottom-full right-0 mb-2 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-[22px] border border-white/10 bg-card/90 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl">
           <div className="flex items-center gap-2 px-3 pt-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <Input
@@ -92,41 +92,45 @@ export function AppSearch() {
             {q.trim().length >= 2 && hits.length === 0 && (
               <li className="px-2 py-3 text-xs text-muted-foreground">Nothing matches.</li>
             )}
-            {hits.map((hit) => (
-              <li key={hit.kind === "skill" ? `s-${hit.key}` : `i-${hit.id}`}>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left hover:bg-secondary/50"
-                  onClick={() => {
-                    if (hit.kind === "skill") {
-                      const prev = lastTabSearch("/methods");
-                      void navigate({
-                        to: "/methods",
-                        search: { ...prev, skill: hit.key } as never,
-                      });
-                    } else {
-                      void navigate({ to: "/item/$id", params: { id: String(hit.id) } });
-                    }
-                    close();
-                  }}
-                >
-                  <WikiImage
-                    icon={hit.kind === "skill" ? hit.wikiIcon : hit.icon}
-                    alt=""
-                    width={22}
-                    height={22}
-                    lazy={false}
-                    className="size-5 shrink-0"
-                  />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                    {hit.label ?? hit.name}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {hit.kind === "skill" ? "Skill" : "Item"}
-                  </span>
-                </button>
-              </li>
-            ))}
+            {hits.map((hit) => {
+              const title = hit.kind === "skill" ? hit.label : hit.name;
+              const icon = hit.kind === "skill" ? hit.wikiIcon : hit.icon;
+              return (
+                <li key={hit.kind === "skill" ? `s-${hit.key}` : `i-${hit.id}`}>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left hover:bg-secondary/50"
+                    onClick={() => {
+                      if (hit.kind === "skill") {
+                        const prev = lastTabSearch("/methods");
+                        void navigate({
+                          to: "/methods",
+                          search: { ...prev, skill: hit.key } as never,
+                        });
+                      } else {
+                        void navigate({ to: "/item/$id", params: { id: String(hit.id) } });
+                      }
+                      close();
+                    }}
+                  >
+                    <WikiImage
+                      icon={icon}
+                      alt=""
+                      width={22}
+                      height={22}
+                      lazy={false}
+                      className="size-5 shrink-0"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                      {title}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {hit.kind === "skill" ? "Skill" : "Item"}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
