@@ -45,10 +45,8 @@ export function EquipmentPaperDoll({
   );
 }
 
-const RS_YELLOW =
-  "#ffff00";
-const RS_FONT =
-  '"RuneScape Bold", "Arial Black", "Arial Narrow", Tahoma, sans-serif';
+const RS_YELLOW = "#ffff00";
+const RS_FONT = '"RuneScape Bold", "Arial Black", "Arial Narrow", Tahoma, sans-serif';
 
 function SkillLevelMark({ level }: { level: number }) {
   const text = String(level);
@@ -66,10 +64,7 @@ function SkillLevelMark({ level }: { level: number }) {
       }}
     >
       <span className="absolute left-0 top-0 tabular-nums">{text}</span>
-      <span
-        className="absolute left-[11px] top-[7px]"
-        style={{ fontSize: 13, fontWeight: 400 }}
-      >
+      <span className="absolute left-[11px] top-[7px]" style={{ fontSize: 13, fontWeight: 400 }}>
         /
       </span>
       <span className="absolute bottom-0 right-0 tabular-nums">{text}</span>
@@ -92,7 +87,7 @@ export function SkillsPanel({
   const hasLevels = levels != null && Object.keys(levels).length > 0;
 
   return (
-    <div className="mx-auto" style={{ width: 204 }}>
+    <div className="shrink-0" style={{ width: 204 }}>
       <div
         style={{
           background: "#3e3529",
