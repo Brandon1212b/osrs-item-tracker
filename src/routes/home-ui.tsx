@@ -45,6 +45,16 @@ export function EquipmentPaperDoll({
   );
 }
 
+function SkillLevelMark({ level }: { level: number }) {
+  return (
+    <span className="relative block h-[30px] w-[34px] shrink-0 font-[Tahoma,Arial,sans-serif] text-[13px] font-bold leading-none text-[#ffff00] [text-shadow:1px_1px_0_#000]">
+      <span className="absolute left-0 top-0 tabular-nums">{level}</span>
+      <span className="absolute left-[13px] top-[8px] text-[15px] font-semibold">/</span>
+      <span className="absolute bottom-0 right-0 tabular-nums">{level}</span>
+    </span>
+  );
+}
+
 export function SkillsPanel({
   active,
   onSelect,
@@ -56,47 +66,73 @@ export function SkillsPanel({
   levels?: Record<string, number> | null;
   enabledKeys?: ReadonlySet<string>;
 }) {
+  const total = SKILLS_PANEL.reduce((sum, s) => sum + (levels?.[s.key] ?? 1), 0);
+  const hasLevels = levels != null && Object.keys(levels).length > 0;
+
   return (
-    <div className="grid grid-cols-3 gap-1">
-      {SKILLS_PANEL.map((s) => {
-        const enabled = !enabledKeys || enabledKeys.has(s.key);
-        const selected = enabled && active === s.key;
-        const level = levels?.[s.key];
-        return (
-          <button
-            key={s.key}
-            type="button"
-            title={s.label}
-            aria-label={level != null ? `${s.label} ${level}` : s.label}
-            aria-pressed={selected}
-            disabled={!enabled}
-            onClick={() => {
-              if (!enabled) return;
-              onSelect(active === s.key ? "all" : s.key);
-            }}
-            className={`flex items-center gap-1.5 rounded-md border px-1.5 py-1 text-left transition-colors ${
-              !enabled
-                ? "cursor-default border-border/30 bg-secondary/10 opacity-40"
-                : selected
-                  ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
-                  : "border-border/50 bg-background/60 hover:bg-secondary/60"
-            }`}
-          >
-            <WikiImage
-              icon={s.wikiIcon}
-              alt=""
-              width={20}
-              height={20}
-              lazy={false}
-              className="size-5 shrink-0"
-              draggable={false}
-            />
-            <span className="min-w-0 flex-1 truncate text-[10px] font-medium text-foreground/90">
-              {level != null ? level : s.label}
-            </span>
-          </button>
-        );
-      })}
+    <div
+      className="mx-auto w-full max-w-[360px] overflow-hidden rounded-sm p-[3px]"
+      style={{
+        background: "linear-gradient(180deg, #6b5428 0%, #3d3016 40%, #2b2216 100%)",
+        boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #8a6d34",
+      }}
+    >
+      <div
+        className="grid grid-cols-3 gap-[3px] p-[4px]"
+        style={{
+          backgroundColor: "#4a4a4a",
+          backgroundImage:
+            "radial-gradient(rgba(0,0,0,0.28) 0.6px, transparent 0.7px), linear-gradient(#505050, #3f3f3f)",
+          backgroundSize: "3px 3px, 100% 100%",
+        }}
+      >
+        {SKILLS_PANEL.map((s) => {
+          const enabled = !enabledKeys || enabledKeys.has(s.key);
+          const selected = enabled && active === s.key;
+          const raw = levels?.[s.key];
+          const level = raw ?? 1;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              title={s.label}
+              aria-label={`${s.label} ${level}`}
+              aria-pressed={selected}
+              disabled={!enabled}
+              onClick={() => {
+                if (!enabled) return;
+                onSelect(active === s.key ? "all" : s.key);
+              }}
+              className="flex h-[46px] items-center justify-between px-1.5"
+              style={{
+                background: selected ? "#6a5a32" : "#555555",
+                boxShadow: selected
+                  ? "inset 1px 1px 0 #c9a44a, inset -1px -1px 0 #2a220e, 0 0 0 1px #e2c15a"
+                  : "inset 1px 1px 0 #2a2a2a, inset -1px -1px 0 #7a7a7a",
+                opacity: enabled ? 1 : 0.38,
+                cursor: enabled ? "pointer" : "default",
+              }}
+            >
+              <WikiImage
+                icon={s.wikiIcon}
+                alt=""
+                width={26}
+                height={26}
+                lazy={false}
+                className="size-[26px] shrink-0 [image-rendering:pixelated]"
+                draggable={false}
+              />
+              <SkillLevelMark level={level} />
+            </button>
+          );
+        })}
+      </div>
+      <div
+        className="px-2 py-1 text-center font-[Tahoma,Arial,sans-serif] text-[13px] font-bold text-[#ffff00] [text-shadow:1px_1px_0_#000]"
+        style={{ background: "#0b0b0b" }}
+      >
+        Total level: {hasLevels ? total : "—"}
+      </div>
     </div>
   );
 }
