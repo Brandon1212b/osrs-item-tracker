@@ -1,68 +1,83 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartLine, Home, Pickaxe } from "lucide-react";
-import type { ReactNode } from "react";
+import { ChartLine, Pickaxe, Star } from "lucide-react";
+import type { ComponentType } from "react";
 
-const linkBase =
-  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors sm:gap-2 sm:px-3";
-const linkInactive = `${linkBase} text-muted-foreground hover:bg-secondary/60 hover:text-foreground`;
-const linkActive = `${linkBase} bg-primary text-primary-foreground shadow-sm`;
+import { useWatchlist } from "@/lib/watchlist";
 
-function NavLink({
-  to,
-  label,
-  icon,
-  active,
-}: {
-  to: "/" | "/methods";
+type TabTo = "/" | "/methods" | "/watchlist";
+
+type Tab = {
+  to: TabTo;
   label: string;
-  icon: ReactNode;
-  active: boolean;
-}) {
-  return (
-    <Link
-      to={to}
-      search={{} as never}
-      className={active ? linkActive : linkInactive}
-      aria-current={active ? "page" : undefined}
-    >
-      {icon}
-      <span>{label}</span>
-    </Link>
-  );
-}
+  Icon: ComponentType<{ className?: string }>;
+  match: (pathname: string) => boolean;
+};
+
+const TABS: Tab[] = [
+  {
+    to: "/",
+    label: "Prices",
+    Icon: ChartLine,
+    match: (p) => p === "/" || p.startsWith("/item"),
+  },
+  {
+    to: "/methods",
+    label: "Methods",
+    Icon: Pickaxe,
+    match: (p) => p.startsWith("/methods"),
+  },
+  {
+    to: "/watchlist",
+    label: "Watchlist",
+    Icon: Star,
+    match: (p) => p.startsWith("/watchlist") || p.startsWith("/auth"),
+  },
+];
 
 export function AppNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const onMethods = pathname.startsWith("/methods");
-  const onPrices = !onMethods;
+  const watchlist = useWatchlist();
+  const watchCount = watchlist.data?.length ?? 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
-        <Link
-          to="/"
-          search={{} as never}
-          aria-label="Home"
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-        >
-          <Home className="size-4" />
-        </Link>
-
-        <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
-          <NavLink
-            to="/"
-            label="Item Prices"
-            active={onPrices}
-            icon={<ChartLine className="size-4 shrink-0" aria-hidden />}
-          />
-          <NavLink
-            to="/methods"
-            label="Skilling Methods"
-            active={onMethods}
-            icon={<Pickaxe className="size-4 shrink-0" aria-hidden />}
-          />
-        </div>
-      </nav>
-    </header>
+    <nav
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-2"
+      aria-label="Primary"
+    >
+      <div className="tab-bar-fade pointer-events-none absolute inset-x-0 bottom-0 h-24" aria-hidden />
+      <div className="pointer-events-auto relative flex w-full max-w-[22.5rem] items-stretch gap-0.5 rounded-[28px] border border-white/10 bg-card/75 px-1.5 py-1.5 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60">
+        {TABS.map((tab) => {
+          const active = tab.match(pathname);
+          const showBadge = tab.to === "/watchlist" && watchCount > 0;
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              search={{} as never}
+              aria-current={active ? "page" : undefined}
+              aria-label={showBadge ? `${tab.label}, ${watchCount} saved` : tab.label}
+              onClick={() => {
+                if (active) {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className={`relative flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-1.5 transition-colors ${
+                active
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+              }`}
+            >
+              <tab.Icon className="size-[22px] shrink-0" aria-hidden strokeWidth={active ? 2.25 : 1.85} />
+              <span className="text-[10px] font-semibold leading-none tracking-wide">{tab.label}</span>
+              {showBadge && (
+                <span className="absolute right-2.5 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold tabular-nums text-primary-foreground">
+                  {watchCount > 99 ? "99+" : watchCount}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
