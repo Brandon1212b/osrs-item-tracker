@@ -56,10 +56,10 @@ export const MINING_METHODS: MiningMethod[] = [
     id: "infernal-shale",
     label: "Infernal shale (tick manip)",
     level: 78,
-    xp: 68368 / 1600,
-    actionsPerHour: 1600,
+    xp: 68368 / 2080,
+    actionsPerHour: 2080,
     inputs: [],
-    output: { name: "Crushed infernal shale", qty: 1.3 },
+    output: { name: "Crushed infernal shale", qty: 1 },
   },
 ];
 
@@ -67,7 +67,7 @@ export function miningMethodItemNames(): string[] {
   const names = new Set<string>();
   for (const m of MINING_METHODS) {
     for (const p of m.inputs) names.add(p.name);
-    if (m.output) names.add(m.output.name);
+    if (m.output) names.add(p.name);
     if (m.outputs) for (const p of m.outputs) names.add(p.name);
   }
   return [...names];
