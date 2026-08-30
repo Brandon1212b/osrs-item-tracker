@@ -147,12 +147,27 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
 
   for (const c of COMPOSITE_ITEMS) {
     if (!wanted.has(c.name.toLowerCase()) || seen.has(c.id)) continue;
-    const src = resolveMapping(c.sourceName, byName, byNameLower);
-    if (!src) continue;
+    let high = c.fixedCoins ?? 0;
+    let low = c.fixedCoins ?? 0;
+    let updated: number | null = null;
+    let volume: number | null = c.fixedCoins != null ? 0 : null;
+    let ok = c.fixedCoins != null || c.sources.length > 0;
+    for (const src of c.sources) {
+      const m = resolveMapping(src.name, byName, byNameLower);
+      if (!m) {
+        ok = false;
+        break;
+      }
+      const l = latest.data[String(m.id)];
+      const v = day.data[String(m.id)];
+      high += (l?.high ?? 0) * src.qty;
+      low += (l?.low ?? 0) * src.qty;
+      const t = l?.highTime ?? l?.lowTime ?? null;
+      if (t != null && (updated == null || t > updated)) updated = t;
+      if (v) volume = (volume ?? 0) + (v.highPriceVolume ?? 0) + (v.lowPriceVolume ?? 0);
+    }
+    if (!ok) continue;
     seen.add(c.id);
-    const l = latest.data[String(src.id)];
-    const v = day.data[String(src.id)];
-    const qty = c.sourceQty;
     rows.push({
       id: c.id,
       name: c.name,
@@ -161,10 +176,10 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
       limit: null,
       highalch: null,
       examine: c.examine,
-      high: l?.high != null ? l.high * qty : null,
-      low: l?.low != null ? l.low * qty : null,
-      updated: l?.highTime ?? l?.lowTime ?? null,
-      volume: v ? (v.highPriceVolume ?? 0) + (v.lowPriceVolume ?? 0) : null,
+      high,
+      low,
+      updated,
+      volume,
     });
   }
 
@@ -257,9 +272,9 @@ export const RANGES: Record<RangeKey, { step: "5m" | "1h" | "6h" | "24h"; points
   "1y": { step: "24h", points: 365, label: "1 year" },
 };
 
-async function sourceGeId(compSourceName: string): Promise<number | null> {
+async function sourceGeId(name: string): Promise<number | null> {
   const mapping = await getMapping();
-  const hit = mapping.find((m) => m.name.toLowerCase() === compSourceName.toLowerCase());
+  const hit = mapping.find((m) => m.name.toLowerCase() === geLookupName(name).toLowerCase());
   return hit?.id ?? null;
 }
 
@@ -278,12 +293,14 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
     await pool(rows, 10, async (row) => {
       try {
         const comp = COMPOSITE_BY_ID.get(row.id);
-        const fetchId = comp ? await sourceGeId(comp.sourceName) : row.id;
+        if (comp && (comp.fixedCoins != null || comp.sources.length === 0)) return;
+        const primary = comp?.sources[0];
+        const fetchId = primary ? await sourceGeId(primary.name) : row.id;
         if (fetchId == null) return;
         const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
           `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
         );
-        const points = scalePoints(res.data ?? [], comp?.sourceQty ?? 1);
+        const points = scalePoints(res.data ?? [], primary?.qty ?? 1);
         const t = summarise(row.id, points, cfg.points);
         if (t) result[row.id] = t;
       } catch {
@@ -395,16 +412,18 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
 
   const cfg = RANGES[range];
   const comp = COMPOSITE_BY_ID.get(id);
-  const fetchId = comp ? await sourceGeId(comp.sourceName) : id;
-  if (fetchId == null) throw new Error("Unknown item");
+  const primary = comp?.sources[0];
+  const fetchId = primary ? await sourceGeId(primary.name) : comp?.fixedCoins != null ? null : id;
 
   const [res, equipment] = await Promise.all([
-    api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
-      `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
-    ),
+    fetchId != null
+      ? api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+          `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
+        )
+      : Promise.resolve({ data: [] }),
     getEquipmentStats(id),
   ]);
-  const raw = scalePoints(res.data ?? [], comp?.sourceQty ?? 1);
+  const raw = scalePoints(res.data ?? [], primary?.qty ?? 1);
   const series = raw
     .map((p) => {
       const mid =
@@ -419,16 +438,16 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
   const prices = series.map((s) => s.p);
   const first = prices[0] ?? 0;
   const last = prices[prices.length - 1] ?? 0;
-  const trend = summarise(id, raw, Math.max(cfg.points, 180));
+  const trend = series.length ? summarise(id, raw, Math.max(cfg.points, 180)) : null;
 
   const value: ItemDetail = {
     row,
     range,
     rangeLabel: cfg.label,
     series,
-    min: prices.length ? Math.min(...prices) : 0,
-    max: prices.length ? Math.max(...prices) : 0,
-    avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+    min: prices.length ? Math.min(...prices) : row.low ?? 0,
+    max: prices.length ? Math.max(...prices) : row.high ?? 0,
+    avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : row.high ?? 0,
     change: first ? Math.round(((last - first) / first) * 1000) / 10 : 0,
     trend,
     equipment,
