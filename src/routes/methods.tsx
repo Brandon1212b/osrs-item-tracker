@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Loader2, User, X } from "lucide-react";
 import { z } from "zod";
 
@@ -23,12 +23,12 @@ import { FiremakingMethodsPanel } from "@/components/FiremakingMethods";
 import { ThievingMethodsPanel } from "@/components/ThievingMethods";
 import { HunterMethodsPanel } from "@/components/HunterMethods";
 import { SailingMethodsPanel } from "@/components/SailingMethods";
-import { WikiImage } from "@/components/WikiImage";
 import { WikiSweepButton } from "@/components/WikiSweepButton";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import { readLastSkill, writeLastSkill } from "@/lib/tab-memory";
+import { FilterCollapse, SkillsPanel } from "./home-ui";
 
 const DEFAULT_G = 2_000_000;
 
@@ -47,72 +47,33 @@ type MethodsPanelProps = {
   playerSkills?: PlayerSkills | null | undefined;
 };
 
-/** One-line config: add a new skill's Methods panel here later. */
 const METHOD_SKILLS: {
   key: string;
   label: string;
   wikiIcon: string;
   Panel: ComponentType<MethodsPanelProps>;
 }[] = [
-  {
-    key: "herblore",
-    label: "Herblore",
-    wikiIcon: "Herblore_icon.png",
-    Panel: HerbloreMethodsPanel,
-  },
-  {
-    key: "construction",
-    label: "Construction",
-    wikiIcon: "Construction_icon.png",
-    Panel: ConstructionMethodsPanel,
-  },
+  { key: "herblore", label: "Herblore", wikiIcon: "Herblore_icon.png", Panel: HerbloreMethodsPanel },
+  { key: "construction", label: "Construction", wikiIcon: "Construction_icon.png", Panel: ConstructionMethodsPanel },
   { key: "prayer", label: "Prayer", wikiIcon: "Prayer_icon.png", Panel: PrayerMethodsPanel },
-  {
-    key: "crafting",
-    label: "Crafting",
-    wikiIcon: "Crafting_icon.png",
-    Panel: CraftingMethodsPanel,
-  },
-  {
-    key: "smithing",
-    label: "Smithing",
-    wikiIcon: "Smithing_icon.png",
-    Panel: SmithingMethodsPanel,
-  },
+  { key: "crafting", label: "Crafting", wikiIcon: "Crafting_icon.png", Panel: CraftingMethodsPanel },
+  { key: "smithing", label: "Smithing", wikiIcon: "Smithing_icon.png", Panel: SmithingMethodsPanel },
   { key: "magic", label: "Magic", wikiIcon: "Magic_icon.png", Panel: MagicMethodsPanel },
-  {
-    key: "runecraft",
-    label: "Runecraft",
-    wikiIcon: "Runecraft_icon.png",
-    Panel: RunecraftMethodsPanel,
-  },
+  { key: "runecraft", label: "Runecraft", wikiIcon: "Runecraft_icon.png", Panel: RunecraftMethodsPanel },
   { key: "farming", label: "Farming", wikiIcon: "Farming_icon.png", Panel: FarmingMethodsPanel },
-  {
-    key: "fletching",
-    label: "Fletching",
-    wikiIcon: "Fletching_icon.png",
-    Panel: FletchingMethodsPanel,
-  },
+  { key: "fletching", label: "Fletching", wikiIcon: "Fletching_icon.png", Panel: FletchingMethodsPanel },
   { key: "cooking", label: "Cooking", wikiIcon: "Cooking_icon.png", Panel: CookingMethodsPanel },
   { key: "agility", label: "Agility", wikiIcon: "Agility_icon.png", Panel: AgilityMethodsPanel },
   { key: "mining", label: "Mining", wikiIcon: "Mining_icon.png", Panel: MiningMethodsPanel },
   { key: "fishing", label: "Fishing", wikiIcon: "Fishing_icon.png", Panel: FishingMethodsPanel },
-  {
-    key: "woodcutting",
-    label: "Woodcutting",
-    wikiIcon: "Woodcutting_icon.png",
-    Panel: WoodcuttingMethodsPanel,
-  },
-  {
-    key: "firemaking",
-    label: "Firemaking",
-    wikiIcon: "Firemaking_icon.png",
-    Panel: FiremakingMethodsPanel,
-  },
+  { key: "woodcutting", label: "Woodcutting", wikiIcon: "Woodcutting_icon.png", Panel: WoodcuttingMethodsPanel },
+  { key: "firemaking", label: "Firemaking", wikiIcon: "Firemaking_icon.png", Panel: FiremakingMethodsPanel },
   { key: "thieving", label: "Thieving", wikiIcon: "Thieving_icon.png", Panel: ThievingMethodsPanel },
   { key: "hunter", label: "Hunter", wikiIcon: "Hunter_icon.png", Panel: HunterMethodsPanel },
   { key: "sailing", label: "Sailing", wikiIcon: "Sailing_icon.png", Panel: SailingMethodsPanel },
 ];
+
+const METHOD_SKILL_KEYS = new Set(METHOD_SKILLS.map((s) => s.key));
 
 export const Route = createFileRoute("/methods")({
   validateSearch: (search: Record<string, unknown>): MethodsSearch =>
@@ -141,6 +102,7 @@ function MethodsPage() {
   const search = Route.useSearch();
   const { skill, g } = search;
   const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
+  const [skillsOpen, setSkillsOpen] = useState(true);
 
   const { snapshot, trends } = useMarketData("6m");
   const { rsnDraft, setRsnDraft, activeRsn, playerQuery, playerSkills, loadRsn, clearRsn } =
@@ -241,18 +203,17 @@ function MethodsPage() {
         )}
       </div>
 
-      <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {METHOD_SKILLS.map((s) => (
-          <WikiIconTab
-            key={s.key}
-            active={skill === s.key}
-            onClick={() => patchSearch({ skill: skill === s.key ? skill : s.key })}
-            label={s.label}
-            wikiIcon={s.wikiIcon}
-            level={playerSkills?.[s.key]}
-          />
-        ))}
-      </div>
+      <FilterCollapse title="Skills" open={skillsOpen} onToggle={() => setSkillsOpen((open) => !open)}>
+        <SkillsPanel
+          active={skill}
+          onSelect={(key) => {
+            if (!METHOD_SKILL_KEYS.has(key)) return;
+            patchSearch({ skill: key === skill ? skill : key });
+          }}
+          levels={playerSkills}
+          enabledKeys={METHOD_SKILL_KEYS}
+        />
+      </FilterCollapse>
 
       {snapshot.isLoading && (
         <div className="mt-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -286,48 +247,5 @@ function MethodsPage() {
         />
       )}
     </main>
-  );
-}
-
-function WikiIconTab({
-  active,
-  onClick,
-  label,
-  wikiIcon,
-  level,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  wikiIcon: string;
-  level?: number;
-}) {
-  const title = level != null ? `${label} ${level}` : label;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-label={title}
-      aria-pressed={active}
-      className={`inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-full border px-2 transition-colors ${
-        active
-          ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
-          : "border-border/60 bg-secondary/30 hover:bg-secondary/50"
-      }`}
-    >
-      <WikiImage
-        icon={wikiIcon}
-        alt=""
-        width={20}
-        height={20}
-        lazy={false}
-        className="size-5 shrink-0"
-        draggable={false}
-      />
-      {level != null && (
-        <span className="pr-0.5 text-[11px] font-semibold tabular-nums text-foreground/90">{level}</span>
-      )}
-    </button>
   );
 }
