@@ -51,7 +51,16 @@ export const MINING_METHODS: MiningMethod[] = [
   { id: "basalt", label: "Basalt", level: 72, xp: 5, actionsPerHour: 700, inputs: [], output: { name: "Basalt", qty: 1 } },
   { id: "zeah-salts", label: "Kourend salts (Te Salt)", level: 70, xp: 5, actionsPerHour: 3500, inputs: [], output: { name: "Te salt", qty: 1 } },
   { id: "infernal-shale-afk", label: "Infernal shale (AFK)", level: 78, xp: 9860 / 221, actionsPerHour: 221, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
-  { id: "infernal-shale-rocks", label: "Infernal shale (medium)", level: 78, xp: 35960 / 806, actionsPerHour: 806, inputs: [], output: { name: "Crushed infernal shale", qty: 1 } },
+  {
+    id: "infernal-shale-rocks",
+    label: "Infernal shale (medium)",
+    level: 78,
+    // Rocks MMG: 35,960 XP/h and 806 crushed/h at 1.3 crush → 620 mines/h.
+    xp: 35960 / 620,
+    actionsPerHour: 620,
+    inputs: [],
+    output: { name: "Crushed infernal shale", qty: 806 / 620 },
+  },
   {
     id: "infernal-shale",
     label: "Infernal shale (tick manip)",
