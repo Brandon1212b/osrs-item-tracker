@@ -67,7 +67,7 @@ export function miningMethodItemNames(): string[] {
   const names = new Set<string>();
   for (const m of MINING_METHODS) {
     for (const p of m.inputs) names.add(p.name);
-    if (m.output) names.add(p.name);
+    if (m.output) names.add(m.output.name);
     if (m.outputs) for (const p of m.outputs) names.add(p.name);
   }
   return [...names];
