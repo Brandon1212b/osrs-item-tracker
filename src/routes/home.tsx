@@ -9,6 +9,7 @@ import {
 import "@/lib/catalog-pvm-additions";
 import { gearSetsForTier, gearSetItemNames } from "@/lib/gear-sets";
 import { costPerBonus } from "@/lib/item-bonuses";
+import { itemSearchText } from "@/lib/item-search-aliases";
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import { useMarketData } from "@/hooks/useMarketData";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
@@ -102,10 +103,14 @@ export function Home() {
     });
   };
 
-  const rowsByName = useMemo(
-    () => new Map((snapshot.data ?? []).map((r) => [r.name, r])),
-    [snapshot.data],
-  );
+  const rowsByName = useMemo(() => {
+    const map = new Map<string, PriceRow>();
+    for (const r of snapshot.data ?? []) {
+      map.set(r.name, r);
+      map.set(r.name.toLowerCase(), r);
+    }
+    return map;
+  }, [snapshot.data]);
 
   const itemByName = useMemo(() => {
     const map = new Map<string, CatalogItem>();
@@ -145,11 +150,9 @@ export function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((item) => rowsByName.get(item.name) ?? rowsByName.get(
-            [...rowsByName.keys()].find((k) => k.toLowerCase() === item.name.toLowerCase()) ?? "",
-          ))
+          .map((item) => rowsByName.get(item.name) ?? rowsByName.get(item.name.toLowerCase()))
           .filter((r): r is NonNullable<typeof r> => !!r)
-          .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
+          .filter((r) => (q ? itemSearchText(r.name).includes(q) : true))
           .filter((r) => {
             const tags = itemByName.get(r.name.toLowerCase())?.tags ?? [];
             if (filter === "gear") {
