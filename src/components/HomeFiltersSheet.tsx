@@ -1,15 +1,18 @@
-import { SlidersHorizontal } from "lucide-react";
+import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
+import type { UseQueryResult } from "@tanstack/react-query";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
 import {
   GEAR_COMBAT_FILTERS,
   SKILLING_FILTERS,
   SUPPLIES_FILTERS,
 } from "@/lib/osrs-catalog";
+import type { PlayerSkills } from "@/lib/player-stats";
 import type { RangeKey } from "@/lib/osrs.server";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
@@ -65,20 +68,25 @@ function Chip({
 
 export function HomeFiltersButton({
   onClick,
+  activeRsn,
   className = "",
 }: {
   onClick: () => void;
+  activeRsn?: string | null;
   className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Open filters"
-      title="Filters"
-      className={`inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
+      aria-label={activeRsn ? `Open filters, player ${activeRsn}` : "Open filters"}
+      title={activeRsn ? `Filters · ${activeRsn}` : "Filters"}
+      className={`relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
     >
       <SlidersHorizontal className="size-4" />
+      {activeRsn ? (
+        <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" aria-hidden />
+      ) : null}
     </button>
   );
 }
@@ -92,6 +100,12 @@ export function HomeFiltersSheet({
   supplyType,
   sort,
   range,
+  rsnDraft,
+  setRsnDraft,
+  activeRsn,
+  playerQuery,
+  loadRsn,
+  clearRsn,
   onFilterChange,
   onCombatChange,
   onSkillChange,
@@ -107,6 +121,12 @@ export function HomeFiltersSheet({
   supplyType: string;
   sort: SortKey;
   range: RangeKey;
+  rsnDraft: string;
+  setRsnDraft: (v: string) => void;
+  activeRsn: string | null;
+  playerQuery: UseQueryResult<{ name?: string; skills?: PlayerSkills }, Error>;
+  loadRsn: (rsn: string) => void;
+  clearRsn: () => void;
   onFilterChange: (next: Filter) => void;
   onCombatChange: (next: string) => void;
   onSkillChange: (next: string) => void;
@@ -114,39 +134,65 @@ export function HomeFiltersSheet({
   onSortChange: (next: SortKey) => void;
   onRangeChange: (next: RangeKey) => void;
 }) {
-  const subLabel =
-    filter === "gear" && gearCombat !== "all"
-      ? GEAR_COMBAT_FILTERS.find((c) => c.key === gearCombat)?.label
-      : filter === "skilling" && skill !== "all"
-        ? SKILLING_FILTERS.find((c) => c.key === skill)?.label
-        : filter === "supplies" && supplyType !== "all"
-          ? SUPPLIES_FILTERS.find((c) => c.key === supplyType)?.label
-          : null;
-  const categoryLabel = subLabel ?? CATEGORIES.find((c) => c.key === filter)?.label ?? "All";
-  const sortLabel = SORTS.find((s) => s.key === sort)?.label ?? "Sort";
-  const rangeLabel = RANGES.find((r) => r.key === range)?.label ?? range;
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <button
-          type="button"
-          onClick={() => onOpenChange(true)}
-          className="pointer-events-auto mx-auto flex h-11 w-full max-w-md items-center justify-center gap-2 rounded-full border border-border/70 bg-background/95 px-4 text-sm font-medium text-foreground shadow-lg backdrop-blur hover:bg-secondary/60"
-        >
-          <SlidersHorizontal className="size-4 shrink-0" />
-          <span>Filters</span>
-          <span className="text-muted-foreground">·</span>
-          <span className="truncate text-muted-foreground">
-            {categoryLabel} · {sortLabel} · {rangeLabel}
-          </span>
-        </button>
-      </div>
       <DrawerContent className="mx-auto max-w-lg">
         <DrawerHeader className="pb-1 text-left">
           <DrawerTitle>Filters</DrawerTitle>
         </DrawerHeader>
-        <div className="space-y-4 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <section className="space-y-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Player
+            </p>
+            <form
+              className="flex items-center gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                loadRsn(rsnDraft);
+              }}
+            >
+              <div className="relative min-w-0 flex-1">
+                <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={rsnDraft}
+                  onChange={(e) => setRsnDraft(e.target.value)}
+                  placeholder="RSN…"
+                  className="h-10 pl-8 pr-8 text-base"
+                  aria-label="Old School RuneScape username"
+                  autoComplete="username"
+                />
+                {activeRsn && (
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Clear player"
+                    onClick={clearRsn}
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={!rsnDraft.trim() || playerQuery.isFetching}
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary/60 px-3 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+              >
+                {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
+              </button>
+            </form>
+            {activeRsn && !playerQuery.isError && (
+              <p className="text-[11px] text-muted-foreground">
+                Locked items hide gear above {activeRsn}'s levels.
+              </p>
+            )}
+            {playerQuery.isError && (
+              <p className="text-[11px] text-destructive">
+                {(playerQuery.error as Error)?.message ?? "Lookup failed"}
+              </p>
+            )}
+          </section>
+
           <section className="space-y-2">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Category</p>
             <div className="flex flex-wrap gap-1.5">
