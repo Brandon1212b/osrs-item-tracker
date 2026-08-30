@@ -92,8 +92,8 @@ export function HomeMain({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-0 sm:px-6">
-      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
+    <main className="mx-auto w-full max-w-7xl px-4 pb-6 pt-0 sm:px-6">
+      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
           <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
             <form
