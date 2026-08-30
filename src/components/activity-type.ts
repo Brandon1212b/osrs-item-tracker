@@ -7,6 +7,8 @@ export function getActivityType(
   const id = m.id.toLowerCase();
   const label = m.label.toLowerCase();
 
+  if (id.includes("infernal-shale") || label.includes("infernal shale")) return "Infernal shale";
+
   if (isActivity) {
     if (id.includes("wintertodt")) return "Wintertodt";
     if (id.includes("tempoross")) return "Tempoross";

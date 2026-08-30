@@ -127,6 +127,12 @@ export function MethodHelpPopover({
           <p className="font-semibold text-foreground">GP/hr</p>
           <p className="mt-0.5 text-muted-foreground">{gpText}</p>
         </section>
+        {activity?.notes ? (
+          <section>
+            <p className="font-semibold text-foreground">Notes</p>
+            <p className="mt-0.5 text-muted-foreground">{activity.notes}</p>
+          </section>
+        ) : null}
         <section>
           <p className="mb-1.5 font-semibold text-foreground">Links</p>
           <div className="grid grid-cols-3 gap-1.5">

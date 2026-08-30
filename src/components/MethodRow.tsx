@@ -6,6 +6,7 @@ import { intensityClass } from "@/components/methods-ux";
 import type { RankedMethod } from "@/components/skilling-types";
 import type { MethodsMetricView } from "@/components/MethodsGoalBar";
 import { MethodHelpPopover } from "@/components/MethodHelpPopover";
+import { methodFallbackIcon } from "@/lib/method-icons";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -47,7 +48,6 @@ export function MethodRow({
   missing,
   locked,
   secondaryLine,
-  notes,
   intensity,
   rateBandLevel,
   hoursToTarget,
@@ -71,10 +71,14 @@ export function MethodRow({
   const titlePart = method
     ? (method.outputs && method.outputs.length > 0 ? method.outputs[0] : method.output) ??
       method.inputs[0]
-    : undefined;
+    : activity?.rewards[0]
+      ? { name: activity.rewards[0].name, qty: activity.rewards[0].expectedQtyPerHour }
+      : activity?.consumables[0];
   const titleRow =
     titlePart && titlePart.name !== "Coins" ? rowsByName.get(titlePart.name) : undefined;
-  const titleIcon = titlePart ? chipIcon(titleRow, titlePart.name) : null;
+  const titleIcon = titlePart
+    ? chipIcon(titleRow, titlePart.name)
+    : methodFallbackIcon(id, skillKey ?? skillLabel.toLowerCase());
 
   return (
     <article
@@ -90,7 +94,7 @@ export function MethodRow({
             <span className="flex size-10 shrink-0 items-center justify-center">
               <WikiImage
                 icon={titleIcon}
-                alt={titlePart?.name ?? ""}
+                alt={titlePart?.name ?? label}
                 width={40}
                 height={40}
                 className="size-10 drop-shadow-sm"
@@ -172,23 +176,8 @@ export function MethodRow({
           />
         </div>
       </div>
-      {isActivity ? (
-        <div className="space-y-1 text-xs">
-          <p className="text-[11px] text-muted-foreground">
-            Activity method — expected reward value (not a single GE output)
-          </p>
-          {notes && <p className="text-[11px] text-muted-foreground">{notes}</p>}
-          {missing && (
-            <p className="text-[11px] text-muted-foreground">(partial / missing price data)</p>
-          )}
-        </div>
-      ) : method ? (
+      {method ? (
         <div className="flex flex-nowrap items-center gap-1 overflow-x-auto text-xs">
-          {method.inputs.length === 0 &&
-            !method.output &&
-            !(method.outputs && method.outputs.length > 0) && (
-              <span className="text-[11px] text-muted-foreground">No GE inputs (course XP)</span>
-            )}
           {method.inputs.map((part, idx) => (
             <span key={`in-${part.name}-${idx}`} className="inline-flex shrink-0 items-center gap-1">
               {idx > 0 && <span className="px-0.5 text-muted-foreground">+</span>}
