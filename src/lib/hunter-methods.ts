@@ -3,7 +3,7 @@
  * Complex activities (Herbiboar) live in hunter-activities.ts.
  *
  * Birdhouse runs use effective rates (active-time XP/h from the wiki table).
- * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs + Hunter training (2026).
+ * Sources: oldschool.runescape.wiki Bird house trapping + chin MMGs + Hunter training (2026-08-30).
  */
 export type MethodPart = { name: string; qty: number };
 
@@ -16,6 +16,7 @@ export type HunterMethod = {
   inputs: MethodPart[];
   output: MethodPart | null;
   outputs?: MethodPart[];
+  intensity?: "low" | "medium" | "high";
 };
 
 function birdhouseOutputs(expectedNestsPerHouse: number): MethodPart[] {
@@ -31,7 +32,8 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Grey chinchompas",
     level: 53,
     xp: 198.4,
-    actionsPerHour: 225,
+    // Wiki MMG Hunting chinchompas: 44,775 XP/h
+    actionsPerHour: 44775 / 198.4,
     inputs: [],
     output: { name: "Chinchompa", qty: 1 },
   },
@@ -40,7 +42,8 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Red chinchompas",
     level: 63,
     xp: 265,
-    actionsPerHour: 400,
+    // Wiki MMG Hunting carnivorous chinchompas: 125,875 XP/h
+    actionsPerHour: 125875 / 265,
     inputs: [],
     output: { name: "Red chinchompa", qty: 1 },
   },
@@ -49,7 +52,8 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Black chinchompas",
     level: 73,
     xp: 315,
-    actionsPerHour: 350,
+    // Wiki MMG Hunting black chinchompas: 94,500 XP/h (no tick-manip column)
+    actionsPerHour: 94500 / 315,
     inputs: [],
     output: { name: "Black chinchompa", qty: 1 },
   },
@@ -58,7 +62,7 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Falconry — Spotted kebbit",
     level: 43,
     xp: 104,
-    actionsPerHour: 480,
+    actionsPerHour: 625, // wiki 60–70k XP/h; catch rate does not scale
     inputs: [],
     output: null,
   },
@@ -67,7 +71,7 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Falconry — Dark kebbit",
     level: 57,
     xp: 132,
-    actionsPerHour: 480,
+    actionsPerHour: 587, // wiki 75–80k XP/h
     inputs: [],
     output: null,
   },
@@ -76,7 +80,7 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Falconry — Dashing kebbit",
     level: 69,
     xp: 156,
-    actionsPerHour: 450,
+    actionsPerHour: 577, // wiki 85–95k XP/h
     inputs: [],
     output: null,
   },
@@ -116,7 +120,8 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Sunlight antelope",
     level: 72,
     xp: 375,
-    actionsPerHour: 220,
+    // Wiki MMG Hunting sunlight antelopes: 83,600 XP/h
+    actionsPerHour: 83600 / 375,
     inputs: [],
     output: { name: "Sunlight antelope antler", qty: 1 },
   },
@@ -125,7 +130,8 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Moonlight antelope",
     level: 91,
     xp: 400,
-    actionsPerHour: 225,
+    // Wiki MMG Hunting moonlight antelopes: 90,000 XP/h
+    actionsPerHour: 90000 / 400,
     inputs: [],
     output: { name: "Moonlight antelope antler", qty: 1 },
   },
@@ -223,22 +229,37 @@ export const HUNTER_METHODS: HunterMethod[] = [
     label: "Pyre foxes",
     level: 57,
     xp: 222,
+    // Wiki MMG Hunting pyre foxes: 180 foxes / 39,960 Hunter XP/h
     actionsPerHour: 180,
-    inputs: [],
+    inputs: [{ name: "Jerboa tail", qty: 1 }],
     output: null,
     outputs: [
       { name: "Fox fur", qty: 1 },
       { name: "Raw pyre fox", qty: 1 },
     ],
+    intensity: "low",
+  },
+  {
+    id: "rainbow-crabs-4trap",
+    label: "Rainbow crabs (4 traps)",
+    level: 77,
+    // Wiki: ~122,000 XP/h with 4 traps. 216 XP/crab, static catch rate.
+    xp: 216,
+    actionsPerHour: 122000 / 216,
+    inputs: [{ name: "Fine fish offcuts", qty: 1 }],
+    output: { name: "Rainbow crab paste", qty: 1 },
+    intensity: "medium",
   },
   {
     id: "rainbow-crabs",
-    label: "Rainbow crabs",
-    level: 65,
-    xp: 180,
-    actionsPerHour: 220,
-    inputs: [],
-    output: { name: "Rainbow crab meat", qty: 1 },
+    label: "Rainbow crabs (5 traps)",
+    level: 77,
+    // Wiki: 155,000 XP/h with 5 traps. Catch rate is static (does not scale by level).
+    xp: 216,
+    actionsPerHour: 155000 / 216,
+    inputs: [{ name: "Fine fish offcuts", qty: 1 }],
+    output: { name: "Rainbow crab paste", qty: 1 },
+    intensity: "high",
   },
 ];
 
