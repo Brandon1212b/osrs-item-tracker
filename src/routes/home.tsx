@@ -111,14 +111,15 @@ export function Home() {
     const map = new Map<string, CatalogItem>();
     for (const g of CATALOG) {
       for (const i of g.items) {
-        const existing = map.get(i.name);
+        const key = i.name.toLowerCase();
+        const existing = map.get(key);
         if (existing) {
-          map.set(i.name, {
+          map.set(key, {
             name: i.name,
             tags: [...new Set([...existing.tags, ...i.tags])],
           });
         } else {
-          map.set(i.name, i);
+          map.set(key, i);
         }
       }
     }
@@ -144,17 +145,19 @@ export function Home() {
       .map((g) => ({
         ...g,
         rows: g.items
-          .map((item) => rowsByName.get(item.name))
+          .map((item) => rowsByName.get(item.name) ?? rowsByName.get(
+            [...rowsByName.keys()].find((k) => k.toLowerCase() === item.name.toLowerCase()) ?? "",
+          ))
           .filter((r): r is NonNullable<typeof r> => !!r)
           .filter((r) => (q ? r.name.toLowerCase().includes(q) : true))
           .filter((r) => {
-            const tags = itemByName.get(r.name)?.tags ?? [];
+            const tags = itemByName.get(r.name.toLowerCase())?.tags ?? [];
             if (filter === "gear") {
               if (isSuppliesItem(tags)) return false;
               if (gearCombat !== "all" && !tags.includes(gearCombat)) return false;
               if (gearSlot !== "all" && !tags.includes(gearSlot)) return false;
               if (gearTier !== "all" && !tags.includes(gearTier)) return false;
-              if (setItemNames && !setItemNames.has(r.name)) return false;
+              if (setItemNames && !setItemNames.has(r.name.toLowerCase())) return false;
             }
             if (filter === "skilling") {
               if (skill !== "all" && !tags.includes(skill)) return false;
@@ -197,8 +200,8 @@ export function Home() {
         return cb - ca || a.name.localeCompare(b.name);
       }
       if (sort === "value") {
-        const tagsA = itemByName.get(a.name)?.tags ?? [];
-        const tagsB = itemByName.get(b.name)?.tags ?? [];
+        const tagsA = itemByName.get(a.name.toLowerCase())?.tags ?? [];
+        const tagsB = itemByName.get(b.name.toLowerCase())?.tags ?? [];
         const va = costPerBonus(priceOf(a), a.name, tagsA, gearCombat);
         const vb = costPerBonus(priceOf(b), b.name, tagsB, gearCombat);
         return va - vb || a.name.localeCompare(b.name);
