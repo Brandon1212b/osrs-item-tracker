@@ -25,10 +25,16 @@ import { HunterMethodsPanel } from "@/components/HunterMethods";
 import { SailingMethodsPanel } from "@/components/SailingMethods";
 import { WikiSweepButton } from "@/components/WikiSweepButton";
 import { Input } from "@/components/ui/input";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import { readLastSkill, writeLastSkill } from "@/lib/tab-memory";
-import { FilterCollapse, SkillsPanel } from "./home-ui";
+import { SkillsPanel } from "./home-ui";
 import { MethodSkillsNavProvider } from "@/components/method-skills-nav";
 
 const DEFAULT_G = 2_000_000;
@@ -103,7 +109,7 @@ function MethodsPage() {
   const search = Route.useSearch();
   const { skill, g } = search;
   const moneyPerHour = Number.isFinite(g) && g > 0 ? g : DEFAULT_G;
-  const [skillsOpen, setSkillsOpen] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const { snapshot, trends } = useMarketData("6m");
   const { rsnDraft, setRsnDraft, activeRsn, playerQuery, playerSkills, loadRsn, clearRsn } =
@@ -161,6 +167,8 @@ function MethodsPage() {
     },
     levels: playerSkills,
     enabledKeys: METHOD_SKILL_KEYS,
+    sheetOpen,
+    setSheetOpen,
   };
 
   return (
@@ -216,14 +224,32 @@ function MethodsPage() {
         </div>
 
         {!SelectedPanel && (
-          <FilterCollapse title="Skills" open={skillsOpen} onToggle={() => setSkillsOpen((open) => !open)}>
-            <SkillsPanel
-              active={skill}
-              onSelect={skillsNav.onSelect}
-              levels={playerSkills}
-              enabledKeys={METHOD_SKILL_KEYS}
-            />
-          </FilterCollapse>
+          <>
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              className="flex h-11 w-full items-center justify-center rounded-lg border border-border/60 bg-secondary/30 text-sm font-medium hover:bg-secondary/50"
+            >
+              Choose a skill
+            </button>
+            <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
+              <DrawerContent className="mx-auto max-w-lg">
+                <DrawerHeader className="pb-1 text-left">
+                  <DrawerTitle>Skills</DrawerTitle>
+                </DrawerHeader>
+                <div className="max-h-[min(78dvh,40rem)] overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                  <div className="flex justify-center pb-3">
+                    <SkillsPanel
+                      active={skill}
+                      onSelect={skillsNav.onSelect}
+                      levels={playerSkills}
+                      enabledKeys={METHOD_SKILL_KEYS}
+                    />
+                  </div>
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </>
         )}
 
         {snapshot.isLoading && (
@@ -243,7 +269,7 @@ function MethodsPage() {
           <div className="mt-10 rounded-lg border border-dashed border-border/60 bg-secondary/20 px-4 py-10 text-center">
             <p className="text-sm font-medium text-foreground">Pick a skill</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Select a skill icon above to view training methods ranked by cost and XP.
+              Open the skills popup to view training methods ranked by cost and XP.
             </p>
           </div>
         )}
