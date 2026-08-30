@@ -56,10 +56,11 @@ export const MINING_METHODS: MiningMethod[] = [
     id: "infernal-shale",
     label: "Infernal shale (tick manip)",
     level: 78,
-    xp: 68368 / 2080,
-    actionsPerHour: 2080,
+    // 1,600 shale mined/h × ~42.73 xp = 68,368 xp/h. Crush ratio 1.3 → 2,080 crushed/h for GP.
+    xp: 68368 / 1600,
+    actionsPerHour: 1600,
     inputs: [],
-    output: { name: "Crushed infernal shale", qty: 1 },
+    output: { name: "Crushed infernal shale", qty: 2080 / 1600 },
   },
 ];
 
