@@ -106,9 +106,10 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   ]);
 
   const byName = new Map(mapping.map((m) => [m.name, m]));
+  const byNameLower = new Map(mapping.map((m) => [m.name.toLowerCase(), m]));
   const rows: PriceRow[] = [];
   for (const name of names) {
-    const m = byName.get(name);
+    const m = byName.get(name) ?? byNameLower.get(name.toLowerCase());
     if (!m) continue;
     const l = latest.data[String(m.id)];
     const v = day.data[String(m.id)];
