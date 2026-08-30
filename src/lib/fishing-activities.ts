@@ -94,6 +94,23 @@ export const FISHING_RATE_TABLES: ActivityMethod[] = [
     notes: "Wiki infernal eel table. Tokkul/onyx shards not itemized.",
   },
   {
+    id: "leechfin",
+    label: "Leechfin",
+    skillKey: "fishing",
+    level: 78,
+    rateBands: [
+      { level: 78, xpPerHour: 109_000 },
+      { level: 85, xpPerHour: 116_000 },
+      { level: 90, xpPerHour: 122_000 },
+      { level: 95, xpPerHour: 127_000 },
+      { level: 99, xpPerHour: 130_000 },
+    ],
+    consumables: [],
+    rewards: [],
+    intensity: "high",
+    notes: "Wiki leechfin table (Vampyrium, angler's). Power-fish; blood sacs not itemized.",
+  },
+  {
     id: "minnows",
     label: "Minnows",
     skillKey: "fishing",
