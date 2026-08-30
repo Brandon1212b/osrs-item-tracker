@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   GEAR_COMBAT_FILTERS,
   GEAR_TIER_FILTERS,
-  SKILLING_FILTERS,
   SUPPLIES_FILTERS,
 } from "@/lib/osrs-catalog";
 import { formatCompact } from "@/lib/format";
@@ -14,7 +13,7 @@ import { meetsRequirements, firstMissingRequirement, type PlayerSkills } from "@
 import type { PriceRow, RangeKey, Trend } from "@/lib/osrs.server";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { gearSetsForTier } from "@/lib/gear-sets";
-import { EquipmentPaperDoll, SubTab, WikiIconTab } from "./home-ui";
+import { EquipmentPaperDoll, FilterCollapse, SkillsPanel, SubTab, WikiIconTab } from "./home-ui";
 import type { HomeSearch } from "./index";
 
 type Filter = "all" | "gear" | "skilling" | "supplies";
@@ -86,6 +85,7 @@ export function HomeMain({
 }: HomeMainProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [gearDetailOpen, setGearDetailOpen] = useState(true);
+  const [skillPanelOpen, setSkillPanelOpen] = useState(true);
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 pb-6 pt-0 sm:px-6">
@@ -128,94 +128,89 @@ export function HomeMain({
             ))}
           </div>
 
-          <div className="rounded-lg border border-border/50 bg-secondary/15">
-            <button
-              type="button"
-              onClick={() => setGearDetailOpen((open) => !open)}
-              aria-expanded={gearDetailOpen}
-              className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left"
-            >
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Gear piece & progression
-              </span>
-              <ChevronDown
-                className={`size-4 shrink-0 text-muted-foreground transition-transform ${
-                  gearDetailOpen ? "rotate-0" : "-rotate-90"
-                }`}
-              />
-            </button>
-            {gearDetailOpen && (
-              <div className="flex flex-wrap items-start gap-3 border-t border-border/40 p-2.5 pt-2">
-                <EquipmentPaperDoll active={gearSlot} onSelect={(slot) => patchSearch({ slot })} />
+          <FilterCollapse
+            title="Gear piece & progression"
+            open={gearDetailOpen}
+            onToggle={() => setGearDetailOpen((open) => !open)}
+          >
+            <div className="flex flex-wrap items-start gap-3">
+              <EquipmentPaperDoll active={gearSlot} onSelect={(slot) => patchSearch({ slot })} />
 
-                <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <div className="flex shrink-0 flex-col gap-1.5">
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                      Progression
-                    </span>
-                    <div className="flex flex-col gap-1">
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <div className="flex shrink-0 flex-col gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Progression
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    <SubTab
+                      active={gearTier === "all"}
+                      onClick={() => patchSearch({ tier: "all", set: "all" })}
+                      label="All stages"
+                    />
+                    {GEAR_TIER_FILTERS.map((t) => (
                       <SubTab
-                        active={gearTier === "all"}
-                        onClick={() => patchSearch({ tier: "all", set: "all" })}
+                        key={t.key}
+                        active={gearTier === t.key}
+                        onClick={() =>
+                          patchSearch({
+                            tier: gearTier === t.key ? "all" : t.key,
+                            set: "all",
+                          })
+                        }
+                        label={t.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {availableSets.length > 0 && (
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5 border-l border-border/60 pl-3">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                      Wiki stage
+                    </span>
+                    <div className="flex max-h-[11.5rem] flex-col gap-1 overflow-y-auto overscroll-contain pr-0.5">
+                      <SubTab
+                        active={gearSet === "all"}
+                        onClick={() => patchSearch({ set: "all" })}
                         label="All stages"
                       />
-                      {GEAR_TIER_FILTERS.map((t) => (
+                      {availableSets.map((s) => (
                         <SubTab
-                          key={t.key}
-                          active={gearTier === t.key}
-                          onClick={() =>
-                            patchSearch({
-                              tier: gearTier === t.key ? "all" : t.key,
-                              set: "all",
-                            })
-                          }
-                          label={t.label}
+                          key={s.key}
+                          active={gearSet === s.key}
+                          onClick={() => patchSearch({ set: gearSet === s.key ? "all" : s.key })}
+                          label={s.label}
                         />
                       ))}
                     </div>
                   </div>
-
-                  {availableSets.length > 0 && (
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5 border-l border-border/60 pl-3">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Wiki stage
-                      </span>
-                      <div className="flex max-h-[11.5rem] flex-col gap-1 overflow-y-auto overscroll-contain pr-0.5">
-                        <SubTab
-                          active={gearSet === "all"}
-                          onClick={() => patchSearch({ set: "all" })}
-                          label="All stages"
-                        />
-                        {availableSets.map((s) => (
-                          <SubTab
-                            key={s.key}
-                            active={gearSet === s.key}
-                            onClick={() => patchSearch({ set: gearSet === s.key ? "all" : s.key })}
-                            label={s.label}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </FilterCollapse>
         </div>
       )}
 
       {showSkillSub && (
-        <div className="mt-4 flex flex-wrap items-center gap-1.5">
-          <SubTab active={skill === "all"} onClick={() => patchSearch({ skill: "all" })} label="All items" />
-          {SKILLING_FILTERS.map((f) => (
-            <WikiIconTab
-              key={f.key}
-              active={skill === f.key}
-              onClick={() => patchSearch({ skill: skill === f.key ? "all" : f.key })}
-              label={f.label}
-              wikiIcon={f.wikiIcon}
+        <div className="mt-4">
+          <FilterCollapse
+            title="Skills"
+            open={skillPanelOpen}
+            onToggle={() => setSkillPanelOpen((open) => !open)}
+          >
+            <div className="mb-2">
+              <SubTab
+                active={skill === "all"}
+                onClick={() => patchSearch({ skill: "all" })}
+                label="All items"
+              />
+            </div>
+            <SkillsPanel
+              active={skill}
+              onSelect={(key) => patchSearch({ skill: key })}
+              levels={playerSkills}
             />
-          ))}
+          </FilterCollapse>
         </div>
       )}
 
