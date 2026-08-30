@@ -76,9 +76,9 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Noxious halberd": { str: 110 },
   "Ghrazi rapier": { str: 93 },
   "Inquisitor's mace": { str: 89 },
-  "Scythe of vitur (uncharged)": { str: 75 },
+  "Scythe of Vitur (uncharged)": { str: 75 },
   "Soulreaper axe": { str: 116 },
-  "Blade of saeldor (inactive)": { str: 89 },
+  "Blade of Saeldor (inactive)": { str: 89 },
   "Amulet of rancour": { str: 12 },
   "Torva full helm": { str: 8 },
   "Torva platebody": { str: 6 },
@@ -108,7 +108,7 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Toxic blowpipe (empty)": { rstr: 40 },
   "Twisted bow": { rstr: 20 },
   "Zaryte crossbow": { rstr: 0 },
-  "Bow of faerdhinen (inactive)": { rstr: 0 },
+  "Bow of Faerdhinen (inactive)": { rstr: 0 },
   "Dragon hunter crossbow": { rstr: 0 },
   "Armadyl crossbow": { rstr: 0 },
   "Dragon crossbow": { rstr: 0 },
@@ -136,9 +136,6 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Ahrim's robeskirt": { mdmg: 0 },
   "Ahrim's staff": { mdmg: 5 },
   "Tumeken's shadow (uncharged)": { mdmg: 0 },
-  "Harmonised nightmare staff": { mdmg: 15 },
-  "Volatile nightmare staff": { mdmg: 15 },
-  "Eldritch nightmare staff": { mdmg: 15 },
   "Sanguinesti staff (uncharged)": { mdmg: 0 },
   "Trident of the seas (full)": { mdmg: 0 },
   "Uncharged toxic trident": { mdmg: 0 },
@@ -146,6 +143,10 @@ export const ITEM_OFFENSIVE: Record<string, OffensiveBonus> = {
   "Seers ring": { mdmg: 0 },
   "Mage's book": { mdmg: 0 },
 };
+
+const ITEM_OFFENSIVE_LOWER: Record<string, OffensiveBonus> = Object.fromEntries(
+  Object.entries(ITEM_OFFENSIVE).map(([k, v]) => [k.toLowerCase(), v]),
+);
 
 /**
  * Returns the relevant offensive bonus for efficiency sorting.
@@ -157,7 +158,7 @@ export function offensiveBonus(
   tags: string[],
   combat: string,
 ): number {
-  const b = ITEM_OFFENSIVE[name];
+  const b = ITEM_OFFENSIVE[name] ?? ITEM_OFFENSIVE_LOWER[name.toLowerCase()];
   if (!b) return 0;
 
   const style =
