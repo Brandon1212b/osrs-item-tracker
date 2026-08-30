@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { ListFilter } from "lucide-react";
+import { ChevronRight, ListFilter } from "lucide-react";
 import { deriveIntensity } from "@/components/methods-ux";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { resolveActivityBand } from "@/lib/activity-methods";
 import { gp } from "@/lib/format";
+import { SKILLS_PANEL } from "@/lib/skills-panel";
 import {
   Select,
   SelectContent,
@@ -13,12 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
 import { MethodsGoalBar, useMethodsGoal } from "@/components/MethodsGoalBar";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
-import { FilterCollapse, SkillsPanel } from "@/routes/home-ui";
+import { SkillsPanel } from "@/routes/home-ui";
+import { WikiImage } from "@/components/WikiImage";
 import { useMethodSkillsNav } from "@/components/method-skills-nav";
 export type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 import type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
@@ -114,15 +122,18 @@ export function SkillingMethodsPanel({
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sectionOpen, setSectionOpen] = useState(true);
+  const [localSheetOpen, setLocalSheetOpen] = useState(false);
   const [listFiltersOpen, setListFiltersOpen] = useState(false);
   const skillsNav = useMethodSkillsNav();
+  const sheetOpen = skillsNav?.sheetOpen ?? localSheetOpen;
+  const setSheetOpen = skillsNav?.setSheetOpen ?? setLocalSheetOpen;
   const skillLevel = readSkillLevel(playerSkills, skillKey);
   const magicLevel = readSkillLevel(playerSkills, "magic");
   const { playerXp } = usePlayerLookup();
   const hiscoreXp = playerXp?.[skillKey] ?? playerXp?.[skillKey.toLowerCase()];
   const goal = useMethodsGoal(skillLevel, hiscoreXp);
   const isHerblore = skillKey === "herblore";
+  const skillMeta = SKILLS_PANEL.find((s) => s.key === skillKey);
 
   const ranked = useMemo(() => {
     const chemistryPrice = isHerblore ? buyPrice(rowsByName.get("Amulet of chemistry")) : null;
@@ -389,110 +400,141 @@ export function SkillingMethodsPanel({
 
   return (
     <section className="mt-3 space-y-3">
-      <FilterCollapse title="Skills" open={sectionOpen} onToggle={() => setSectionOpen((open) => !open)}>
-        <div className="flex flex-col gap-3">
-          {skillsNav && (
-            <div className="flex justify-center">
-              <SkillsPanel
-                active={skillsNav.active}
-                onSelect={skillsNav.onSelect}
-                levels={skillsNav.levels}
-                enabledKeys={skillsNav.enabledKeys}
-              />
-            </div>
-          )}
-
-          <MethodsGoalBar
-            view={goal.view}
-            onViewChange={goal.setView}
-            currentLevel={goal.currentLevel}
-            onCurrentLevelChange={goal.setCurrentLevel}
-            targetLevel={goal.targetLevel}
-            onTargetLevelChange={goal.setTargetLevel}
-            skillLabel={skillLabel}
-            trailing={
-              <button
-                type="button"
-                onClick={() => setListFiltersOpen((open) => !open)}
-                aria-expanded={listFiltersOpen}
-                className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
-                  listFiltersOpen || filtersActive
-                    ? "border-primary/70 bg-primary/15 text-primary"
-                    : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <ListFilter className="size-3.5" />
-                Filter
-              </button>
-            }
+      <button
+        type="button"
+        onClick={() => setSheetOpen(true)}
+        className="flex h-12 w-full items-center gap-2.5 rounded-lg border border-border/60 bg-secondary/25 px-3 text-left hover:bg-secondary/40"
+      >
+        {skillMeta && (
+          <WikiImage
+            icon={skillMeta.wikiIcon}
+            alt=""
+            width={22}
+            height={22}
+            lazy={false}
+            className="size-[22px] shrink-0"
           />
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium text-foreground">
+            {skillLabel}
+            {skillLevel != null ? ` · ${skillLevel}` : ""}
+          </span>
+          <span className="block text-[11px] text-muted-foreground">Skills, goal & rate</span>
+        </span>
+        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{gp(g)}/h</span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+      </button>
 
-          {listFiltersOpen && (
-            <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-secondary/20 p-2">
-              <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-                <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-                  <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-                  <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
-                  <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
-                  <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
-                  <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
-                </SelectContent>
-              </Select>
+      <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
+        <DrawerContent className="mx-auto max-w-lg">
+          <DrawerHeader className="pb-1 text-left">
+            <DrawerTitle>Skills</DrawerTitle>
+          </DrawerHeader>
+          <div className="max-h-[min(78dvh,42rem)] space-y-3 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            {skillsNav && (
+              <div className="flex justify-center">
+                <SkillsPanel
+                  active={skillsNav.active}
+                  onSelect={skillsNav.onSelect}
+                  levels={skillsNav.levels}
+                  enabledKeys={skillsNav.enabledKeys}
+                />
+              </div>
+            )}
 
-              {categories.length > 1 && (
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <MethodsGoalBar
+              view={goal.view}
+              onViewChange={goal.setView}
+              currentLevel={goal.currentLevel}
+              onCurrentLevelChange={goal.setCurrentLevel}
+              targetLevel={goal.targetLevel}
+              onTargetLevelChange={goal.setTargetLevel}
+              skillLabel={skillLabel}
+              trailing={
+                <button
+                  type="button"
+                  onClick={() => setListFiltersOpen((open) => !open)}
+                  aria-expanded={listFiltersOpen}
+                  className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
+                    listFiltersOpen || filtersActive
+                      ? "border-primary/70 bg-primary/15 text-primary"
+                      : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <ListFilter className="size-3.5" />
+                  Filter
+                </button>
+              }
+            />
+
+            {listFiltersOpen && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-secondary/20 p-2">
+                <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
                   <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-                    <SelectValue placeholder="Activity type" />
+                    <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
+                    <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                    <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+                    <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+                    <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+                    <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
 
-              {isHerblore && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-muted-foreground">Amulet</span>
-                    <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
-                      <SelectTrigger className="h-8 w-[8.5rem] text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="chemistry">Chemistry</SelectItem>
-                        <SelectItem value="alchemist">Alchemist</SelectItem>
-                      </SelectContent>
-                    </Select>
+                {categories.length > 1 && (
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {isHerblore && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">Amulet</span>
+                      <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                        <SelectTrigger className="h-8 w-[8.5rem] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="alchemist">Alchemist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={goggles}
+                        onChange={(e) => setGoggles(e.target.checked)}
+                        className="size-3.5 rounded border-border"
+                      />
+                      Amylase goggles
+                    </label>
                   </div>
-                  <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={goggles}
-                      onChange={(e) => setGoggles(e.target.checked)}
-                      className="size-3.5 rounded border-border"
-                    />
-                    Amylase goggles
-                  </label>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          <div className="border-t border-border/40 pt-2.5">
-            <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
+            <div className="border-t border-border/40 pt-2.5">
+              <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
+            </div>
           </div>
-        </div>
-      </FilterCollapse>
+        </DrawerContent>
+      </Drawer>
 
       <div className="space-y-2">
         {filtered.map((r, i) => (
