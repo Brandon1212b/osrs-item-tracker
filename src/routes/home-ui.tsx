@@ -1,6 +1,6 @@
-import {
-  GEAR_SLOT_FILTERS,
-} from "@/lib/osrs-catalog";
+import { ChevronDown } from "lucide-react";
+import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
+import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
 
 export function EquipmentPaperDoll({
@@ -41,6 +41,95 @@ export function EquipmentPaperDoll({
           />
         </button>
       ))}
+    </div>
+  );
+}
+
+export function SkillsPanel({
+  active,
+  onSelect,
+  levels,
+  enabledKeys,
+}: {
+  active: string;
+  onSelect: (key: string) => void;
+  levels?: Record<string, number> | null;
+  enabledKeys?: ReadonlySet<string>;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-1">
+      {SKILLS_PANEL.map((s) => {
+        const enabled = !enabledKeys || enabledKeys.has(s.key);
+        const selected = enabled && active === s.key;
+        const level = levels?.[s.key];
+        return (
+          <button
+            key={s.key}
+            type="button"
+            title={s.label}
+            aria-label={level != null ? `${s.label} ${level}` : s.label}
+            aria-pressed={selected}
+            disabled={!enabled}
+            onClick={() => {
+              if (!enabled) return;
+              onSelect(active === s.key ? "all" : s.key);
+            }}
+            className={`flex items-center gap-1.5 rounded-md border px-1.5 py-1 text-left transition-colors ${
+              !enabled
+                ? "cursor-default border-border/30 bg-secondary/10 opacity-40"
+                : selected
+                  ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
+                  : "border-border/50 bg-background/60 hover:bg-secondary/60"
+            }`}
+          >
+            <WikiImage
+              icon={s.wikiIcon}
+              alt=""
+              width={20}
+              height={20}
+              lazy={false}
+              className="size-5 shrink-0"
+              draggable={false}
+            />
+            <span className="min-w-0 flex-1 truncate text-[10px] font-medium text-foreground/90">
+              {level != null ? level : s.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function FilterCollapse({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-border/50 bg-secondary/15">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left"
+      >
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          {title}
+        </span>
+        <ChevronDown
+          className={`size-4 shrink-0 text-muted-foreground transition-transform ${
+            open ? "rotate-0" : "-rotate-90"
+          }`}
+        />
+      </button>
+      {open && <div className="border-t border-border/40 p-2.5 pt-2">{children}</div>}
     </div>
   );
 }
