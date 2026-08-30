@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, type ComponentType } from "react";
+import { useEffect, useMemo, type ComponentType } from "react";
 import { Loader2, User, X } from "lucide-react";
 import { z } from "zod";
 
@@ -28,6 +28,7 @@ import { WikiSweepButton } from "@/components/WikiSweepButton";
 import { Input } from "@/components/ui/input";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
+import { readLastSkill, writeLastSkill } from "@/lib/tab-memory";
 
 const DEFAULT_G = 2_000_000;
 
@@ -166,8 +167,38 @@ function MethodsPage() {
     });
   };
 
+  useEffect(() => {
+    if (skill) {
+      writeLastSkill(skill);
+      return;
+    }
+    const last = readLastSkill();
+    if (last && METHOD_SKILLS.some((s) => s.key === last)) {
+      patchSearch({ skill: last });
+      return;
+    }
+    if (!playerSkills) return;
+    let bestKey = "";
+    let bestLevel = -1;
+    for (const s of METHOD_SKILLS) {
+      const level = playerSkills[s.key];
+      if (level != null && level > bestLevel) {
+        bestLevel = level;
+        bestKey = s.key;
+      }
+    }
+    if (bestKey) patchSearch({ skill: bestKey });
+  }, [skill, playerSkills]);
+
+  const orderedSkills = useMemo(() => {
+    if (!skill) return METHOD_SKILLS;
+    const active = METHOD_SKILLS.find((s) => s.key === skill);
+    if (!active) return METHOD_SKILLS;
+    return [active, ...METHOD_SKILLS.filter((s) => s.key !== skill)];
+  }, [skill]);
+
   return (
-    <main className="mx-auto max-w-6xl px-3 pb-16 pt-0 sm:px-4">
+    <main className="mx-auto max-w-6xl px-3 pb-16 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-4">
       <div className="flex flex-col gap-2 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
@@ -217,12 +248,12 @@ function MethodsPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        {METHOD_SKILLS.map((s) => (
+      <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {orderedSkills.map((s) => (
           <WikiIconTab
             key={s.key}
             active={skill === s.key}
-            onClick={() => patchSearch({ skill: skill === s.key ? "" : s.key })}
+            onClick={() => patchSearch({ skill: skill === s.key ? skill : s.key })}
             label={s.label}
             wikiIcon={s.wikiIcon}
             level={playerSkills?.[s.key]}
@@ -286,7 +317,7 @@ function WikiIconTab({
       title={title}
       aria-label={title}
       aria-pressed={active}
-      className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-full border px-1.5 transition-colors ${
+      className={`inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-full border px-2 transition-colors ${
         active
           ? "border-primary/70 bg-primary/15 ring-1 ring-primary/40"
           : "border-border/60 bg-secondary/30 hover:bg-secondary/50"

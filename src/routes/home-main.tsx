@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  Search,
-  User,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import {
   GEAR_COMBAT_FILTERS,
   GEAR_TIER_FILTERS,
@@ -92,66 +87,19 @@ export function HomeMain({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-0 sm:px-6">
-      <div className="sticky top-0 z-30 -mx-4 flex flex-col gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
-          <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[12rem]">
-            <form
-              className="flex items-center gap-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                loadRsn(rsnDraft);
-              }}
-            >
-              <div className="relative min-w-0 flex-1">
-                <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={rsnDraft}
-                  onChange={(e) => setRsnDraft(e.target.value)}
-                  placeholder="RSN…"
-                  className="h-9 pl-8 pr-8 text-base"
-                  aria-label="Old School RuneScape username"
-                  autoComplete="username"
-                />
-                {activeRsn && (
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label="Clear player"
-                    onClick={clearRsn}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                )}
-              </div>
-              <button
-                type="submit"
-                disabled={!rsnDraft.trim() || playerQuery.isFetching}
-                className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/60 px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
-              >
-                {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
-              </button>
-            </form>
-            {playerQuery.isError && (
-              <p className="text-[11px] text-destructive">
-                {(playerQuery.error as Error)?.message ?? "Lookup failed"}
-              </p>
-            )}
-          </div>
-
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(e) => patchSearch({ q: e.target.value })}
-                placeholder="Search items…"
-                className="pl-9"
-              />
-            </div>
-            <HomeFiltersButton onClick={() => setFiltersOpen(true)} />
-          </div>
+    <main className="mx-auto w-full max-w-7xl px-4 pb-6 pt-0 sm:px-6">
+      <div className="sticky top-0 z-30 -mx-4 flex items-center gap-2 border-b border-border/40 bg-background/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6 pointer-events-auto isolate">
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => patchSearch({ q: e.target.value })}
+            placeholder="Search items…"
+            className="pl-9"
+            aria-label="Search items"
+          />
         </div>
+        <HomeFiltersButton activeRsn={activeRsn} onClick={() => setFiltersOpen(true)} />
       </div>
 
       {showGearSub && (
@@ -336,6 +284,12 @@ export function HomeMain({
         supplyType={supplyType}
         sort={sort}
         range={range}
+        rsnDraft={rsnDraft}
+        setRsnDraft={setRsnDraft}
+        activeRsn={activeRsn}
+        playerQuery={playerQuery}
+        loadRsn={loadRsn}
+        clearRsn={clearRsn}
         onFilterChange={handleFilterChange}
         onCombatChange={(next) => patchSearch({ filter: "gear", combat: next, set: "all" })}
         onSkillChange={(next) => patchSearch({ filter: "skilling", skill: next })}

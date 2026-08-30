@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
+import { ChevronLeft, ExternalLink, RefreshCw } from "lucide-react";
 import { fetchItemDetail } from "@/lib/osrs.functions";
 import type { EquipmentStats, RangeKey } from "@/lib/osrs.server";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { PriceChart } from "@/components/PriceChart";
 import { WikiImage } from "@/components/WikiImage";
 import { gp, formatCompact, signalOf, timeAgo } from "@/lib/format";
+import { lastTabSearch } from "@/lib/tab-memory";
 
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: "1d", label: "24h" },
@@ -87,19 +88,37 @@ function ItemPage() {
   const goBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.history.back();
-    } else {
-      void router.navigate({ to: "/", search: {} as never });
+      return;
     }
+    void router.navigate({ to: "/", search: lastTabSearch("/") as never });
   };
 
+  useEffect(() => {
+    let startX = 0;
+    const onStart = (e: TouchEvent) => {
+      startX = e.touches[0]?.clientX ?? 0;
+    };
+    const onEnd = (e: TouchEvent) => {
+      const x = e.changedTouches[0]?.clientX ?? 0;
+      if (startX <= 28 && x - startX >= 72) goBack();
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd);
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [router]);
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-8 sm:px-6">
+    <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6">
       <button
         type="button"
         onClick={goBack}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        aria-label="Back"
+        className="-ml-2 inline-flex size-11 items-center justify-center rounded-full text-foreground hover:bg-secondary/60"
       >
-        <ArrowLeft className="size-4" /> Back to all items
+        <ChevronLeft className="size-6" />
       </button>
 
       {detail.isLoading && <div className="panel mt-4 h-[520px] animate-pulse opacity-60" />}
@@ -110,7 +129,7 @@ function ItemPage() {
 
       {row && d && (
         <>
-          <header className="panel mt-4 flex flex-wrap items-start gap-4 p-5 sm:p-6">
+          <header className="panel mt-2 flex flex-wrap items-start gap-4 p-5 sm:p-6">
             <WikiImage
               icon={row.icon}
               alt={row.name}
@@ -289,21 +308,9 @@ function EquipmentPanel({ eq }: { eq: EquipmentStats }) {
       </div>
 
       <div className="mt-2 space-y-1.5">
-        <BonusRow
-          headerIcon={BONUS_ICONS.attack}
-          headerLabel="Attack"
-          cells={attack}
-        />
-        <BonusRow
-          headerIcon={BONUS_ICONS.defence}
-          headerLabel="Defence"
-          cells={defence}
-        />
-        <BonusRow
-          headerIcon={BONUS_ICONS.other}
-          headerLabel="Other"
-          cells={other}
-        />
+        <BonusRow headerIcon={BONUS_ICONS.attack} headerLabel="Attack" cells={attack} />
+        <BonusRow headerIcon={BONUS_ICONS.defence} headerLabel="Defence" cells={defence} />
+        <BonusRow headerIcon={BONUS_ICONS.other} headerLabel="Other" cells={other} />
       </div>
     </section>
   );
