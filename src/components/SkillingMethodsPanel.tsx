@@ -18,6 +18,7 @@ import { getActivityType } from "@/components/activity-type";
 import { MethodsGoalBar, useMethodsGoal } from "@/components/MethodsGoalBar";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
+import { FilterCollapse } from "@/routes/home-ui";
 export type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 import type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 
@@ -114,6 +115,7 @@ export function SkillingMethodsPanel({
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [filtersOpen, setFiltersOpen] = useState(true);
   const skillLevel = readSkillLevel(playerSkills, skillKey);
   const magicLevel = readSkillLevel(playerSkills, "magic");
   const { playerXp } = usePlayerLookup();
@@ -385,78 +387,86 @@ export function SkillingMethodsPanel({
 
   return (
     <section className="mt-3 space-y-3">
-      <div className="flex flex-col gap-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-            <SelectTrigger className="h-8 w-[11.5rem] text-xs">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-              <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-              <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
-              <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
-              <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
-              <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {categories.length > 1 && (
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="h-8 w-[12rem] text-xs">
-                <SelectValue placeholder="Activity type" />
+      <FilterCollapse
+        title="Method filters"
+        open={filtersOpen}
+        onToggle={() => setFiltersOpen((open) => !open)}
+      >
+        <div className="flex flex-col gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+              <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
+                <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
+                <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+                <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+                <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+                <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
               </SelectContent>
             </Select>
-          )}
-        </div>
 
-        <MethodsGoalBar
-          view={goal.view}
-          onViewChange={goal.setView}
-          currentLevel={goal.currentLevel}
-          onCurrentLevelChange={goal.setCurrentLevel}
-          targetLevel={goal.targetLevel}
-          onTargetLevelChange={goal.setTargetLevel}
-          skillLabel={skillLabel}
-        />
-
-        {isHerblore && (
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground">Amulet</span>
-              <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
-                <SelectTrigger className="h-8 w-[8.5rem] text-xs">
-                  <SelectValue />
+            {categories.length > 1 ? (
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                  <SelectValue placeholder="Activity type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="chemistry">Chemistry</SelectItem>
-                  <SelectItem value="alchemist">Alchemist</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-            <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={goggles}
-                onChange={(e) => setGoggles(e.target.checked)}
-                className="size-3.5 rounded border-border"
-              />
-              Amylase goggles
-            </label>
+            ) : (
+              <div />
+            )}
           </div>
-        )}
 
-        <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
-      </div>
+          <MethodsGoalBar
+            view={goal.view}
+            onViewChange={goal.setView}
+            currentLevel={goal.currentLevel}
+            onCurrentLevelChange={goal.setCurrentLevel}
+            targetLevel={goal.targetLevel}
+            onTargetLevelChange={goal.setTargetLevel}
+            skillLabel={skillLabel}
+          />
+
+          {isHerblore && (
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-muted-foreground">Amulet</span>
+                <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                  <SelectTrigger className="h-8 w-[8.5rem] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="chemistry">Chemistry</SelectItem>
+                    <SelectItem value="alchemist">Alchemist</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={goggles}
+                  onChange={(e) => setGoggles(e.target.checked)}
+                  className="size-3.5 rounded border-border"
+                />
+                Amylase goggles
+              </label>
+            </div>
+          )}
+
+          <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
+        </div>
+      </FilterCollapse>
 
       <div className="space-y-2">
         {filtered.map((r, i) => (
