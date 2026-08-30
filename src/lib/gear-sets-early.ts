@@ -30,13 +30,13 @@ export const GEAR_SETS_EARLY: GearSetRow[] = [
     key: "pre-rfd",
     label: "Pre-RfD",
     tier: "mid",
-    items: ["Abyssal whip", "Amulet of fury", "Zamorakian hasta", "Zombie axe", "Obsidian helmet", "Obsidian platebody", "Obsidian platelegs", "Berserker necklace", "Toktz-xil-ak", "Toktz-xil-ek", "Ursine chainmace", "Helm of neitiznot", "Dragon boots", "Dorgeshuun crossbow", "Bone bolts", "Magic shortbow", "Rune arrow", "Rune crossbow", "Broad bolts"],
+    items: ["Abyssal whip", "Amulet of fury", "Zamorakian hasta", "Zombie axe", "Obsidian helmet", "Obsidian platebody", "Obsidian platelegs", "Berserker necklace", "Toktz-xil-ak", "Toktz-xil-ek", "Ursine chainmace (u)", "Helm of neitiznot", "Dragon boots", "Dorgeshuun crossbow", "Bone bolts", "Magic shortbow", "Rune arrow", "Rune crossbow", "Broad bolts"],
   },
   {
     key: "post-rfd",
     label: "Post-RfD",
     tier: "mid",
-    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Zamorakian hasta", "Zombie axe", "Berserker ring", "Ursine chainmace", "Dragon boots", "Helm of neitiznot", "Dharok's helm", "Dharok's platebody", "Dharok's platelegs", "Dharok's greataxe", "Magic shortbow", "Rune arrow", "Amethyst arrow", "Rune crossbow", "Broad bolts", "Diamond bolts (e)", "Ruby bolts (e)", "Infinity hat", "Infinity top", "Infinity bottoms", "Infinity gloves", "Infinity boots", "Bloodbark helm", "Bloodbark body", "Bloodbark legs", "Bloodbark gauntlets", "Bloodbark boots", "Dagon'hai hat", "Dagon'hai robe top", "Dagon'hai robe bottom", "Warped sceptre", "Iban's staff (u)"],
+    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Zamorakian hasta", "Zombie axe", "Berserker ring", "Ursine chainmace (u)", "Dragon boots", "Helm of neitiznot", "Dharok's helm", "Dharok's platebody", "Dharok's platelegs", "Dharok's greataxe", "Magic shortbow", "Rune arrow", "Amethyst arrow", "Rune crossbow", "Broad bolts", "Diamond bolts (e)", "Ruby bolts (e)", "Infinity hat", "Infinity top", "Infinity bottoms", "Infinity gloves", "Infinity boots", "Bloodbark helm", "Bloodbark body", "Bloodbark legs", "Bloodbark gauntlets", "Bloodbark boots", "Dagon'hai hat", "Dagon'hai robe top", "Dagon'hai robe bottom", "Warped sceptre (uncharged)", "Iban's staff (u)"],
   },
   {
     key: "barrows",
@@ -64,13 +64,13 @@ export const GEAR_SETS_EARLY: GearSetRow[] = [
     label: "65+",
     tier: "mid",
     combat: "melee",
-    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Berserker ring", "Dragon boots", "Helm of neitiznot", "Zamorakian hasta", "Zombie axe", "Ursine chainmace"],
+    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Berserker ring", "Dragon boots", "Helm of neitiznot", "Zamorakian hasta", "Zombie axe", "Ursine chainmace (u)"],
   },
   {
     key: "lvl70",
     label: "70+",
     tier: "mid",
-    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Berserker ring", "Dragon boots", "Helm of neitiznot", "Dharok's helm", "Dharok's platebody", "Dharok's platelegs", "Dharok's greataxe", "Obsidian helmet", "Obsidian platebody", "Obsidian platelegs", "Berserker necklace", "Rune crossbow", "Broad bolts", "Diamond bolts (e)", "Ruby bolts (e)", "Amethyst arrow", "Magic shortbow", "Rune arrow", "Steel cannonball", "Red chinchompa", "Black chinchompa", "Ahrim's hood", "Ahrim's robetop", "Ahrim's robeskirt", "Ahrim's staff", "Ancient sceptre", "Trident of the seas (full)", "Uncharged trident", "Occult necklace", "Seers ring", "Mage's book", "Tome of fire", "Tome of water", "Tome of earth", "Blue moon helm", "Blue moon chestplate", "Blue moon tassets"],
+    items: ["Abyssal whip", "Kraken tentacle", "Amulet of fury", "Berserker ring", "Dragon boots", "Helm of neitiznot", "Dharok's helm", "Dharok's platebody", "Dharok's platelegs", "Dharok's greataxe", "Obsidian helmet", "Obsidian platebody", "Obsidian platelegs", "Berserker necklace", "Rune crossbow", "Broad bolts", "Diamond bolts (e)", "Ruby bolts (e)", "Amethyst arrow", "Magic shortbow", "Rune arrow", "Steel cannonball", "Red chinchompa", "Black chinchompa", "Ahrim's hood", "Ahrim's robetop", "Ahrim's robeskirt", "Ahrim's staff", "Ancient sceptre", "Trident of the seas (full)", "Uncharged trident", "Occult necklace", "Seers ring", "Mage's book", "Tome of Fire (empty)", "Tome of Water (empty)", "Tome of Earth (empty)", "Blue moon helm", "Blue moon chestplate", "Blue moon tassets"],
   },
   {
     key: "ahrims",
