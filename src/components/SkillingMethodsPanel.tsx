@@ -5,7 +5,6 @@ import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { resolveActivityBand } from "@/lib/activity-methods";
-import { gp } from "@/lib/format";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import {
   Select,
@@ -23,6 +22,7 @@ import {
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
 import { MethodsViewToggle, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { MoneyMakingSlider } from "@/components/MoneyMakingSlider";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
 import { SkillsPanel } from "@/routes/home-ui";
@@ -556,29 +556,5 @@ export function SkillingMethodsPanel({
         )}
       </div>
     </section>
-  );
-}
-
-function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  return (
-    <div className="w-full space-y-1">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium text-foreground">Your rate</p>
-          <p className="text-[11px] text-muted-foreground">Opportunity cost used to rank methods.</p>
-        </div>
-        <span className="shrink-0 text-[12px] font-semibold tabular-nums text-foreground">{gp(value)}/h</span>
-      </div>
-      <input
-        type="range"
-        min={G_MIN}
-        max={G_MAX}
-        step={G_STEP}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-primary"
-        aria-label="Your money-making rate per hour"
-      />
-    </div>
   );
 }
