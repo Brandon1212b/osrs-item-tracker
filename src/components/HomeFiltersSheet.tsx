@@ -2,8 +2,8 @@ import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import {
   Popover,
-  PopoverAnchor,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import {
@@ -71,7 +71,7 @@ export function HomeFiltersButton({
   marked,
   className = "",
 }: {
-  onClick: () => void;
+  onClick?: () => void;
   activeRsn?: string | null;
   marked?: boolean;
   className?: string;
@@ -138,16 +138,16 @@ export function HomeFiltersSheet({
 }) {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverAnchor asChild>
-        <HomeFiltersButton activeRsn={activeRsn} onClick={() => onOpenChange(!open)} />
-      </PopoverAnchor>
+      <PopoverTrigger asChild>
+        <HomeFiltersButton activeRsn={activeRsn} />
+      </PopoverTrigger>
       <PopoverContent
         align="end"
         side="bottom"
         sideOffset={8}
         collisionPadding={12}
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[min(22rem,calc(100vw-1.5rem))] p-3"
+        className="z-[80] w-[min(22rem,calc(100vw-1.5rem))] p-3"
       >
         <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto pr-0.5">
           <p className="text-sm font-semibold text-foreground">Filters</p>
