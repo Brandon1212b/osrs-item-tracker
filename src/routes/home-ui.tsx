@@ -1,13 +1,8 @@
+import { useEffect, useRef } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
-import {
-  Popover,
-  PopoverArrow,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 export function EquipmentPaperDoll({
   active,
@@ -170,6 +165,25 @@ export function SkillsPanel({
   );
 }
 
+function useDismissOnOutside(open: boolean, onClose: () => void, rootRef: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: PointerEvent) => {
+      const el = rootRef.current;
+      if (!el) return;
+      if (el.contains(e.target as Node)) return;
+      onClose();
+    };
+    const id = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onDoc, true);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("pointerdown", onDoc, true);
+    };
+  }, [open, onClose, rootRef]);
+}
+
 export function FilterPopover({
   open,
   onOpenChange,
@@ -189,34 +203,32 @@ export function FilterPopover({
   contentClassName?: string;
   children: React.ReactNode;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useDismissOnOutside(open, () => onOpenChange(false), rootRef);
+
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={ariaLabel ?? label}
-          aria-expanded={open}
-          className={`flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left ${className}`}
-        >
-          {icon}
-          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
-          <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground">
-            <ChevronRight className={`size-4 transition-transform ${open ? "rotate-90" : ""}`} />
-          </span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        side="bottom"
-        sideOffset={8}
-        collisionPadding={12}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className={`z-[80] w-auto max-w-[calc(100vw-1.5rem)] p-3 ${contentClassName}`}
+    <div ref={rootRef} className={`relative ${className}`}>
+      <button
+        type="button"
+        aria-label={ariaLabel ?? label}
+        aria-expanded={open}
+        onClick={() => onOpenChange(!open)}
+        className="flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left"
       >
-        <PopoverArrow className="fill-popover" />
-        {children}
-      </PopoverContent>
-    </Popover>
+        {icon}
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
+        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+          <ChevronRight className={`size-4 transition-transform ${open ? "rotate-90" : ""}`} />
+        </span>
+      </button>
+      {open ? (
+        <div
+          className={`absolute left-0 top-full z-[80] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
+        >
+          {children}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
