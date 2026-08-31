@@ -74,6 +74,39 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
   };
 }
 
+export function MethodsViewToggle({
+  view,
+  onViewChange,
+  targetLevel,
+}: {
+  view: MethodsMetricView;
+  onViewChange: (v: MethodsMetricView) => void;
+  targetLevel: number;
+}) {
+  return (
+    <div className="inline-flex h-8 shrink-0 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
+      <button
+        type="button"
+        onClick={() => onViewChange("rate")}
+        className={`h-7 rounded-full px-2 text-[11px] font-medium ${
+          view === "rate" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        XP/h
+      </button>
+      <button
+        type="button"
+        onClick={() => onViewChange("goal")}
+        className={`h-7 rounded-full px-2 text-[11px] font-medium ${
+          view === "goal" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        Train to {targetLevel}
+      </button>
+    </div>
+  );
+}
+
 function MiniStepper({
   value,
   min,
@@ -122,8 +155,6 @@ function MiniStepper({
 }
 
 export function MethodsGoalBar({
-  view,
-  onViewChange,
   currentLevel,
   onCurrentLevelChange,
   targetLevel,
@@ -131,66 +162,36 @@ export function MethodsGoalBar({
   skillLabel,
   trailing,
 }: {
-  view: MethodsMetricView;
-  onViewChange: (v: MethodsMetricView) => void;
   currentLevel: number;
   onCurrentLevelChange: (n: number) => void;
   targetLevel: number;
   onTargetLevelChange: (n: number) => void;
   skillLabel: string;
   trailing?: ReactNode;
-  currentXp?: number;
-  xpRemaining?: number;
-  usingExactXp?: boolean;
 }) {
   return (
-    <div className="flex w-full flex-col gap-2 text-[11px] text-muted-foreground">
-      <div className="flex items-center gap-2">
-        <div className="inline-flex h-8 flex-1 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
-          <button
-            type="button"
-            onClick={() => onViewChange("rate")}
-            className={`h-7 flex-1 rounded-full px-2 text-[11px] font-medium ${
-              view === "rate" ? "bg-primary/15 text-primary" : "hover:text-foreground"
-            }`}
-          >
-            XP/h
-          </button>
-          <button
-            type="button"
-            onClick={() => onViewChange("goal")}
-            className={`h-7 flex-1 rounded-full px-2 text-[11px] font-medium ${
-              view === "goal" ? "bg-primary/15 text-primary" : "hover:text-foreground"
-            }`}
-          >
-            Train to {targetLevel}
-          </button>
-        </div>
-        {trailing}
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5">
-          <span>Now</span>
-          <MiniStepper
-            value={currentLevel}
-            min={1}
-            max={MAX_SKILL_LEVEL}
-            onChange={onCurrentLevelChange}
-            ariaLabel={`Current ${skillLabel} level`}
-          />
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span>Target</span>
-          <MiniStepper
-            value={targetLevel}
-            min={2}
-            max={MAX_SKILL_LEVEL}
-            onChange={onTargetLevelChange}
-            ariaLabel="Target skill level"
-          />
-        </span>
-      </div>
+    <div className="flex w-full items-center justify-between gap-3 text-[11px] text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        <span>Now</span>
+        <MiniStepper
+          value={currentLevel}
+          min={1}
+          max={MAX_SKILL_LEVEL}
+          onChange={onCurrentLevelChange}
+          ariaLabel={`Current ${skillLabel} level`}
+        />
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span>Target</span>
+        <MiniStepper
+          value={targetLevel}
+          min={2}
+          max={MAX_SKILL_LEVEL}
+          onChange={onTargetLevelChange}
+          ariaLabel="Target skill level"
+        />
+      </span>
+      {trailing}
     </div>
   );
 }
