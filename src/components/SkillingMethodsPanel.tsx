@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/drawer";
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
-import { MethodsGoalBar, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { MethodsGoalBar, MethodsViewToggle, useMethodsGoal } from "@/components/MethodsGoalBar";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
 import { SkillsPanel } from "@/routes/home-ui";
@@ -400,31 +400,41 @@ export function SkillingMethodsPanel({
 
   return (
     <section className="mt-3 space-y-3">
-      <button
-        type="button"
-        onClick={() => setSheetOpen(true)}
-        className="flex h-12 w-full items-center gap-2.5 rounded-lg border border-border/60 bg-secondary/25 px-3 text-left hover:bg-secondary/40"
-      >
-        {skillMeta && (
-          <WikiImage
-            icon={skillMeta.wikiIcon}
-            alt=""
-            width={22}
-            height={22}
-            lazy={false}
-            className="size-[22px] shrink-0"
-          />
-        )}
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-foreground">
+      <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          {skillMeta && (
+            <WikiImage
+              icon={skillMeta.wikiIcon}
+              alt=""
+              width={22}
+              height={22}
+              lazy={false}
+              className="size-[22px] shrink-0"
+            />
+          )}
+          <span className="min-w-0 truncate text-sm font-medium text-foreground">
             {skillLabel}
             {skillLevel != null ? ` · ${skillLevel}` : ""}
           </span>
-          <span className="block text-[11px] text-muted-foreground">Skills, goal & rate</span>
-        </span>
-        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{gp(g)}/h</span>
-        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-      </button>
+        </button>
+        <MethodsViewToggle
+          view={goal.view}
+          onViewChange={goal.setView}
+          targetLevel={goal.targetLevel}
+        />
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-label="Open skills"
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
 
       <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
         <DrawerContent className="mx-auto max-w-lg">
@@ -444,8 +454,6 @@ export function SkillingMethodsPanel({
             )}
 
             <MethodsGoalBar
-              view={goal.view}
-              onViewChange={goal.setView}
               currentLevel={goal.currentLevel}
               onCurrentLevelChange={goal.setCurrentLevel}
               targetLevel={goal.targetLevel}
