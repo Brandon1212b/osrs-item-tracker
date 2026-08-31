@@ -1,11 +1,10 @@
 import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import {
   GEAR_COMBAT_FILTERS,
@@ -72,7 +71,7 @@ export function HomeFiltersButton({
   marked,
   className = "",
 }: {
-  onClick: () => void;
+  onClick?: () => void;
   activeRsn?: string | null;
   marked?: boolean;
   className?: string;
@@ -138,12 +137,20 @@ export function HomeFiltersSheet({
   onRangeChange: (next: RangeKey) => void;
 }) {
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="mx-auto max-w-lg">
-        <DrawerHeader className="pb-1 text-left">
-          <DrawerTitle>Filters</DrawerTitle>
-        </DrawerHeader>
-        <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
+        <HomeFiltersButton activeRsn={activeRsn} />
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        collisionPadding={12}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="z-[80] w-[min(22rem,calc(100vw-1.5rem))] p-3"
+      >
+        <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto pr-0.5">
+          <p className="text-sm font-semibold text-foreground">Filters</p>
           <section className="space-y-2">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Player
@@ -271,7 +278,7 @@ export function HomeFiltersSheet({
             </div>
           </section>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </PopoverContent>
+    </Popover>
   );
 }

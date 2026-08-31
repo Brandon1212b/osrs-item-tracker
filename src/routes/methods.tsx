@@ -25,22 +25,17 @@ import { HunterMethodsPanel } from "@/components/HunterMethods";
 import { SailingMethodsPanel } from "@/components/SailingMethods";
 import { WikiSweepButton } from "@/components/WikiSweepButton";
 import { Input } from "@/components/ui/input";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import { readLastSkill, writeLastSkill } from "@/lib/tab-memory";
-import { SkillsPanel } from "./home-ui";
+import { FilterPopover, SkillsPanel } from "./home-ui";
 import { MethodSkillsNavProvider } from "@/components/method-skills-nav";
 
 const DEFAULT_G = 2_000_000;
+const DEFAULT_SKILL = "crafting";
 
 const methodsSearchSchema = z.object({
-  skill: z.string().catch(""),
+  skill: z.string().catch(DEFAULT_SKILL),
   g: z.coerce.number().catch(DEFAULT_G),
 });
 
@@ -137,26 +132,31 @@ function MethodsPage() {
   };
 
   useEffect(() => {
-    if (skill) {
+    if (skill && METHOD_SKILL_KEYS.has(skill)) {
       writeLastSkill(skill);
       return;
     }
+    if (playerSkills) {
+      let bestKey = "";
+      let bestLevel = -1;
+      for (const s of METHOD_SKILLS) {
+        const level = playerSkills[s.key];
+        if (level != null && level > bestLevel) {
+          bestLevel = level;
+          bestKey = s.key;
+        }
+      }
+      if (bestKey) {
+        patchSearch({ skill: bestKey });
+        return;
+      }
+    }
     const last = readLastSkill();
-    if (last && METHOD_SKILLS.some((s) => s.key === last)) {
+    if (last && METHOD_SKILL_KEYS.has(last)) {
       patchSearch({ skill: last });
       return;
     }
-    if (!playerSkills) return;
-    let bestKey = "";
-    let bestLevel = -1;
-    for (const s of METHOD_SKILLS) {
-      const level = playerSkills[s.key];
-      if (level != null && level > bestLevel) {
-        bestLevel = level;
-        bestKey = s.key;
-      }
-    }
-    if (bestKey) patchSearch({ skill: bestKey });
+    patchSearch({ skill: DEFAULT_SKILL });
   }, [skill, playerSkills]);
 
   const skillsNav = {
@@ -227,30 +227,27 @@ function MethodsPage() {
 
         {!SelectedPanel && (
           <>
-            <button
-              type="button"
-              onClick={() => setSheetOpen(true)}
-              className="flex h-11 w-full items-center justify-center rounded-lg border border-border/60 bg-secondary/30 text-sm font-medium hover:bg-secondary/50"
+            <FilterPopover
+              open={sheetOpen}
+              onOpenChange={setSheetOpen}
+              label="Choose a skill"
+              ariaLabel="Open skills"
             >
-              Choose a skill
-            </button>
-            <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
-              <DrawerContent className="mx-auto max-w-lg">
-                <DrawerHeader className="pb-1 text-left">
-                  <DrawerTitle>Skills</DrawerTitle>
-                </DrawerHeader>
-                <div className="max-h-[min(78dvh,40rem)] overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-                  <div className="flex justify-center pb-3">
-                    <SkillsPanel
-                      active={skill}
-                      onSelect={skillsNav.onSelect}
-                      levels={playerSkills}
-                      enabledKeys={METHOD_SKILL_KEYS}
-                    />
-                  </div>
-                </div>
-              </DrawerContent>
-            </Drawer>
+              <div className="flex justify-center">
+                <SkillsPanel
+                  active={skill}
+                  onSelect={skillsNav.onSelect}
+                  levels={playerSkills}
+                  enabledKeys={METHOD_SKILL_KEYS}
+                />
+              </div>
+            </FilterPopover>
+            <div className="mt-10 rounded-lg border border-dashed border-border/60 bg-secondary/20 px-4 py-10 text-center">
+              <p className="text-sm font-medium text-foreground">Pick a skill</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Open the skills popup to view training methods ranked by cost and XP.
+              </p>
+            </div>
           </>
         )}
 
@@ -265,15 +262,6 @@ function MethodsPage() {
           <p className="mt-8 text-center text-sm text-destructive">
             Couldn't reach the live price feed. Try refreshing in a moment.
           </p>
-        )}
-
-        {!snapshot.isLoading && !SelectedPanel && (
-          <div className="mt-10 rounded-lg border border-dashed border-border/60 bg-secondary/20 px-4 py-10 text-center">
-            <p className="text-sm font-medium text-foreground">Pick a skill</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Open the skills popup to view training methods ranked by cost and XP.
-            </p>
-          </div>
         )}
 
         {!snapshot.isLoading && SelectedPanel && (

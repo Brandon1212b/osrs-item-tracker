@@ -1,7 +1,13 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
+import {
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function EquipmentPaperDoll({
   active,
@@ -51,7 +57,7 @@ const RS_PIXEL: React.CSSProperties = {
   color: RS_YELLOW,
   fontFamily: RS_FONT,
   fontWeight: 400,
-  fontSize: 12,
+  fontSize: 14,
   lineHeight: 1,
   letterSpacing: 0,
   textShadow: "1px 1px 0 #000",
@@ -62,7 +68,7 @@ const RS_PIXEL: React.CSSProperties = {
 function SkillLevelMark({ level }: { level: number }) {
   return (
     <span
-      className="flex min-w-[22px] flex-1 items-center justify-center select-none"
+      className="flex min-w-[24px] flex-1 items-center justify-center select-none"
       style={RS_PIXEL}
     >
       {level}
@@ -85,19 +91,19 @@ export function SkillsPanel({
   const hasLevels = levels != null && Object.keys(levels).length > 0;
 
   return (
-    <div className="shrink-0" style={{ width: 204 }}>
+    <div className="shrink-0" style={{ width: 222 }}>
       <div
         style={{
           background: "#3e3529",
           boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #6a5a3a",
-          padding: 2,
+          padding: 3,
         }}
       >
         <div
           className="grid"
           style={{
-            gridTemplateColumns: "repeat(3, 62px)",
-            gridAutoRows: "32px",
+            gridTemplateColumns: "repeat(3, 68px)",
+            gridAutoRows: "34px",
             gap: 2,
             background: "#2b2b2b",
             padding: 2,
@@ -121,9 +127,10 @@ export function SkillsPanel({
                 }}
                 className="flex items-center"
                 style={{
-                  width: 62,
-                  height: 32,
-                  padding: "0 2px 0 1px",
+                  width: 68,
+                  height: 34,
+                  padding: "0 4px 0 6px",
+                  gap: 3,
                   background: selected ? "#5a4a28" : "#494949",
                   boxShadow: selected
                     ? "inset 1px 1px 0 #d2b15a, inset -1px -1px 0 #2a1e08, 0 0 0 1px #c9a44a"
@@ -135,10 +142,10 @@ export function SkillsPanel({
                 <WikiImage
                   icon={s.wikiIcon}
                   alt=""
-                  width={25}
-                  height={25}
+                  width={24}
+                  height={24}
                   lazy={false}
-                  className="size-[25px] shrink-0 [image-rendering:pixelated]"
+                  className="size-6 shrink-0 [image-rendering:pixelated]"
                   draggable={false}
                 />
                 <SkillLevelMark level={level} />
@@ -150,7 +157,7 @@ export function SkillsPanel({
           className="flex items-center justify-center"
           style={{
             ...RS_PIXEL,
-            height: 32,
+            height: 34,
             marginTop: 2,
             background: "#111",
             boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
@@ -160,6 +167,56 @@ export function SkillsPanel({
         </div>
       </div>
     </div>
+  );
+}
+
+export function FilterPopover({
+  open,
+  onOpenChange,
+  icon,
+  label,
+  ariaLabel,
+  className = "",
+  contentClassName = "",
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  icon?: React.ReactNode;
+  label: string;
+  ariaLabel?: string;
+  className?: string;
+  contentClassName?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={ariaLabel ?? label}
+          aria-expanded={open}
+          className={`flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left ${className}`}
+        >
+          {icon}
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
+          <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+            <ChevronRight className={`size-4 transition-transform ${open ? "rotate-90" : ""}`} />
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        sideOffset={8}
+        collisionPadding={12}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className={`z-[80] w-auto max-w-[calc(100vw-1.5rem)] p-3 ${contentClassName}`}
+      >
+        <PopoverArrow className="fill-popover" />
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }
 
