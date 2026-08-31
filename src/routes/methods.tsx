@@ -162,8 +162,9 @@ function MethodsPage() {
   const skillsNav = {
     active: skill,
     onSelect: (key: string) => {
-      if (!METHOD_SKILL_KEYS.has(key)) return;
-      patchSearch({ skill: key === skill ? skill : key });
+      if (METHOD_SKILL_KEYS.has(key)) {
+        patchSearch({ skill: key });
+      }
       setSheetOpen(false);
     },
     levels: playerSkills,
