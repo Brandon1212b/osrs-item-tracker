@@ -28,6 +28,12 @@ import { usePlayerLookup } from "@/hooks/usePlayerLookup";
 import { SkillsPanel } from "@/routes/home-ui";
 import { WikiImage } from "@/components/WikiImage";
 import { useMethodSkillsNav } from "@/components/method-skills-nav";
+import {
+  applyMethodValues,
+  compareMethods,
+  DEFAULT_METHOD_SORT,
+  type MethodSort,
+} from "@/lib/method-rank";
 export type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 import type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 
@@ -37,8 +43,8 @@ const G_STEP = 250_000;
 
 const AMULET_BONUS_DOSE_CHANCE = { none: 0, chemistry: 0.05, alchemist: 0.15 } as const;
 type AmuletChoice = keyof typeof AMULET_BONUS_DOSE_CHANCE;
-type CraftSort = "gp_desc" | "gp_asc" | "xp_desc" | "xp_asc" | "cost_desc" | "cost_asc";
-const DEFAULT_SORT: CraftSort = "cost_asc";
+type CraftSort = MethodSort;
+const DEFAULT_SORT: CraftSort = DEFAULT_METHOD_SORT;
 
 function buyPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
@@ -71,12 +77,6 @@ function netPctChange(current: number, baseline: number): number | null {
   const denom = Math.abs(baseline);
   if (denom < 1) return null;
   return Math.round(((current - baseline) / denom) * 1000) / 10;
-}
-function nullsLast(a: number | null, b: number | null, dir: 1 | -1): number {
-  if (a == null && b == null) return 0;
-  if (a == null) return 1;
-  if (b == null) return -1;
-  return (a - b) * dir;
 }
 function amuletChargeCost(amulet: AmuletChoice, chemistryPrice: number | null): number {
   if (amulet === "none" || chemistryPrice == null) return 0;
@@ -159,9 +159,9 @@ export function SkillingMethodsPanel({
       const outs =
         method.outputs && method.outputs.length > 0
           ? method.outputs
-          : method.output
-            ? [method.output]
-            : [];
+            : method.output
+              ? [method.output]
+              : [];
       for (const p of outs) {
         if (p.name === "Coins") {
           outputValue += p.qty;
@@ -340,32 +340,8 @@ export function SkillingMethodsPanel({
       });
     }
 
-    list.sort((a, b) => {
-      if (skillLevel != null && a.locked !== b.locked) return a.locked ? 1 : -1;
-      switch (sort) {
-        case "gp_desc":
-          return goal.view === "goal"
-            ? nullsLast(b.totalGp ?? null, a.totalGp ?? null, 1)
-            : nullsLast(b.gpPerHour, a.gpPerHour, 1);
-        case "gp_asc":
-          return goal.view === "goal"
-            ? nullsLast(a.totalGp ?? null, b.totalGp ?? null, 1)
-            : nullsLast(a.gpPerHour, b.gpPerHour, 1);
-        case "xp_desc":
-          return goal.view === "goal"
-            ? nullsLast(a.hoursToTarget ?? null, b.hoursToTarget ?? null, 1)
-            : b.xpPerHour - a.xpPerHour;
-        case "xp_asc":
-          return goal.view === "goal"
-            ? nullsLast(b.hoursToTarget ?? null, a.hoursToTarget ?? null, 1)
-            : a.xpPerHour - b.xpPerHour;
-        case "cost_desc":
-          return nullsLast(b.costPerXp, a.costPerXp, 1);
-        case "cost_asc":
-        default:
-          return nullsLast(a.costPerXp, b.costPerXp, 1);
-      }
-    });
+    applyMethodValues(list, moneyPerHour);
+    list.sort((a, b) => compareMethods(a, b, sort, skillLevel != null, goal.view));
 
     return list;
   }, [
@@ -494,8 +470,10 @@ export function SkillingMethodsPanel({
                     <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-                    <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                    <SelectItem value="value_desc">Value/h ↓ (best)</SelectItem>
+                    <SelectItem value="value_asc">Value/h ↑</SelectItem>
+                    <SelectItem value="cost_asc">GP/XP vs rate ↑</SelectItem>
+                    <SelectItem value="cost_desc">GP/XP vs rate ↓</SelectItem>
                     <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
                     <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
                     <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
