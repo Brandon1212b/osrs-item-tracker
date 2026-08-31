@@ -51,7 +51,7 @@ const RS_PIXEL: React.CSSProperties = {
   color: RS_YELLOW,
   fontFamily: RS_FONT,
   fontWeight: 400,
-  fontSize: 12,
+  fontSize: 14,
   lineHeight: 1,
   letterSpacing: 0,
   textShadow: "1px 1px 0 #000",
@@ -62,7 +62,7 @@ const RS_PIXEL: React.CSSProperties = {
 function SkillLevelMark({ level }: { level: number }) {
   return (
     <span
-      className="flex min-w-[22px] flex-1 items-center justify-center select-none"
+      className="flex min-w-[24px] flex-1 items-center justify-center select-none"
       style={RS_PIXEL}
     >
       {level}
@@ -85,19 +85,19 @@ export function SkillsPanel({
   const hasLevels = levels != null && Object.keys(levels).length > 0;
 
   return (
-    <div className="shrink-0" style={{ width: 204 }}>
+    <div className="shrink-0" style={{ width: 222 }}>
       <div
         style={{
           background: "#3e3529",
           boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #6a5a3a",
-          padding: 2,
+          padding: 3,
         }}
       >
         <div
           className="grid"
           style={{
-            gridTemplateColumns: "repeat(3, 62px)",
-            gridAutoRows: "32px",
+            gridTemplateColumns: "repeat(3, 68px)",
+            gridAutoRows: "34px",
             gap: 2,
             background: "#2b2b2b",
             padding: 2,
@@ -121,9 +121,10 @@ export function SkillsPanel({
                 }}
                 className="flex items-center"
                 style={{
-                  width: 62,
-                  height: 32,
-                  padding: "0 2px 0 1px",
+                  width: 68,
+                  height: 34,
+                  padding: "0 4px 0 6px",
+                  gap: 3,
                   background: selected ? "#5a4a28" : "#494949",
                   boxShadow: selected
                     ? "inset 1px 1px 0 #d2b15a, inset -1px -1px 0 #2a1e08, 0 0 0 1px #c9a44a"
@@ -135,10 +136,10 @@ export function SkillsPanel({
                 <WikiImage
                   icon={s.wikiIcon}
                   alt=""
-                  width={25}
-                  height={25}
+                  width={24}
+                  height={24}
                   lazy={false}
-                  className="size-[25px] shrink-0 [image-rendering:pixelated]"
+                  className="size-6 shrink-0 [image-rendering:pixelated]"
                   draggable={false}
                 />
                 <SkillLevelMark level={level} />
@@ -150,7 +151,7 @@ export function SkillsPanel({
           className="flex items-center justify-center"
           style={{
             ...RS_PIXEL,
-            height: 32,
+            height: 34,
             marginTop: 2,
             background: "#111",
             boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
