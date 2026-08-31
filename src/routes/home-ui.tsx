@@ -4,9 +4,9 @@ import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
 import {
   Popover,
-  PopoverAnchor,
   PopoverArrow,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 
 export function EquipmentPaperDoll({
@@ -191,36 +191,27 @@ export function FilterPopover({
 }) {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <div
-        className={`flex min-w-0 flex-1 items-center gap-1 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 ${className}`}
-      >
-        <PopoverAnchor asChild>
-          <button
-            type="button"
-            onClick={() => onOpenChange(true)}
-            aria-label={ariaLabel ?? label}
-            className="flex min-w-0 flex-1 items-center gap-2 text-left"
-          >
-            {icon}
-            <span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>
-          </button>
-        </PopoverAnchor>
+      <PopoverTrigger asChild>
         <button
           type="button"
-          onClick={() => onOpenChange(!open)}
-          aria-label={open ? "Close" : "Open"}
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          aria-label={ariaLabel ?? label}
+          aria-expanded={open}
+          className={`flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left ${className}`}
         >
-          <ChevronRight className={`size-4 transition-transform ${open ? "rotate-90" : ""}`} />
+          {icon}
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
+          <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground">
+            <ChevronRight className={`size-4 transition-transform ${open ? "rotate-90" : ""}`} />
+          </span>
         </button>
-      </div>
+      </PopoverTrigger>
       <PopoverContent
         align="start"
         side="bottom"
         sideOffset={8}
         collisionPadding={12}
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className={`w-auto max-w-[calc(100vw-1.5rem)] p-3 ${contentClassName}`}
+        className={`z-[80] w-auto max-w-[calc(100vw-1.5rem)] p-3 ${contentClassName}`}
       >
         <PopoverArrow className="fill-popover" />
         {children}
