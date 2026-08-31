@@ -403,7 +403,7 @@ export function SkillingMethodsPanel({
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Popover open={sheetOpen} onOpenChange={setSheetOpen}>
-            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1">
               <PopoverAnchor asChild>
                 <button
                   type="button"
@@ -426,13 +426,6 @@ export function SkillingMethodsPanel({
                   </span>
                 </button>
               </PopoverAnchor>
-              <MethodsViewToggle
-                view={goal.view}
-                onViewChange={goal.setView}
-                targetLevel={goal.targetLevel}
-                onTargetChange={goal.setTargetLevel}
-                minTarget={goal.currentLevel + 1}
-              />
               <button
                 type="button"
                 onClick={() => setSheetOpen((open) => !open)}
@@ -464,6 +457,14 @@ export function SkillingMethodsPanel({
               )}
             </PopoverContent>
           </Popover>
+
+          <MethodsViewToggle
+            view={goal.view}
+            onViewChange={goal.setView}
+            targetLevel={goal.targetLevel}
+            onTargetChange={goal.setTargetLevel}
+            minTarget={goal.currentLevel + 1}
+          />
 
           <Popover open={listFiltersOpen} onOpenChange={setListFiltersOpen}>
             <PopoverAnchor asChild>
