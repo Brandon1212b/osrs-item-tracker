@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/drawer";
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
-import { MethodsGoalBar, MethodsViewToggle, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { MethodsViewToggle, useMethodsGoal } from "@/components/MethodsGoalBar";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
 import { SkillsPanel } from "@/routes/home-ui";
@@ -124,7 +124,6 @@ export function SkillingMethodsPanel({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [localSheetOpen, setLocalSheetOpen] = useState(false);
   const [listFiltersOpen, setListFiltersOpen] = useState(false);
-  const [goalEditorsOpen, setGoalEditorsOpen] = useState(false);
   const skillsNav = useMethodSkillsNav();
   const sheetOpen = skillsNav?.sheetOpen ?? localSheetOpen;
   const setSheetOpen = skillsNav?.setSheetOpen ?? setLocalSheetOpen;
@@ -425,12 +424,10 @@ export function SkillingMethodsPanel({
           </button>
           <MethodsViewToggle
             view={goal.view}
-            onViewChange={(next) => {
-              goal.setView(next);
-              if (next === "rate") setGoalEditorsOpen(false);
-            }}
+            onViewChange={goal.setView}
             targetLevel={goal.targetLevel}
-            onRepeatGoal={() => setGoalEditorsOpen((open) => !open)}
+            onTargetChange={goal.setTargetLevel}
+            minTarget={goal.currentLevel + 1}
           />
           <button
             type="button"
@@ -441,18 +438,6 @@ export function SkillingMethodsPanel({
             <ChevronRight className="size-4" />
           </button>
         </div>
-
-        {goalEditorsOpen && goal.view === "goal" && (
-          <div className="rounded-lg border border-border/50 bg-secondary/20 px-3 py-2">
-            <MethodsGoalBar
-              currentLevel={goal.currentLevel}
-              onCurrentLevelChange={goal.setCurrentLevel}
-              targetLevel={goal.targetLevel}
-              onTargetLevelChange={goal.setTargetLevel}
-              skillLabel={skillLabel}
-            />
-          </div>
-        )}
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>
