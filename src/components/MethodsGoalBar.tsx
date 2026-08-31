@@ -89,7 +89,21 @@ export function MethodsViewToggle({
   minTarget?: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(String(targetLevel));
   const min = Math.max(2, minTarget);
+
+  useEffect(() => {
+    setDraft(String(targetLevel));
+  }, [targetLevel]);
+
+  const commitDraft = () => {
+    const n = Number.parseInt(draft.replace(/\D/g, ""), 10);
+    if (!Number.isFinite(n)) {
+      setDraft(String(targetLevel));
+      return;
+    }
+    onTargetChange(Math.min(MAX_SKILL_LEVEL, Math.max(min, n)));
+  };
 
   return (
     <div className="inline-flex h-8 shrink-0 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
@@ -140,9 +154,22 @@ export function MethodsViewToggle({
             >
               <Minus className="size-4" />
             </button>
-            <span className="w-8 text-center text-sm font-semibold tabular-nums text-foreground">
-              {targetLevel}
-            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onFocus={(e) => e.currentTarget.select()}
+              onBlur={commitDraft}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="h-8 w-10 rounded-md bg-transparent text-center text-sm font-semibold tabular-nums text-foreground outline-none"
+              aria-label="Target level"
+            />
             <button
               type="button"
               onClick={() => onTargetChange(targetLevel + 1)}
