@@ -37,6 +37,4 @@ export type RankedMethod = {
   category: string;
   hoursToTarget?: number | null;
   totalGp?: number | null;
-  /** Set when another unlocked method is better on both XP/h and GP/h. */
-  dominatedBy?: string | null;
 };

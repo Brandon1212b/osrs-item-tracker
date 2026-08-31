@@ -1,24 +1,37 @@
 import type { RankedMethod } from "@/components/skilling-types";
 
-/** True when `best` is at least as fast and at least as profitable as `other`, and better on one. */
-export function dominatesMethod(best: RankedMethod, other: RankedMethod): boolean {
-  if (best.id === other.id) return false;
-  if (best.locked || other.locked) return false;
-  if (best.gpPerHour == null || other.gpPerHour == null) return false;
-  if (best.xpPerHour < other.xpPerHour) return false;
-  if (best.gpPerHour < other.gpPerHour) return false;
-  return best.xpPerHour > other.xpPerHour || best.gpPerHour > other.gpPerHour;
+/** Fastest unlocked XP/h on the list. Used to put XP and GP on one hourly scale. */
+export function referenceXpPerHour(list: Pick<RankedMethod, "locked" | "xpPerHour">[]): number {
+  const unlocked = list.filter((r) => !r.locked && r.xpPerHour > 0);
+  const pool = unlocked.length > 0 ? unlocked : list.filter((r) => r.xpPerHour > 0);
+  let max = 0;
+  for (const r of pool) if (r.xpPerHour > max) max = r.xpPerHour;
+  return max > 0 ? max : 1;
 }
 
-/** Label of the first unlocked method that is strictly better on XP/h and GP/h. */
-export function findDominator(row: RankedMethod, list: RankedMethod[]): RankedMethod | null {
-  if (row.locked || row.gpPerHour == null) return null;
-  return list.find((other) => dominatesMethod(other, row)) ?? null;
+/**
+ * Value of one hour on this method.
+ * gp/h + yourRate * (xp/h / fastest xp/h)
+ *
+ * Rank by this (higher is better). Do not rank by (rate - gp) / xp:
+ * dividing by XP turns a better hour into a worse per-XP score.
+ */
+export function methodValuePerHour(
+  xpPerHour: number,
+  gpPerHour: number | null,
+  moneyPerHour: number,
+  refXpPerHour: number,
+): number | null {
+  if (gpPerHour == null && !(xpPerHour > 0)) return null;
+  const gp = gpPerHour ?? 0;
+  const ref = refXpPerHour > 0 ? refXpPerHour : 1;
+  const rate = Number.isFinite(moneyPerHour) && moneyPerHour > 0 ? moneyPerHour : 0;
+  return gp + rate * (xpPerHour / ref);
 }
 
-export function applyDominance(list: RankedMethod[]): void {
+export function applyMethodValues(list: RankedMethod[], moneyPerHour: number): void {
+  const ref = referenceXpPerHour(list);
   for (const row of list) {
-    const better = findDominator(row, list);
-    row.dominatedBy = better?.label ?? null;
+    row.netValuePerHour = methodValuePerHour(row.xpPerHour, row.gpPerHour, moneyPerHour, ref);
   }
 }

@@ -37,7 +37,7 @@ export function MoneyMakingSlider({
       <div className="flex items-center gap-2">
         <p className="shrink-0 text-[12px] font-medium text-foreground">Your rate</p>
         <p className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-          Ranks speed vs gold. Slower and poorer methods stay below better ones.
+          Higher rate favors faster methods. Lower rate favors gold-while-training.
         </p>
         {editing ? (
           <input
