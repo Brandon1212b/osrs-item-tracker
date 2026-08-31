@@ -78,10 +78,12 @@ export function MethodsViewToggle({
   view,
   onViewChange,
   targetLevel,
+  onRepeatGoal,
 }: {
   view: MethodsMetricView;
   onViewChange: (v: MethodsMetricView) => void;
   targetLevel: number;
+  onRepeatGoal?: () => void;
 }) {
   return (
     <div className="inline-flex h-8 shrink-0 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
@@ -96,7 +98,10 @@ export function MethodsViewToggle({
       </button>
       <button
         type="button"
-        onClick={() => onViewChange("goal")}
+        onClick={() => {
+          if (view === "goal") onRepeatGoal?.();
+          else onViewChange("goal");
+        }}
         className={`h-7 rounded-full px-2 text-[11px] font-medium ${
           view === "goal" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
         }`}
