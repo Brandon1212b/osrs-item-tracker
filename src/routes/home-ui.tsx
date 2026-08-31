@@ -60,12 +60,12 @@ const RS_PIXEL: React.CSSProperties = {
 };
 
 function SkillLevelMark({ level }: { level: number }) {
-  const text = String(level);
   return (
-    <span className="relative block h-[28px] w-[30px] shrink-0 select-none" style={RS_PIXEL}>
-      <span className="absolute left-0 top-0">{text}</span>
-      <span className="absolute left-[10px] top-[7px]">/</span>
-      <span className="absolute bottom-0 right-0">{text}</span>
+    <span
+      className="flex min-w-[22px] flex-1 items-center justify-center select-none"
+      style={RS_PIXEL}
+    >
+      {level}
     </span>
   );
 }
