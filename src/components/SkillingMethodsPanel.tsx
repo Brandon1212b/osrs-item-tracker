@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, ListFilter } from "lucide-react";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
 import { deriveIntensity } from "@/components/methods-ux";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
@@ -470,15 +470,14 @@ export function SkillingMethodsPanel({
               <button
                 type="button"
                 onClick={() => setListFiltersOpen((open) => !open)}
-                aria-expanded={listFiltersOpen}
-                className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-lg border px-2.5 text-[11px] font-medium ${
-                  listFiltersOpen || filtersActive
-                    ? "border-primary/70 bg-primary/15 text-primary"
-                    : "border-border/60 bg-secondary/25 text-muted-foreground hover:text-foreground"
-                }`}
+                aria-label="Open filters"
+                title="Filters"
+                className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60"
               >
-                <ListFilter className="size-3.5" />
-                Filter
+                <SlidersHorizontal className="size-4" />
+                {filtersActive ? (
+                  <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" aria-hidden />
+                ) : null}
               </button>
             </PopoverAnchor>
             <PopoverContent
