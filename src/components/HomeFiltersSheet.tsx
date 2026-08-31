@@ -69,12 +69,15 @@ function Chip({
 export function HomeFiltersButton({
   onClick,
   activeRsn,
+  marked,
   className = "",
 }: {
   onClick: () => void;
   activeRsn?: string | null;
+  marked?: boolean;
   className?: string;
 }) {
+  const showDot = Boolean(marked ?? activeRsn);
   return (
     <button
       type="button"
@@ -84,7 +87,7 @@ export function HomeFiltersButton({
       className={`relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
     >
       <SlidersHorizontal className="size-4" />
-      {activeRsn ? (
+      {showDot ? (
         <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" aria-hidden />
       ) : null}
     </button>

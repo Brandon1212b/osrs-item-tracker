@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { xpForLevel, clampSkillLevel, xpRemainingToLevel, MAX_SKILL_LEVEL } from "@/lib/osrs-xp";
 
 export type MethodsMetricView = "rate" | "goal";
@@ -35,7 +36,6 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
     }
   }, [view, hydrated]);
 
-  // New hiscores load replaces a previous manual override and re-defaults target.
   useEffect(() => {
     setManualLevel(null);
     setTargetTouched(false);
@@ -45,7 +45,6 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
   const usingExactXp = manualLevel == null && hiscoreXp != null && Number.isFinite(hiscoreXp);
   const currentXp = usingExactXp ? Math.max(0, hiscoreXp!) : xpForLevel(currentLevel);
 
-  // Default target to the next level above current unless the user set it themselves.
   useEffect(() => {
     if (targetTouched) return;
     const next = clampSkillLevel(currentLevel + 1, 2, MAX_SKILL_LEVEL);
@@ -68,7 +67,6 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
     currentLevel,
     setCurrentLevel: (n: number) => {
       setManualLevel(clampSkillLevel(n, 1, MAX_SKILL_LEVEL));
-      // Changing "Now" re-defaults target to next level.
       setTargetTouched(false);
     },
     currentXp,
@@ -77,118 +75,113 @@ export function useMethodsGoal(hiscoreLevel?: number, hiscoreXp?: number) {
   };
 }
 
-function MiniStepper({
-  value,
-  min,
-  max,
-  onChange,
-  ariaLabel,
-}: {
-  value: number;
-  min: number;
-  max: number;
-  onChange: (n: number) => void;
-  ariaLabel: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      <button
-        type="button"
-        onClick={() => onChange(value - 1)}
-        disabled={value <= min}
-        className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
-        aria-label={`Decrease ${ariaLabel}`}
-      >
-        <Minus className="size-3" />
-      </button>
-      <input
-        type="number"
-        min={min}
-        max={max}
-        inputMode="numeric"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-6 w-9 rounded-md border border-border/50 bg-background px-0.5 text-center text-xs font-semibold tabular-nums text-foreground"
-        aria-label={ariaLabel}
-      />
-      <button
-        type="button"
-        onClick={() => onChange(value + 1)}
-        disabled={value >= max}
-        className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
-        aria-label={`Increase ${ariaLabel}`}
-      >
-        <Plus className="size-3" />
-      </button>
-    </span>
-  );
-}
-
-/** Compact "train to X" strip under skill icons. */
-export function MethodsGoalBar({
+export function MethodsViewToggle({
   view,
   onViewChange,
-  currentLevel,
-  onCurrentLevelChange,
   targetLevel,
-  onTargetLevelChange,
-  skillLabel,
+  onTargetChange,
+  minTarget = 2,
 }: {
   view: MethodsMetricView;
   onViewChange: (v: MethodsMetricView) => void;
-  currentLevel: number;
-  onCurrentLevelChange: (n: number) => void;
   targetLevel: number;
-  onTargetLevelChange: (n: number) => void;
-  skillLabel: string;
-  currentXp?: number;
-  xpRemaining?: number;
-  usingExactXp?: boolean;
+  onTargetChange: (n: number) => void;
+  minTarget?: number;
 }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(String(targetLevel));
+  const min = Math.max(2, minTarget);
+
+  useEffect(() => {
+    setDraft(String(targetLevel));
+  }, [targetLevel]);
+
+  const commitDraft = () => {
+    const n = Number.parseInt(draft.replace(/\D/g, ""), 10);
+    if (!Number.isFinite(n)) {
+      setDraft(String(targetLevel));
+      return;
+    }
+    onTargetChange(Math.min(MAX_SKILL_LEVEL, Math.max(min, n)));
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
-      <div className="inline-flex h-7 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
-        <button
-          type="button"
-          onClick={() => onViewChange("rate")}
-          className={`h-6 rounded-full px-2.5 text-[11px] font-medium ${
-            view === "rate" ? "bg-primary/15 text-primary" : "hover:text-foreground"
-          }`}
+    <div className="inline-flex h-8 shrink-0 items-center rounded-full border border-border/60 bg-secondary/30 p-0.5">
+      <button
+        type="button"
+        onClick={() => {
+          onViewChange("rate");
+          setOpen(false);
+        }}
+        className={`h-7 rounded-full px-2 text-[11px] font-medium ${
+          view === "rate" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        XP/h
+      </button>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverAnchor asChild>
+          <button
+            type="button"
+            onClick={() => {
+              if (view !== "goal") {
+                onViewChange("goal");
+                return;
+              }
+              setOpen((was) => !was);
+            }}
+            className={`h-7 rounded-full px-2 text-[11px] font-medium ${
+              view === "goal" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Train to {targetLevel}
+          </button>
+        </PopoverAnchor>
+        <PopoverContent
+          align="center"
+          side="bottom"
+          sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="w-auto rounded-full border-border/70 p-1 shadow-lg"
         >
-          XP/h
-        </button>
-        <button
-          type="button"
-          onClick={() => onViewChange("goal")}
-          className={`h-6 rounded-full px-2.5 text-[11px] font-medium ${
-            view === "goal" ? "bg-primary/15 text-primary" : "hover:text-foreground"
-          }`}
-        >
-          Train to {targetLevel}
-        </button>
-      </div>
-
-      <span className="inline-flex items-center gap-1">
-        <span>Now</span>
-        <MiniStepper
-          value={currentLevel}
-          min={1}
-          max={MAX_SKILL_LEVEL}
-          onChange={onCurrentLevelChange}
-          ariaLabel={`Current ${skillLabel} level`}
-        />
-      </span>
-
-      <span className="inline-flex items-center gap-1">
-        <span>Target</span>
-        <MiniStepper
-          value={targetLevel}
-          min={2}
-          max={MAX_SKILL_LEVEL}
-          onChange={onTargetLevelChange}
-          ariaLabel="Target skill level"
-        />
-      </span>
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => onTargetChange(targetLevel - 1)}
+              disabled={targetLevel <= min}
+              className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+              aria-label="Lower target level"
+            >
+              <Minus className="size-4" />
+            </button>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onFocus={(e) => e.currentTarget.select()}
+              onBlur={commitDraft}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="h-8 w-10 rounded-md bg-transparent text-center text-sm font-semibold tabular-nums text-foreground outline-none"
+              aria-label="Target level"
+            />
+            <button
+              type="button"
+              onClick={() => onTargetChange(targetLevel + 1)}
+              disabled={targetLevel >= MAX_SKILL_LEVEL}
+              className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+              aria-label="Raise target level"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

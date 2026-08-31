@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { deriveIntensity, MONEY_PRESETS } from "@/components/methods-ux";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
+import { deriveIntensity } from "@/components/methods-ux";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 import type { ActivityMethod } from "@/lib/activity-methods";
 import { resolveActivityBand } from "@/lib/activity-methods";
-import { gp } from "@/lib/format";
+import { SKILLS_PANEL } from "@/lib/skills-panel";
 import {
   Select,
   SelectContent,
@@ -13,11 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { MethodRow } from "@/components/MethodRow";
 import { getActivityType } from "@/components/activity-type";
-import { MethodsGoalBar, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { MethodsViewToggle, useMethodsGoal } from "@/components/MethodsGoalBar";
+import { MoneyMakingSlider } from "@/components/MoneyMakingSlider";
 import { hoursToXp } from "@/lib/osrs-xp";
 import { usePlayerLookup } from "@/hooks/usePlayerLookup";
+import { SkillsPanel } from "@/routes/home-ui";
+import { WikiImage } from "@/components/WikiImage";
+import { useMethodSkillsNav } from "@/components/method-skills-nav";
 export type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 import type { MethodPart, SkillingMethod, RankedMethod } from "@/components/skilling-types";
 
@@ -26,7 +36,6 @@ const G_MAX = 10_000_000;
 const G_STEP = 250_000;
 
 const AMULET_BONUS_DOSE_CHANCE = { none: 0, chemistry: 0.05, alchemist: 0.15 } as const;
-const GOGGLES_SKIP_CHANCE = 0.1;
 type AmuletChoice = keyof typeof AMULET_BONUS_DOSE_CHANCE;
 type CraftSort = "gp_desc" | "gp_asc" | "xp_desc" | "xp_asc" | "cost_desc" | "cost_asc";
 const DEFAULT_SORT: CraftSort = "cost_asc";
@@ -39,7 +48,6 @@ function sellPrice(row: PriceRow | undefined): number | null {
   if (!row) return null;
   return row.low ?? row.high ?? null;
 }
-/** GE tax: 2% of sell price (floored), capped at 5,000,000 gp per item. Returns net proceeds after tax. */
 function afterTaxSell(unitPrice: number): number {
   if (!Number.isFinite(unitPrice) || unitPrice <= 0) return unitPrice;
   const tax = Math.min(Math.floor(unitPrice * 0.02), 5_000_000);
@@ -114,12 +122,18 @@ export function SkillingMethodsPanel({
   const [amulet, setAmulet] = useState<AmuletChoice>("none");
   const [goggles, setGoggles] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [localSheetOpen, setLocalSheetOpen] = useState(false);
+  const [listFiltersOpen, setListFiltersOpen] = useState(false);
+  const skillsNav = useMethodSkillsNav();
+  const sheetOpen = skillsNav?.sheetOpen ?? localSheetOpen;
+  const setSheetOpen = skillsNav?.setSheetOpen ?? setLocalSheetOpen;
   const skillLevel = readSkillLevel(playerSkills, skillKey);
   const magicLevel = readSkillLevel(playerSkills, "magic");
   const { playerXp } = usePlayerLookup();
   const hiscoreXp = playerXp?.[skillKey] ?? playerXp?.[skillKey.toLowerCase()];
   const goal = useMethodsGoal(skillLevel, hiscoreXp);
   const isHerblore = skillKey === "herblore";
+  const skillMeta = SKILLS_PANEL.find((s) => s.key === skillKey);
 
   const ranked = useMemo(() => {
     const chemistryPrice = isHerblore ? buyPrice(rowsByName.get("Amulet of chemistry")) : null;
@@ -382,78 +396,159 @@ export function SkillingMethodsPanel({
   }, [ranked, selectedCategory]);
 
   const g = clampG(moneyPerHour);
+  const filtersActive = sort !== DEFAULT_SORT || selectedCategory !== "all";
 
   return (
     <section className="mt-3 space-y-3">
-      <div className="flex flex-col gap-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
-            <SelectTrigger className="h-8 w-[11.5rem] text-xs">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-              <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-              <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
-              <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
-              <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
-              <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {categories.length > 1 && (
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="h-8 w-[12rem] text-xs">
-                <SelectValue placeholder="Activity type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-
-        <MethodsGoalBar
-          view={goal.view}
-          onViewChange={goal.setView}
-          currentLevel={goal.currentLevel}
-          onCurrentLevelChange={goal.setCurrentLevel}
-          targetLevel={goal.targetLevel}
-          onTargetLevelChange={goal.setTargetLevel}
-          skillLabel={skillLabel}
-        />
-
-        {isHerblore && (
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground">Amulet</span>
-              <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
-                <SelectTrigger className="h-8 w-[8.5rem] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="chemistry">Chemistry</SelectItem>
-                  <SelectItem value="alchemist">Alchemist</SelectItem>
-                </SelectContent>
-              </Select>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Popover open={sheetOpen} onOpenChange={setSheetOpen}>
+            <div className="flex min-w-0 flex-1 items-center gap-1 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1">
+              <PopoverAnchor asChild>
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(true)}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  {skillMeta && (
+                    <WikiImage
+                      icon={skillMeta.wikiIcon}
+                      alt=""
+                      width={22}
+                      height={22}
+                      lazy={false}
+                      className="size-[22px] shrink-0"
+                    />
+                  )}
+                  <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                    {skillLabel}
+                    {skillLevel != null ? ` · ${skillLevel}` : ""}
+                  </span>
+                </button>
+              </PopoverAnchor>
+              <button
+                type="button"
+                onClick={() => setSheetOpen((open) => !open)}
+                aria-label="Open skills"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+              >
+                <ChevronRight className={`size-4 transition-transform ${sheetOpen ? "rotate-90" : ""}`} />
+              </button>
             </div>
-            <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={goggles}
-                onChange={(e) => setGoggles(e.target.checked)}
-                className="size-3.5 rounded border-border"
-              />
-              Amylase goggles
-            </label>
-          </div>
-        )}
+
+            <PopoverContent
+              align="start"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={12}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+              className="w-auto max-w-[calc(100vw-1.5rem)] p-3"
+            >
+              <PopoverArrow className="fill-popover" />
+              {skillsNav && (
+                <div className="flex justify-center">
+                  <SkillsPanel
+                    active={skillsNav.active}
+                    onSelect={skillsNav.onSelect}
+                    levels={skillsNav.levels}
+                    enabledKeys={skillsNav.enabledKeys}
+                  />
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          <MethodsViewToggle
+            view={goal.view}
+            onViewChange={goal.setView}
+            targetLevel={goal.targetLevel}
+            onTargetChange={goal.setTargetLevel}
+            minTarget={goal.currentLevel + 1}
+          />
+
+          <Popover open={listFiltersOpen} onOpenChange={setListFiltersOpen}>
+            <PopoverAnchor asChild>
+              <button
+                type="button"
+                onClick={() => setListFiltersOpen((open) => !open)}
+                aria-label="Open filters"
+                title="Filters"
+                className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60"
+              >
+                <SlidersHorizontal className="size-4" />
+                {filtersActive ? (
+                  <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" aria-hidden />
+                ) : null}
+              </button>
+            </PopoverAnchor>
+            <PopoverContent
+              align="end"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={12}
+              className="w-56 p-2"
+            >
+              <div className="flex flex-col gap-2">
+                <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+                  <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
+                    <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                    <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+                    <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+                    <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+                    <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {categories.length > 1 && (
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {isHerblore && (
+                  <>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">Amulet</span>
+                      <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                        <SelectTrigger className="h-8 flex-1 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="alchemist">Alchemist</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={goggles}
+                        onChange={(e) => setGoggles(e.target.checked)}
+                        className="size-3.5 rounded border-border"
+                      />
+                      Amylase goggles
+                    </label>
+                  </>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>
@@ -477,58 +572,5 @@ export function SkillingMethodsPanel({
         )}
       </div>
     </section>
-  );
-}
-
-function MoneyMakingSlider({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] text-muted-foreground">Your rate</span>
-        {MONEY_PRESETS.map((p) => (
-          <button
-            key={p.label}
-            type="button"
-            onClick={() => onChange(p.value)}
-            className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition-colors ${
-              value === p.value
-                ? "border-primary/70 bg-primary/15 text-primary"
-                : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-7 items-center gap-0.5 rounded-full border border-border/60 bg-secondary/30 px-2 text-[11px] text-muted-foreground hover:text-foreground"
-        >
-          Adjust
-          {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-        </button>
-      </div>
-      {open && (
-        <div className="space-y-1 rounded-lg border border-border/50 bg-secondary/15 px-2.5 py-2">
-          <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums text-muted-foreground">
-            <span>{gp(value)}/h</span>
-            <span>
-              {gp(G_MIN)} – {gp(G_MAX)}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={G_MIN}
-            max={G_MAX}
-            step={G_STEP}
-            value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="w-full accent-primary"
-          />
-        </div>
-      )}
-    </div>
   );
 }

@@ -1,6 +1,6 @@
-import {
-  GEAR_SLOT_FILTERS,
-} from "@/lib/osrs-catalog";
+import { ChevronDown } from "lucide-react";
+import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
+import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
 
 export function EquipmentPaperDoll({
@@ -41,6 +41,157 @@ export function EquipmentPaperDoll({
           />
         </button>
       ))}
+    </div>
+  );
+}
+
+const RS_YELLOW = "#ffff00";
+const RS_FONT = '"RuneScape Bold 12", monospace';
+const RS_PIXEL: React.CSSProperties = {
+  color: RS_YELLOW,
+  fontFamily: RS_FONT,
+  fontWeight: 400,
+  fontSize: 12,
+  lineHeight: 1,
+  letterSpacing: 0,
+  textShadow: "1px 1px 0 #000",
+  fontSmooth: "never",
+  WebkitFontSmoothing: "none",
+};
+
+function SkillLevelMark({ level }: { level: number }) {
+  return (
+    <span
+      className="flex min-w-[22px] flex-1 items-center justify-center select-none"
+      style={RS_PIXEL}
+    >
+      {level}
+    </span>
+  );
+}
+
+export function SkillsPanel({
+  active,
+  onSelect,
+  levels,
+  enabledKeys,
+}: {
+  active: string;
+  onSelect: (key: string) => void;
+  levels?: Record<string, number> | null;
+  enabledKeys?: ReadonlySet<string>;
+}) {
+  const total = SKILLS_PANEL.reduce((sum, s) => sum + (levels?.[s.key] ?? 1), 0);
+  const hasLevels = levels != null && Object.keys(levels).length > 0;
+
+  return (
+    <div className="shrink-0" style={{ width: 204 }}>
+      <div
+        style={{
+          background: "#3e3529",
+          boxShadow: "0 0 0 1px #1a140c, inset 0 0 0 1px #6a5a3a",
+          padding: 2,
+        }}
+      >
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: "repeat(3, 62px)",
+            gridAutoRows: "32px",
+            gap: 2,
+            background: "#2b2b2b",
+            padding: 2,
+          }}
+        >
+          {SKILLS_PANEL.map((s) => {
+            const enabled = !enabledKeys || enabledKeys.has(s.key);
+            const selected = enabled && active === s.key;
+            const level = levels?.[s.key] ?? 1;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                title={s.label}
+                aria-label={`${s.label} ${level}`}
+                aria-pressed={selected}
+                disabled={!enabled}
+                onClick={() => {
+                  if (!enabled) return;
+                  onSelect(active === s.key ? "all" : s.key);
+                }}
+                className="flex items-center"
+                style={{
+                  width: 62,
+                  height: 32,
+                  padding: "0 2px 0 1px",
+                  background: selected ? "#5a4a28" : "#494949",
+                  boxShadow: selected
+                    ? "inset 1px 1px 0 #d2b15a, inset -1px -1px 0 #2a1e08, 0 0 0 1px #c9a44a"
+                    : "inset 1px 1px 0 #222, inset -1px -1px 0 #6e6e6e",
+                  opacity: enabled ? 1 : 0.38,
+                  cursor: enabled ? "pointer" : "default",
+                }}
+              >
+                <WikiImage
+                  icon={s.wikiIcon}
+                  alt=""
+                  width={25}
+                  height={25}
+                  lazy={false}
+                  className="size-[25px] shrink-0 [image-rendering:pixelated]"
+                  draggable={false}
+                />
+                <SkillLevelMark level={level} />
+              </button>
+            );
+          })}
+        </div>
+        <div
+          className="flex items-center justify-center"
+          style={{
+            ...RS_PIXEL,
+            height: 32,
+            marginTop: 2,
+            background: "#111",
+            boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
+          }}
+        >
+          Total level: {hasLevels ? total : "—"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function FilterCollapse({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-border/50 bg-secondary/15">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left"
+      >
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          {title}
+        </span>
+        <ChevronDown
+          className={`size-4 shrink-0 text-muted-foreground transition-transform ${
+            open ? "rotate-0" : "-rotate-90"
+          }`}
+        />
+      </button>
+      {open && <div className="border-t border-border/40 p-2.5 pt-2">{children}</div>}
     </div>
   );
 }

@@ -67,12 +67,11 @@ export const MINING_RATE_TABLES: ActivityMethod[] = [
     skillKey: "mining",
     level: 92,
     rateBands: [
-      { level: 92, xpPerHour: 20_000 },
-      { level: 99, xpPerHour: 25_000 },
+      { level: 92, xpPerHour: 21_600 },
     ],
     consumables: [],
-    rewards: [{ name: "Amethyst", expectedQtyPerHour: 104 }],
+    rewards: [{ name: "Amethyst", expectedQtyPerHour: 90 }],
     intensity: "low",
-    notes: "Wiki 20–25k amethyst band. Qty at 99 = 25k/240.",
+    notes: "MMG Mining amethyst: 21,600 XP and 90 ore/h (80–100 band midpoint).",
   },
 ];
