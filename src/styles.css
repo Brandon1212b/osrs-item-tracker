@@ -2,6 +2,15 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "RuneScape Bold 12";
+  src: url("https://db.onlinewebfonts.com/t/b03f20a1f49f8f522dbdf3f6428680f1.woff2") format("woff2"),
+    url("https://db.onlinewebfonts.com/t/b03f20a1f49f8f522dbdf3f6428680f1.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -92,6 +101,7 @@
   /* Calibri system font with open-source / cross-platform fallbacks */
   --font-display: "Calibri", "Carlito", "Segoe UI", system-ui, sans-serif;
   --font-body: "Calibri", "Carlito", "Segoe UI", system-ui, sans-serif;
+  --font-rs-bold: "RuneScape Bold 12", "Press Start 2P", monospace;
 
   --sidebar: oklch(0.22 0.018 62);
   --sidebar-foreground: oklch(0.93 0.02 85);
@@ -180,4 +190,13 @@ select {
     oklch(0.19 0.015 60 / 35%) 45%,
     transparent 100%
   );
+}
+
+.rs-pixel {
+  font-family: var(--font-rs-bold);
+  font-weight: 400;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: geometricPrecision;
 }
