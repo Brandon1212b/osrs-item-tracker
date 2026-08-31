@@ -46,28 +46,26 @@ export function EquipmentPaperDoll({
 }
 
 const RS_YELLOW = "#ffff00";
-const RS_FONT = '"RuneScape Bold", "Arial Black", "Arial Narrow", Tahoma, sans-serif';
+const RS_FONT = '"RuneScape Bold 12", monospace';
+const RS_PIXEL: React.CSSProperties = {
+  color: RS_YELLOW,
+  fontFamily: RS_FONT,
+  fontWeight: 400,
+  fontSize: 12,
+  lineHeight: 1,
+  letterSpacing: 0,
+  textShadow: "1px 1px 0 #000",
+  fontSmooth: "never",
+  WebkitFontSmoothing: "none",
+};
 
 function SkillLevelMark({ level }: { level: number }) {
   const text = String(level);
   return (
-    <span
-      className="relative block h-[28px] w-[30px] shrink-0 select-none"
-      style={{
-        color: RS_YELLOW,
-        fontFamily: RS_FONT,
-        fontWeight: 700,
-        fontSize: 12,
-        lineHeight: 1,
-        letterSpacing: "-0.4px",
-        textShadow: "1px 1px 0 #000",
-      }}
-    >
-      <span className="absolute left-0 top-0 tabular-nums">{text}</span>
-      <span className="absolute left-[11px] top-[7px]" style={{ fontSize: 13, fontWeight: 400 }}>
-        /
-      </span>
-      <span className="absolute bottom-0 right-0 tabular-nums">{text}</span>
+    <span className="relative block h-[28px] w-[30px] shrink-0 select-none" style={RS_PIXEL}>
+      <span className="absolute left-0 top-0">{text}</span>
+      <span className="absolute left-[10px] top-[7px]">/</span>
+      <span className="absolute bottom-0 right-0">{text}</span>
     </span>
   );
 }
@@ -151,16 +149,11 @@ export function SkillsPanel({
         <div
           className="flex items-center justify-center"
           style={{
+            ...RS_PIXEL,
             height: 32,
             marginTop: 2,
             background: "#111",
             boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
-            color: RS_YELLOW,
-            fontFamily: RS_FONT,
-            fontWeight: 700,
-            fontSize: 13,
-            letterSpacing: "-0.2px",
-            textShadow: "1px 1px 0 #000",
           }}
         >
           Total level: {hasLevels ? total : "—"}
