@@ -124,6 +124,7 @@ export function SkillingMethodsPanel({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [localSheetOpen, setLocalSheetOpen] = useState(false);
   const [listFiltersOpen, setListFiltersOpen] = useState(false);
+  const [goalEditorsOpen, setGoalEditorsOpen] = useState(false);
   const skillsNav = useMethodSkillsNav();
   const sheetOpen = skillsNav?.sheetOpen ?? localSheetOpen;
   const setSheetOpen = skillsNav?.setSheetOpen ?? setLocalSheetOpen;
@@ -400,40 +401,60 @@ export function SkillingMethodsPanel({
 
   return (
     <section className="mt-3 space-y-3">
-      <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-        >
-          {skillMeta && (
-            <WikiImage
-              icon={skillMeta.wikiIcon}
-              alt=""
-              width={22}
-              height={22}
-              lazy={false}
-              className="size-[22px] shrink-0"
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+          >
+            {skillMeta && (
+              <WikiImage
+                icon={skillMeta.wikiIcon}
+                alt=""
+                width={22}
+                height={22}
+                lazy={false}
+                className="size-[22px] shrink-0"
+              />
+            )}
+            <span className="min-w-0 truncate text-sm font-medium text-foreground">
+              {skillLabel}
+              {skillLevel != null ? ` · ${skillLevel}` : ""}
+            </span>
+          </button>
+          <MethodsViewToggle
+            view={goal.view}
+            onViewChange={(next) => {
+              goal.setView(next);
+              if (next === "rate") setGoalEditorsOpen(false);
+            }}
+            targetLevel={goal.targetLevel}
+            onRepeatGoal={() => setGoalEditorsOpen((open) => !open)}
+          />
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label="Open skills"
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+
+        {goalEditorsOpen && goal.view === "goal" && (
+          <div className="rounded-lg border border-border/50 bg-secondary/20 px-3 py-2">
+            <MethodsGoalBar
+              currentLevel={goal.currentLevel}
+              onCurrentLevelChange={goal.setCurrentLevel}
+              targetLevel={goal.targetLevel}
+              onTargetLevelChange={goal.setTargetLevel}
+              skillLabel={skillLabel}
             />
-          )}
-          <span className="min-w-0 truncate text-sm font-medium text-foreground">
-            {skillLabel}
-            {skillLevel != null ? ` · ${skillLevel}` : ""}
-          </span>
-        </button>
-        <MethodsViewToggle
-          view={goal.view}
-          onViewChange={goal.setView}
-          targetLevel={goal.targetLevel}
-        />
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          aria-label="Open skills"
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-        >
-          <ChevronRight className="size-4" />
-        </button>
+          </div>
+        )}
+
+        <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>
 
       <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -453,28 +474,19 @@ export function SkillingMethodsPanel({
               </div>
             )}
 
-            <MethodsGoalBar
-              currentLevel={goal.currentLevel}
-              onCurrentLevelChange={goal.setCurrentLevel}
-              targetLevel={goal.targetLevel}
-              onTargetLevelChange={goal.setTargetLevel}
-              skillLabel={skillLabel}
-              trailing={
-                <button
-                  type="button"
-                  onClick={() => setListFiltersOpen((open) => !open)}
-                  aria-expanded={listFiltersOpen}
-                  className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
-                    listFiltersOpen || filtersActive
-                      ? "border-primary/70 bg-primary/15 text-primary"
-                      : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <ListFilter className="size-3.5" />
-                  Filter
-                </button>
-              }
-            />
+            <button
+              type="button"
+              onClick={() => setListFiltersOpen((open) => !open)}
+              aria-expanded={listFiltersOpen}
+              className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
+                listFiltersOpen || filtersActive
+                  ? "border-primary/70 bg-primary/15 text-primary"
+                  : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ListFilter className="size-3.5" />
+              Filter
+            </button>
 
             {listFiltersOpen && (
               <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-secondary/20 p-2">
@@ -536,10 +548,6 @@ export function SkillingMethodsPanel({
                 )}
               </div>
             )}
-
-            <div className="border-t border-border/40 pt-2.5">
-              <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
-            </div>
           </div>
         </DrawerContent>
       </Drawer>
