@@ -401,57 +401,57 @@ export function SkillingMethodsPanel({
   return (
     <section className="mt-3 space-y-3">
       <div className="space-y-2">
-        <Popover open={sheetOpen} onOpenChange={setSheetOpen}>
-          <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
-            <PopoverAnchor asChild>
+        <div className="flex items-center gap-2">
+          <Popover open={sheetOpen} onOpenChange={setSheetOpen}>
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-2">
+              <PopoverAnchor asChild>
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(true)}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  {skillMeta && (
+                    <WikiImage
+                      icon={skillMeta.wikiIcon}
+                      alt=""
+                      width={22}
+                      height={22}
+                      lazy={false}
+                      className="size-[22px] shrink-0"
+                    />
+                  )}
+                  <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                    {skillLabel}
+                    {skillLevel != null ? ` · ${skillLevel}` : ""}
+                  </span>
+                </button>
+              </PopoverAnchor>
+              <MethodsViewToggle
+                view={goal.view}
+                onViewChange={goal.setView}
+                targetLevel={goal.targetLevel}
+                onTargetChange={goal.setTargetLevel}
+                minTarget={goal.currentLevel + 1}
+              />
               <button
                 type="button"
-                onClick={() => setSheetOpen(true)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                onClick={() => setSheetOpen((open) => !open)}
+                aria-label="Open skills"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
-                {skillMeta && (
-                  <WikiImage
-                    icon={skillMeta.wikiIcon}
-                    alt=""
-                    width={22}
-                    height={22}
-                    lazy={false}
-                    className="size-[22px] shrink-0"
-                  />
-                )}
-                <span className="min-w-0 truncate text-sm font-medium text-foreground">
-                  {skillLabel}
-                  {skillLevel != null ? ` · ${skillLevel}` : ""}
-                </span>
+                <ChevronRight className={`size-4 transition-transform ${sheetOpen ? "rotate-90" : ""}`} />
               </button>
-            </PopoverAnchor>
-            <MethodsViewToggle
-              view={goal.view}
-              onViewChange={goal.setView}
-              targetLevel={goal.targetLevel}
-              onTargetChange={goal.setTargetLevel}
-              minTarget={goal.currentLevel + 1}
-            />
-            <button
-              type="button"
-              onClick={() => setSheetOpen((open) => !open)}
-              aria-label="Open skills"
-              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-            >
-              <ChevronRight className={`size-4 transition-transform ${sheetOpen ? "rotate-90" : ""}`} />
-            </button>
-          </div>
+            </div>
 
-          <PopoverContent
-            align="start"
-            side="bottom"
-            sideOffset={8}
-            collisionPadding={12}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            className="w-auto max-w-[calc(100vw-1.5rem)] p-3"
-          >
-            <PopoverArrow className="fill-popover" />
-            <div className="space-y-3">
+            <PopoverContent
+              align="start"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={12}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+              className="w-auto max-w-[calc(100vw-1.5rem)] p-3"
+            >
+              <PopoverArrow className="fill-popover" />
               {skillsNav && (
                 <div className="flex justify-center">
                   <SkillsPanel
@@ -462,84 +462,93 @@ export function SkillingMethodsPanel({
                   />
                 </div>
               )}
+            </PopoverContent>
+          </Popover>
 
+          <Popover open={listFiltersOpen} onOpenChange={setListFiltersOpen}>
+            <PopoverAnchor asChild>
               <button
                 type="button"
                 onClick={() => setListFiltersOpen((open) => !open)}
                 aria-expanded={listFiltersOpen}
-                className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-medium ${
+                className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-lg border px-2.5 text-[11px] font-medium ${
                   listFiltersOpen || filtersActive
                     ? "border-primary/70 bg-primary/15 text-primary"
-                    : "border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground"
+                    : "border-border/60 bg-secondary/25 text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <ListFilter className="size-3.5" />
                 Filter
               </button>
+            </PopoverAnchor>
+            <PopoverContent
+              align="end"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={12}
+              className="w-56 p-2"
+            >
+              <div className="flex flex-col gap-2">
+                <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+                  <SelectTrigger className="h-8 w-full min-w-0 text-xs">
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
+                    <SelectItem value="cost_desc">Your cost ↓</SelectItem>
+                    <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
+                    <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
+                    <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
+                    <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              {listFiltersOpen && (
-                <div className="flex flex-col gap-2 rounded-lg border border-border/50 bg-secondary/20 p-2">
-                  <Select value={sort} onValueChange={(v) => setSort(v as CraftSort)}>
+                {categories.length > 1 && (
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-                      <SelectValue placeholder="Sort" />
+                      <SelectValue placeholder="Activity type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cost_asc">Your cost ↑ (best)</SelectItem>
-                      <SelectItem value="cost_desc">Your cost ↓</SelectItem>
-                      <SelectItem value="gp_desc">{goal.view === "goal" ? "Total GP ↓" : "GP/h ↓"}</SelectItem>
-                      <SelectItem value="gp_asc">{goal.view === "goal" ? "Total GP ↑" : "GP/h ↑"}</SelectItem>
-                      <SelectItem value="xp_desc">{goal.view === "goal" ? "Hours ↑ (fastest)" : "XP/h ↓"}</SelectItem>
-                      <SelectItem value="xp_asc">{goal.view === "goal" ? "Hours ↓" : "XP/h ↑"}</SelectItem>
+                      <SelectItem value="all">All types</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                )}
 
-                  {categories.length > 1 && (
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="h-8 w-full min-w-0 text-xs">
-                        <SelectValue placeholder="Activity type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All types</SelectItem>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-
-                  {isHerblore && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-muted-foreground">Amulet</span>
-                        <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
-                          <SelectTrigger className="h-8 w-[8.5rem] text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="chemistry">Chemistry</SelectItem>
-                            <SelectItem value="alchemist">Alchemist</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
-                        <input
-                          type="checkbox"
-                          checked={goggles}
-                          onChange={(e) => setGoggles(e.target.checked)}
-                          className="size-3.5 rounded border-border"
-                        />
-                        Amylase goggles
-                      </label>
+                {isHerblore && (
+                  <>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">Amulet</span>
+                      <Select value={amulet} onValueChange={(v) => setAmulet(v as AmuletChoice)}>
+                        <SelectTrigger className="h-8 flex-1 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="alchemist">Alchemist</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
+                    <label className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-secondary/40 px-3 text-[11px] font-medium text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={goggles}
+                        onChange={(e) => setGoggles(e.target.checked)}
+                        className="size-3.5 rounded border-border"
+                      />
+                      Amylase goggles
+                    </label>
+                  </>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
 
         <MoneyMakingSlider value={g} onChange={onMoneyPerHourChange} />
       </div>
