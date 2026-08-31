@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { PriceRow } from "@/lib/osrs.server";
-import { gp, compactNum, formatCost, formatHours } from "@/lib/format";
+import { gp, compactNum, formatHours } from "@/lib/format";
 import { WikiImage } from "@/components/WikiImage";
 import { intensityClass } from "@/components/methods-ux";
 import type { RankedMethod } from "@/components/skilling-types";
@@ -45,6 +45,7 @@ export function MethodRow({
   profitPerCraft,
   netChangePct,
   costPerXp,
+  netValuePerHour,
   missing,
   locked,
   secondaryLine,
@@ -158,21 +159,17 @@ export function MethodRow({
             />
           )}
           <Stat
-            label="Your cost"
-            value={costPerXp == null ? "-" : `${formatCost(costPerXp)} gp/xp`}
+            label="Value/h"
+            value={netValuePerHour == null ? "-" : gp(Math.round(netValuePerHour))}
             emphasis
             tone={
-              costPerXp == null
+              netValuePerHour == null
                 ? undefined
-                : costPerXp <= 0
+                : netValuePerHour >= 0
                   ? "deal"
-                  : costPerXp <= 15
-                    ? "deal"
-                    : costPerXp >= 40
-                      ? "steep"
-                      : undefined
+                  : "steep"
             }
-            title="Supplies + opportunity cost of not money-making, per XP. Lower is better."
+            title="GP/h plus your rate times this method's speed versus the fastest method. Higher is better."
           />
         </div>
       </div>
