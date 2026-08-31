@@ -54,6 +54,7 @@ export function MethodRow({
   totalGp,
   metricView = "rate",
   xpRemaining = 0,
+  dominatedBy = null,
 }: RankedMethod & {
   rank: number;
   rowsByName: Map<string, PriceRow>;
@@ -131,6 +132,11 @@ export function MethodRow({
               {locked ? " | locked" : ""}
               {secondaryLine ? ` | ${secondaryLine}` : ""}
             </p>
+            {dominatedBy ? (
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Slower and less GP/h than {dominatedBy}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-wrap gap-3 text-right text-xs tabular-nums">
