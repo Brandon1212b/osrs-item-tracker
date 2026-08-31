@@ -32,9 +32,10 @@ import { FilterPopover, SkillsPanel } from "./home-ui";
 import { MethodSkillsNavProvider } from "@/components/method-skills-nav";
 
 const DEFAULT_G = 2_000_000;
+const DEFAULT_SKILL = "crafting";
 
 const methodsSearchSchema = z.object({
-  skill: z.string().catch(""),
+  skill: z.string().catch(DEFAULT_SKILL),
   g: z.coerce.number().catch(DEFAULT_G),
 });
 
@@ -131,26 +132,31 @@ function MethodsPage() {
   };
 
   useEffect(() => {
-    if (skill) {
+    if (skill && METHOD_SKILL_KEYS.has(skill)) {
       writeLastSkill(skill);
       return;
     }
+    if (playerSkills) {
+      let bestKey = "";
+      let bestLevel = -1;
+      for (const s of METHOD_SKILLS) {
+        const level = playerSkills[s.key];
+        if (level != null && level > bestLevel) {
+          bestLevel = level;
+          bestKey = s.key;
+        }
+      }
+      if (bestKey) {
+        patchSearch({ skill: bestKey });
+        return;
+      }
+    }
     const last = readLastSkill();
-    if (last && METHOD_SKILLS.some((s) => s.key === last)) {
+    if (last && METHOD_SKILL_KEYS.has(last)) {
       patchSearch({ skill: last });
       return;
     }
-    if (!playerSkills) return;
-    let bestKey = "";
-    let bestLevel = -1;
-    for (const s of METHOD_SKILLS) {
-      const level = playerSkills[s.key];
-      if (level != null && level > bestLevel) {
-        bestLevel = level;
-        bestKey = s.key;
-      }
-    }
-    if (bestKey) patchSearch({ skill: bestKey });
+    patchSearch({ skill: DEFAULT_SKILL });
   }, [skill, playerSkills]);
 
   const skillsNav = {
