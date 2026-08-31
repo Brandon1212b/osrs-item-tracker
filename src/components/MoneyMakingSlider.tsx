@@ -34,11 +34,11 @@ export function MoneyMakingSlider({
 
   return (
     <div className="w-full space-y-1">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium text-foreground">Your rate</p>
-          <p className="text-[11px] text-muted-foreground">Opportunity cost used to rank methods.</p>
-        </div>
+      <div className="flex items-center gap-2">
+        <p className="shrink-0 text-[12px] font-medium text-foreground">Your rate</p>
+        <p className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
+          Opportunity cost used to rank methods.
+        </p>
         {editing ? (
           <input
             autoFocus
@@ -51,7 +51,7 @@ export function MoneyMakingSlider({
             onKeyDown={(e) => {
               if (e.key === "Enter") e.currentTarget.blur();
             }}
-            className="h-7 w-[5.5rem] rounded-md border border-border/60 bg-background px-1.5 text-right text-[12px] font-semibold tabular-nums text-foreground outline-none"
+            className="h-7 w-[5.5rem] shrink-0 rounded-md border border-border/60 bg-background px-1.5 text-right text-[12px] font-semibold tabular-nums text-foreground outline-none"
             aria-label="Your money-making rate per hour"
           />
         ) : (
