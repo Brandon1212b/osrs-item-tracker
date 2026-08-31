@@ -164,6 +164,7 @@ function MethodsPage() {
     onSelect: (key: string) => {
       if (!METHOD_SKILL_KEYS.has(key)) return;
       patchSearch({ skill: key === skill ? skill : key });
+      setSheetOpen(false);
     },
     levels: playerSkills,
     enabledKeys: METHOD_SKILL_KEYS,
