@@ -2,6 +2,7 @@ import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { MINING_METHODS } from "@/lib/mining-methods";
 import { MINING_RATE_TABLES } from "@/lib/mining-activities";
 import { activitiesForSkill } from "@/lib/activity-methods";
+import { ZALCANO_METHODS } from "@/lib/wiki-audit-activities";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -26,7 +27,7 @@ export function MiningMethodsPanel({
       skillKey="mining"
       skillLabel="Mining"
       methods={MINING_METHODS.filter((m) => !MOVED.has(m.id))}
-      activities={[...activitiesForSkill("mining"), ...MINING_RATE_TABLES]}
+      activities={[...activitiesForSkill("mining"), ...MINING_RATE_TABLES, ...ZALCANO_METHODS]}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

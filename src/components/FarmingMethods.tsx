@@ -1,6 +1,11 @@
 import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { FARMING_METHODS } from "@/lib/farming-methods";
 import { activitiesForSkill } from "@/lib/activity-methods";
+import {
+  TITHE_FARM_METHODS,
+  FARMING_CONTRACT_METHODS,
+  HESPORI_METHODS,
+} from "@/lib/wiki-audit-activities";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -23,7 +28,12 @@ export function FarmingMethodsPanel({
       skillKey="farming"
       skillLabel="Farming"
       methods={FARMING_METHODS}
-      activities={activitiesForSkill("farming")}
+      activities={[
+        ...activitiesForSkill("farming"),
+        ...TITHE_FARM_METHODS,
+        ...FARMING_CONTRACT_METHODS,
+        ...HESPORI_METHODS,
+      ]}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}

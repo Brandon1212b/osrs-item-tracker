@@ -2,6 +2,7 @@ import { SkillingMethodsPanel } from "@/components/SkillingMethodsPanel";
 import { FISHING_METHODS } from "@/lib/fishing-methods";
 import { FISHING_RATE_TABLES } from "@/lib/fishing-activities";
 import { activitiesForSkill } from "@/lib/activity-methods";
+import { DEEP_SEA_TRAWL_METHODS } from "@/lib/wiki-audit-activities";
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
@@ -26,7 +27,7 @@ export function FishingMethodsPanel({
       skillKey="fishing"
       skillLabel="Fishing"
       methods={FISHING_METHODS.filter((m) => !MOVED.has(m.id))}
-      activities={[...activitiesForSkill("fishing"), ...FISHING_RATE_TABLES]}
+      activities={[...activitiesForSkill("fishing"), ...FISHING_RATE_TABLES, ...DEEP_SEA_TRAWL_METHODS]}
       rowsByName={rowsByName}
       trendsById={trendsById}
       moneyPerHour={moneyPerHour}
