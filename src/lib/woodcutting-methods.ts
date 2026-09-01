@@ -25,6 +25,15 @@ export const WOODCUTTING_METHODS: WoodcuttingMethod[] = [
   { id: "camphor-logs", label: "Camphor logs", level: 66, xp: 143, actionsPerHour: 450, inputs: [], output: { name: "Camphor logs", qty: 1 } },
   { id: "magic-logs", label: "Magic logs", level: 75, xp: 250, actionsPerHour: 130, inputs: [], output: { name: "Magic logs", qty: 1 } },
   { id: "engorged-bloodwood", label: "Engorged bloodwood tree", level: 77, xp: 165, actionsPerHour: 430, inputs: [], output: null },
+  {
+    id: "infected-roots",
+    label: "Chop infected roots (demon tears)",
+    level: 80,
+    xp: 13,
+    actionsPerHour: 700,
+    inputs: [],
+    output: { name: "Demon tear", qty: 1 },
+  },
 ];
 
 export function woodcuttingMethodItemNames(): string[] {
