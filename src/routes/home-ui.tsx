@@ -195,7 +195,7 @@ export function FilterPopover({
   }, [open, onOpenChange]);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${open ? "z-[80]" : ""} ${className}`}>
       <button
         type="button"
         aria-label={ariaLabel ?? label}
