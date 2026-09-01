@@ -36,8 +36,11 @@ export function MoneyMakingSlider({
     <div className="w-full space-y-1">
       <div className="flex items-center gap-2">
         <p className="shrink-0 text-[12px] font-medium text-foreground">Your rate</p>
-        <p className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-          Higher rate favors faster methods. Lower rate favors gold-while-training.
+        <p
+          className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground"
+          title="GP you'd make per hour if you weren't training"
+        >
+          GP you'd make if you weren't training
         </p>
         {editing ? (
           <input
