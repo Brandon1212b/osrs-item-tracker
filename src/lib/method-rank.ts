@@ -20,22 +20,15 @@ export function referenceXpPerHour(list: Pick<RankedMethod, "locked" | "xpPerHou
   return max > 0 ? max : 1;
 }
 
-/** (GP/h - your rate) / XP/h. Higher means cheaper XP after leftover time at your rate. */
-export function leftoverPerXp(
-  xpPerHour: number,
-  gpPerHour: number | null,
-  moneyPerHour: number,
-): number | null {
-  if (!(xpPerHour > 0)) return null;
-  const gp = gpPerHour ?? 0;
-  const rate = Number.isFinite(moneyPerHour) && moneyPerHour > 0 ? moneyPerHour : 0;
-  return (gp - rate) / xpPerHour;
-}
-
 /**
- * Gold to gain as much XP as the fastest method gives in one hour:
- * train this method until that XP, leftover of that hour at your rate.
- * Slower methods take more than one hour; extra hours count as training, not PVM.
+ * One number per method.
+ *
+ * If GP/h >= your rate, you would keep training, so score the hour:
+ *   GP/h + rate * (XP/h / fastest XP/h)
+ *
+ * If GP/h < your rate, you would finish XP then PVM, so score buying
+ * as much XP as the fastest method gives in one hour:
+ *   rate + fastestXp * (GP/h - rate) / XP/h
  */
 export function methodValuePerHour(
   xpPerHour: number,
@@ -43,57 +36,25 @@ export function methodValuePerHour(
   moneyPerHour: number,
   refXpPerHour: number,
 ): number | null {
-  const L = leftoverPerXp(xpPerHour, gpPerHour, moneyPerHour);
-  if (L == null) return gpPerHour;
+  if (gpPerHour == null && !(xpPerHour > 0)) return null;
+  const gp = gpPerHour ?? 0;
   const ref = refXpPerHour > 0 ? refXpPerHour : 1;
   const rate = Number.isFinite(moneyPerHour) && moneyPerHour > 0 ? moneyPerHour : 0;
-  return rate + ref * L;
-}
+  const xp = xpPerHour > 0 ? xpPerHour : 0;
 
-function gpOrMissing(row: RankedMethod): number | null {
-  return row.gpPerHour;
-}
-
-export function applyDominance(list: RankedMethod[]): void {
-  for (const a of list) {
-    a.dominatedBy = null;
-    if (a.locked) continue;
-    const aGp = gpOrMissing(a);
-    for (const b of list) {
-      if (b.locked || b.id === a.id) continue;
-      const bGp = gpOrMissing(b);
-      if (aGp == null && bGp == null) {
-        if (b.xpPerHour > a.xpPerHour) {
-          a.dominatedBy = b.label;
-          break;
-        }
-        continue;
-      }
-      if (bGp == null) continue;
-      if (aGp == null) {
-        if (b.xpPerHour >= a.xpPerHour) {
-          a.dominatedBy = b.label;
-          break;
-        }
-        continue;
-      }
-      const betterXp = b.xpPerHour >= a.xpPerHour;
-      const betterGp = bGp >= aGp;
-      const strict = b.xpPerHour > a.xpPerHour || bGp > aGp;
-      if (betterXp && betterGp && strict) {
-        a.dominatedBy = b.label;
-        break;
-      }
-    }
+  if (gp >= rate) {
+    return gp + rate * (xp / ref);
   }
+  if (!(xp > 0)) return gp;
+  return rate + ref * ((gp - rate) / xp);
 }
 
 export function applyMethodValues(list: RankedMethod[], moneyPerHour: number): void {
   const ref = referenceXpPerHour(list);
   for (const row of list) {
     row.netValuePerHour = methodValuePerHour(row.xpPerHour, row.gpPerHour, moneyPerHour, ref);
+    row.dominatedBy = null;
   }
-  applyDominance(list);
 }
 
 function nullsLast(a: number | null, b: number | null, dir: 1 | -1): number {
@@ -112,18 +73,10 @@ export function compareMethods(
 ): number {
   if (lockedLast && a.locked !== b.locked) return a.locked ? 1 : -1;
   switch (sort) {
-    case "value_desc": {
-      const aDom = a.dominatedBy != null && !a.locked;
-      const bDom = b.dominatedBy != null && !b.locked;
-      if (aDom !== bDom) return aDom ? 1 : -1;
+    case "value_desc":
       return nullsLast(b.netValuePerHour ?? null, a.netValuePerHour ?? null, 1);
-    }
-    case "value_asc": {
-      const aDom = a.dominatedBy != null && !a.locked;
-      const bDom = b.dominatedBy != null && !b.locked;
-      if (aDom !== bDom) return aDom ? 1 : -1;
+    case "value_asc":
       return nullsLast(a.netValuePerHour ?? null, b.netValuePerHour ?? null, 1);
-    }
     case "gp_desc":
       return goalView === "goal"
         ? nullsLast(b.totalGp ?? null, a.totalGp ?? null, 1)
