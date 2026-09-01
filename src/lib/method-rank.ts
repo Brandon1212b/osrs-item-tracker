@@ -20,17 +20,72 @@ export function referenceXpPerHour(list: Pick<RankedMethod, "locked" | "xpPerHou
   return max > 0 ? max : 1;
 }
 
+/** (GP/h - your rate) / XP/h. Higher means cheaper XP after leftover time at your rate. */
+export function leftoverPerXp(
+  xpPerHour: number,
+  gpPerHour: number | null,
+  moneyPerHour: number,
+): number | null {
+  if (!(xpPerHour > 0)) return null;
+  const gp = gpPerHour ?? 0;
+  const rate = Number.isFinite(moneyPerHour) && moneyPerHour > 0 ? moneyPerHour : 0;
+  return (gp - rate) / xpPerHour;
+}
+
+/**
+ * Gold to gain as much XP as the fastest method gives in one hour:
+ * train this method until that XP, leftover of that hour at your rate.
+ * Slower methods take more than one hour; extra hours count as training, not PVM.
+ */
 export function methodValuePerHour(
   xpPerHour: number,
   gpPerHour: number | null,
   moneyPerHour: number,
   refXpPerHour: number,
 ): number | null {
-  if (gpPerHour == null && !(xpPerHour > 0)) return null;
-  const gp = gpPerHour ?? 0;
+  const L = leftoverPerXp(xpPerHour, gpPerHour, moneyPerHour);
+  if (L == null) return gpPerHour;
   const ref = refXpPerHour > 0 ? refXpPerHour : 1;
   const rate = Number.isFinite(moneyPerHour) && moneyPerHour > 0 ? moneyPerHour : 0;
-  return gp + rate * (xpPerHour / ref);
+  return rate + ref * L;
+}
+
+function gpOrMissing(row: RankedMethod): number | null {
+  return row.gpPerHour;
+}
+
+export function applyDominance(list: RankedMethod[]): void {
+  for (const a of list) {
+    a.dominatedBy = null;
+    if (a.locked) continue;
+    const aGp = gpOrMissing(a);
+    for (const b of list) {
+      if (b.locked || b.id === a.id) continue;
+      const bGp = gpOrMissing(b);
+      if (aGp == null && bGp == null) {
+        if (b.xpPerHour > a.xpPerHour) {
+          a.dominatedBy = b.label;
+          break;
+        }
+        continue;
+      }
+      if (bGp == null) continue;
+      if (aGp == null) {
+        if (b.xpPerHour >= a.xpPerHour) {
+          a.dominatedBy = b.label;
+          break;
+        }
+        continue;
+      }
+      const betterXp = b.xpPerHour >= a.xpPerHour;
+      const betterGp = bGp >= aGp;
+      const strict = b.xpPerHour > a.xpPerHour || bGp > aGp;
+      if (betterXp && betterGp && strict) {
+        a.dominatedBy = b.label;
+        break;
+      }
+    }
+  }
 }
 
 export function applyMethodValues(list: RankedMethod[], moneyPerHour: number): void {
@@ -38,6 +93,7 @@ export function applyMethodValues(list: RankedMethod[], moneyPerHour: number): v
   for (const row of list) {
     row.netValuePerHour = methodValuePerHour(row.xpPerHour, row.gpPerHour, moneyPerHour, ref);
   }
+  applyDominance(list);
 }
 
 function nullsLast(a: number | null, b: number | null, dir: 1 | -1): number {
@@ -56,10 +112,18 @@ export function compareMethods(
 ): number {
   if (lockedLast && a.locked !== b.locked) return a.locked ? 1 : -1;
   switch (sort) {
-    case "value_desc":
+    case "value_desc": {
+      const aDom = a.dominatedBy != null && !a.locked;
+      const bDom = b.dominatedBy != null && !b.locked;
+      if (aDom !== bDom) return aDom ? 1 : -1;
       return nullsLast(b.netValuePerHour ?? null, a.netValuePerHour ?? null, 1);
-    case "value_asc":
+    }
+    case "value_asc": {
+      const aDom = a.dominatedBy != null && !a.locked;
+      const bDom = b.dominatedBy != null && !b.locked;
+      if (aDom !== bDom) return aDom ? 1 : -1;
       return nullsLast(a.netValuePerHour ?? null, b.netValuePerHour ?? null, 1);
+    }
     case "gp_desc":
       return goalView === "goal"
         ? nullsLast(b.totalGp ?? null, a.totalGp ?? null, 1)

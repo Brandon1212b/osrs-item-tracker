@@ -26,6 +26,7 @@ export type RankedMethod = {
   netChangePct: number | null;
   costPerXp: number | null;
   netValuePerHour: number | null;
+  dominatedBy?: string | null;
   missing: boolean;
   locked: boolean;
   method?: SkillingMethod;
