@@ -12,6 +12,9 @@ export type MethodSort =
 
 export const DEFAULT_METHOD_SORT: MethodSort = "value_desc";
 
+export const SCORE_DEFINITION =
+  "If this method beats your rate, score is gold from one hour of it. If it pays less than your rate, score is gold to get as much XP as the fastest method gives in one hour, with leftover time at your rate. Higher is better.";
+
 export function referenceXpPerHour(list: Pick<RankedMethod, "locked" | "xpPerHour">[]): number {
   const unlocked = list.filter((r) => !r.locked && r.xpPerHour > 0);
   const pool = unlocked.length > 0 ? unlocked : list.filter((r) => r.xpPerHour > 0);
@@ -20,16 +23,6 @@ export function referenceXpPerHour(list: Pick<RankedMethod, "locked" | "xpPerHou
   return max > 0 ? max : 1;
 }
 
-/**
- * One number per method.
- *
- * If GP/h >= your rate, you would keep training, so score the hour:
- *   GP/h + rate * (XP/h / fastest XP/h)
- *
- * If GP/h < your rate, you would finish XP then PVM, so score buying
- * as much XP as the fastest method gives in one hour:
- *   rate + fastestXp * (GP/h - rate) / XP/h
- */
 export function methodValuePerHour(
   xpPerHour: number,
   gpPerHour: number | null,
