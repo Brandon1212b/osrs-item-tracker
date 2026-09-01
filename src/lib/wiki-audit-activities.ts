@@ -334,3 +334,47 @@ export const AGILITY_PYRAMID_ACTIVITY: ActivityMethod[] = [
     notes: "26 laps/hr max times 10k pyramid top.",
   },
 ];
+
+export const ZALCANO_METHODS: ActivityMethod[] = [
+  {
+    id: "zalcano",
+    label: "Zalcano (loot)",
+    skillKey: "mining",
+    secondarySkill: "smithing",
+    level: 70,
+    rateBands: [
+      { level: 70, xpPerHour: 12_000, expectedLootGpPerHour: 400_000, secondaryXpPerHour: 1_440 },
+      { level: 90, xpPerHour: 12_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 1_440 },
+    ],
+    consumables: [
+      { name: "Stamina potion(4)", qty: 3 },
+      { name: "Saradomin brew(4)", qty: 3 },
+    ],
+    rewards: [
+      { name: "Crystal shard", expectedQtyPerHour: 99.36 },
+      { name: "Gold ore", expectedQtyPerHour: 107.6 },
+      { name: "Coal", expectedQtyPerHour: 48.7 },
+      { name: "Runite ore", expectedQtyPerHour: 6 },
+      { name: "Adamantite bar", expectedQtyPerHour: 12 },
+      { name: "Mithril bar", expectedQtyPerHour: 68.4 },
+      { name: "Steel bar", expectedQtyPerHour: 81.6 },
+    ],
+    intensity: "high",
+    notes: "Wiki MMG ~48 kc/hr. Live GE on shards/ores/bars minus brews/stams. Residual = rune pack + unique EV.",
+  },
+  {
+    id: "zalcano-xp",
+    label: "Zalcano (experience)",
+    skillKey: "mining",
+    secondarySkill: "smithing",
+    level: 70,
+    rateBands: [{ level: 70, xpPerHour: 52_800, expectedLootGpPerHour: 200_000, secondaryXpPerHour: 6_240 }],
+    consumables: [
+      { name: "Stamina potion(4)", qty: 3 },
+      { name: "Saradomin brew(4)", qty: 3 },
+    ],
+    rewards: [{ name: "Crystal shard", expectedQtyPerHour: 99.36 }],
+    intensity: "high",
+    notes: "Wiki MMG experience variant (~1100 Mining XP/kill). Lower loot focus.",
+  },
+];
