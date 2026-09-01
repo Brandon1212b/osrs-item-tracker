@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -133,8 +133,6 @@ export function HomeFiltersSheet({
   onSortChange: (next: SortKey) => void;
   onRangeChange: (next: RangeKey) => void;
 }) {
-  const rootRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -145,7 +143,7 @@ export function HomeFiltersSheet({
   }, [open, onOpenChange]);
 
   return (
-    <div ref={rootRef} className="relative shrink-0">
+    <div className={`relative shrink-0 ${open ? "z-[80]" : ""}`}>
       <HomeFiltersButton activeRsn={activeRsn} onClick={() => onOpenChange(!open)} />
       {open ? (
         <>
