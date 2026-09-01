@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
+import { PopupDismissShield } from "@/components/popup-dismiss-shield";
 
 export function EquipmentPaperDoll({
   active,
@@ -165,25 +166,6 @@ export function SkillsPanel({
   );
 }
 
-function useDismissOnOutside(open: boolean, onClose: () => void, rootRef: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: PointerEvent) => {
-      const el = rootRef.current;
-      if (!el) return;
-      if (el.contains(e.target as Node)) return;
-      onClose();
-    };
-    const id = window.setTimeout(() => {
-      document.addEventListener("pointerdown", onDoc, true);
-    }, 0);
-    return () => {
-      window.clearTimeout(id);
-      document.removeEventListener("pointerdown", onDoc, true);
-    };
-  }, [open, onClose, rootRef]);
-}
-
 export function FilterPopover({
   open,
   onOpenChange,
@@ -203,11 +185,17 @@ export function FilterPopover({
   contentClassName?: string;
   children: React.ReactNode;
 }) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  useDismissOnOutside(open, () => onOpenChange(false), rootRef);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onOpenChange]);
 
   return (
-    <div ref={rootRef} className={`relative ${className}`}>
+    <div className={`relative ${open ? "z-[80]" : ""} ${className}`}>
       <button
         type="button"
         aria-label={ariaLabel ?? label}
@@ -222,11 +210,14 @@ export function FilterPopover({
         </span>
       </button>
       {open ? (
-        <div
-          className={`absolute left-0 top-full z-[80] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
-        >
-          {children}
-        </div>
+        <>
+          <PopupDismissShield onDismiss={() => onOpenChange(false)} />
+          <div
+            className={`absolute left-0 top-full z-[80] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
+          >
+            {children}
+          </div>
+        </>
       ) : null}
     </div>
   );
