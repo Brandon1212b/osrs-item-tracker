@@ -21,6 +21,7 @@ import { hunterMethodItemNames } from "./hunter-methods";
 import { sailingMethodItemNames } from "./sailing-methods";
 import { sailingActivityItemNames } from "./sailing-activity-methods";
 import { activityMethodItemNames } from "./activity-methods";
+import { wikiAuditActivityItemNames } from "./wiki-audit-activities";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -48,6 +49,7 @@ const allNames = () => {
       ...sailingMethodItemNames(),
       ...sailingActivityItemNames(),
       ...activityMethodItemNames(),
+      ...wikiAuditActivityItemNames(),
     ]),
   ];
 };

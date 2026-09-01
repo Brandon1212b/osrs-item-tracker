@@ -10,6 +10,8 @@ import {
 import type { PriceRow, Trend } from "@/lib/osrs.server";
 import type { PlayerSkills } from "@/lib/player-stats";
 
+const MOVED = new Set(["hallowed-sepulchre", "wilderness-agility"]);
+
 export function AgilityMethodsPanel({
   rowsByName,
   trendsById,
@@ -28,7 +30,7 @@ export function AgilityMethodsPanel({
       title="Agility methods"
       skillKey="agility"
       skillLabel="Agility"
-      methods={AGILITY_METHODS.filter((m) => m.id !== "hallowed-sepulchre")}
+      methods={AGILITY_METHODS.filter((m) => !MOVED.has(m.id))}
       activities={[
         SEPULCHRE_FLOOR_5,
         ...SEPULCHRE_ACTIVITY.filter((a) => a.id !== "sepulchre-floor-5-loot"),
