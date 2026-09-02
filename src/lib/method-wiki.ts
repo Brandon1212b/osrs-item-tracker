@@ -112,7 +112,7 @@ const BY_ID: Record<string, WikiRef> = {
   "yew-longbow": { page: "Money making guide/Fletching yew longbows", title: "Fletching yew longbows (MMG)" },
   "magic-longbow": { page: "Money making guide/Fletching magic longbows", title: "Fletching magic longbows (MMG)" },
   "redwood-pyre": { page: "Money making guide/Making redwood pyre logs", title: "Making redwood pyre logs (MMG)" },
-  "sepulchre-floor-5-loot": { page: "Money making guide/Looting the Hallowed Sepulchre", title: "Looting Hallowed Sepulchre (MMG)" },
+  "sepulchre-floor-5-loot": { page: "Money making guide/Hallowed Sepulchre (Floor 5)", title: "Hallowed Sepulchre Floor 5 (MMG)" },
   "wilderness-agility-tickets": { page: "Money making guide/Wilderness Agility Course", title: "Wilderness Agility Course (MMG)" },
 };
 
