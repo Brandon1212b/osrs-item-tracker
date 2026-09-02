@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { createPortal } from "react-dom";
 
 /**
  * After a popup unmounts mid-gesture, iOS/Safari still delivers the leftover
@@ -30,7 +29,11 @@ export function swallowBehindPopup(ms = 500) {
   swallowUntil = Date.now() + ms;
 }
 
-/** Full-screen tap catcher, portaled so stacking contexts cannot hide it. */
+/**
+ * Full-screen tap catcher. A near-invisible fill is required so iOS actually
+ * hits this layer. Dismiss + swallow on pointerup so the leftover click cannot
+ * open the item/method under the finger.
+ */
 export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
   useEffect(() => {
     installSwallow();
@@ -41,9 +44,7 @@ export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
     onDismiss();
   };
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
+  return (
     <div
       aria-hidden
       className="fixed inset-0 z-[60]"
@@ -69,7 +70,6 @@ export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
         e.preventDefault();
         e.stopPropagation();
       }}
-    />,
-    document.body,
+    />
   );
 }
