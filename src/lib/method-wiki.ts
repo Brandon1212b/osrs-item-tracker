@@ -1,7 +1,7 @@
 /**
  * Best OSRS Wiki page for each /methods row.
  * Preference: exact MMG, then activity/course page, then skill training guide.
- * Titles checked against oldschool.runescape.wiki (Aug 2026).
+ * Titles checked against oldschool.runescape.wiki (Sep 2026).
  */
 
 export type WikiRef = {
@@ -13,6 +13,10 @@ const WIKI_ORIGIN = "https://oldschool.runescape.wiki/w/";
 
 export function wikiHref(page: string): string {
   return WIKI_ORIGIN + page.replace(/ /g, "_");
+}
+
+function mmg(pageSuffix: string, title: string): WikiRef {
+  return { page: `Money making guide/${pageSuffix}`, title: `${title} (MMG)` };
 }
 
 const SKILL_TRAINING: Record<string, WikiRef> = {
@@ -37,83 +41,140 @@ const SKILL_TRAINING: Record<string, WikiRef> = {
 };
 
 const BY_SKILL_ID: Record<string, WikiRef> = {
-  "cooking:karambwan": { page: "Money making guide/Cooking raw karambwan", title: "Cooking karambwan (MMG)" },
-  "cooking:shark": { page: "Money making guide/Cooking raw sharks", title: "Cooking sharks (MMG)" },
-  "cooking:dark-crab": { page: "Money making guide/Cooking raw dark crabs", title: "Cooking dark crabs (MMG)" },
-  "cooking:anglerfish": { page: "Money making guide/Cooking raw anglerfish", title: "Cooking anglerfish (MMG)" },
-  "fishing:shark": { page: "Money making guide/Catching sharks", title: "Catching sharks (MMG)" },
-  "fishing:dark-crab": { page: "Money making guide/Catching dark crabs", title: "Catching dark crabs (MMG)" },
-  "fishing:anglerfish": { page: "Money making guide/Catching anglerfish", title: "Catching anglerfish (MMG)" },
-  "fishing:minnows": { page: "Money making guide/Catching minnows", title: "Catching minnows (MMG)" },
-  "fishing:karambwan": { page: "Money making guide/Catching raw karambwan", title: "Catching raw karambwan (MMG)" },
-  "woodcutting:magic-logs": { page: "Money making guide/Cutting magic logs", title: "Cutting magic logs (MMG)" },
-  "woodcutting:redwood-logs": { page: "Money making guide/Cutting redwood logs", title: "Cutting redwood logs (MMG)" },
-  "woodcutting:yew-logs": { page: "Money making guide/Cutting yew logs", title: "Cutting yew logs (MMG)" },
-  "woodcutting:camphor-logs": { page: "Money making guide/Cutting camphor logs", title: "Cutting camphor logs (MMG)" },
+  "cooking:karambwan": mmg("Cooking raw karambwan", "Cooking karambwan"),
+  "cooking:shark": mmg("Cooking raw sharks", "Cooking sharks"),
+  "cooking:dark-crab": mmg("Cooking raw dark crabs", "Cooking dark crabs"),
+  "cooking:anglerfish": mmg("Cooking raw anglerfish", "Cooking anglerfish"),
+  "cooking:moonlight-antelope": mmg("Cooking raw moonlight antelope", "Cooking moonlight antelope"),
+  "fishing:shark": mmg("Catching sharks", "Catching sharks"),
+  "fishing:dark-crab": mmg("Catching dark crabs", "Catching dark crabs"),
+  "fishing:anglerfish": mmg("Catching anglerfish", "Catching anglerfish"),
+  "fishing:minnows": mmg("Catching minnows", "Catching minnows"),
+  "fishing:karambwan": mmg("Catching raw karambwan", "Catching raw karambwan"),
+  "fishing:lobster": mmg("Catching lobsters", "Catching lobsters"),
+  "fishing:sacred-eel": mmg("Catching sacred eels", "Catching sacred eels"),
+  "fishing:infernal-eel": mmg("Catching infernal eels", "Catching infernal eels"),
+  "woodcutting:magic-logs": mmg("Cutting magic logs", "Cutting magic logs"),
+  "woodcutting:redwood-logs": mmg("Cutting redwood logs", "Cutting redwood logs"),
+  "woodcutting:yew-logs": mmg("Cutting yew logs", "Cutting yew logs"),
+  "woodcutting:camphor-logs": mmg("Cutting camphor logs", "Cutting camphor logs"),
+  "woodcutting:oak-logs": mmg("Cutting oak logs", "Cutting oak logs"),
 };
 
 const BY_ID: Record<string, WikiRef> = {
-  herbiboar: { page: "Money making guide/Hunting herbiboars", title: "Hunting herbiboars (MMG)" },
+  herbiboar: mmg("Hunting herbiboars", "Hunting herbiboars"),
   "hunter-rumours": { page: "Hunters' Rumours", title: "Hunters' Rumours" },
-  "hunter-implings": { page: "Money making guide/Hunting implings", title: "Hunting implings (MMG)" },
-  "snowy-knights": { page: "Money making guide/Catching snowy knights", title: "Catching snowy knights (MMG)" },
-  "pyre-foxes": { page: "Money making guide/Hunting pyre foxes", title: "Hunting pyre foxes (MMG)" },
-  "rainbow-crabs": { page: "Money making guide/Catching rainbow crabs", title: "Catching rainbow crabs (MMG)" },
-  "rainbow-crabs-4trap": { page: "Money making guide/Catching rainbow crabs", title: "Catching rainbow crabs (MMG)" },
+  "hunter-implings": mmg("Hunting implings", "Hunting implings"),
+  "snowy-knights": mmg("Catching snowy knights", "Catching snowy knights"),
+  "pyre-foxes": mmg("Hunting pyre foxes", "Hunting pyre foxes"),
+  "rainbow-crabs": mmg("Catching rainbow crabs", "Catching rainbow crabs"),
+  "rainbow-crabs-4trap": mmg("Catching rainbow crabs", "Catching rainbow crabs"),
   "spotted-kebbit": { page: "Falconry", title: "Falconry" },
   "dark-kebbit": { page: "Falconry", title: "Falconry" },
   "dashing-kebbit": { page: "Falconry", title: "Falconry" },
-  "grey-chins": { page: "Money making guide/Hunting chinchompas", title: "Hunting chinchompas (MMG)" },
-  "red-chins": { page: "Money making guide/Hunting carnivorous chinchompas", title: "Hunting red chinchompas (MMG)" },
-  "black-chins": { page: "Money making guide/Hunting black chinchompas", title: "Hunting black chinchompas (MMG)" },
-  "sunlight-antelope": { page: "Money making guide/Hunting sunlight antelopes", title: "Hunting sunlight antelopes (MMG)" },
-  "moonlight-antelope": { page: "Money making guide/Hunting moonlight antelopes", title: "Hunting moonlight antelopes (MMG)" },
-  "infernal-shale-afk": { page: "Money making guide/Mining and crushing infernal shale (Infernal shale deposit)", title: "Infernal shale deposit (MMG)" },
-  "infernal-shale-rocks": { page: "Money making guide/Mining and crushing infernal shale (Infernal shale rocks)", title: "Infernal shale rocks (MMG)" },
-  "infernal-shale": { page: "Money making guide/Mining and crushing infernal shale (Tick manipulation)", title: "Infernal shale tick manip (MMG)" },
-  amethyst: { page: "Money making guide/Mining amethyst", title: "Mining amethyst (MMG)" },
-  "zeah-salts": { page: "Money making guide/Mining salts", title: "Mining salts (MMG)" },
-  "volcanic-ash": { page: "Money making guide/Mining volcanic ash", title: "Mining volcanic ash (MMG)" },
-  "lead-ore-deepfin": { page: "Money making guide/Mining lead ore (Deepfin mine)", title: "Mining lead ore Deepfin (MMG)" },
-  basalt: { page: "Money making guide/Mining basalt", title: "Mining basalt (MMG)" },
-  "runite-ore": { page: "Money making guide/Mining runite ore", title: "Mining runite ore (MMG)" },
-  "iron-ore": { page: "Money making guide/Mining iron ore", title: "Mining iron ore (MMG)" },
-  "gem-rock": { page: "Money making guide/Mining gemstones", title: "Mining gemstones (MMG)" },
-  "rubium-splinters": { page: "Money making guide/Mining rubium splinters", title: "Mining rubium splinters (MMG)" },
-  "rubium-splinters-afk": { page: "Money making guide/Mining rubium splinters", title: "Mining rubium splinters (MMG)" },
-  "motherlode-mine": { page: "Money making guide/Motherlode Mine", title: "Motherlode Mine (MMG)" },
-  "blast-mine": { page: "Money making guide/Blast mining", title: "Blast mining (MMG)" },
-  "dark-crab": { page: "Money making guide/Catching dark crabs", title: "Catching dark crabs (MMG)" },
-  minnows: { page: "Money making guide/Catching minnows", title: "Catching minnows (MMG)" },
-  "sacred-eel": { page: "Money making guide/Catching sacred eels", title: "Catching sacred eels (MMG)" },
-  "infernal-eel": { page: "Money making guide/Catching infernal eels", title: "Catching infernal eels (MMG)" },
-  "drift-net": { page: "Money making guide/Drift net fishing", title: "Drift net fishing (MMG)" },
-  "magic-logs": { page: "Money making guide/Cutting magic logs", title: "Cutting magic logs (MMG)" },
-  "redwood-logs": { page: "Money making guide/Cutting redwood logs", title: "Cutting redwood logs (MMG)" },
-  "yew-logs": { page: "Money making guide/Cutting yew logs", title: "Cutting yew logs (MMG)" },
-  "camphor-logs": { page: "Money making guide/Cutting camphor logs", title: "Cutting camphor logs (MMG)" },
-  "engorged-bloodwood": { page: "Money making guide/Chopping the engorged bloodwood tree", title: "Engorged bloodwood (MMG)" },
-  "bf-iron": { page: "Money making guide/Smelting iron bars at Blast Furnace", title: "BF iron bars (MMG)" },
-  "bf-steel": { page: "Money making guide/Smelting steel bars at Blast Furnace", title: "BF steel bars (MMG)" },
-  "bf-mithril": { page: "Money making guide/Smelting mithril bars at Blast Furnace", title: "BF mithril bars (MMG)" },
-  "bf-adamant": { page: "Money making guide/Smelting adamantite bars at Blast Furnace", title: "BF adamant bars (MMG)" },
-  "bf-rune": { page: "Money making guide/Smelting runite bars at Blast Furnace", title: "BF rune bars (MMG)" },
-  cannonballs: { page: "Money making guide/Smithing steel cannonballs", title: "Smithing cannonballs (MMG)" },
-  "cannonballs-double": { page: "Money making guide/Smithing steel cannonballs", title: "Smithing cannonballs (MMG)" },
-  "rune-2h": { page: "Money making guide/Smithing rune items", title: "Smithing rune items (MMG)" },
-  "astral-runes": { page: "Money making guide/Crafting astral runes", title: "Crafting astral runes (MMG)" },
-  "mud-runes": { page: "Money making guide/Crafting mud runes", title: "Crafting mud runes (MMG)" },
-  "aether-runes": { page: "Money making guide/Crafting aether runes using scarred extract", title: "Crafting aether runes (MMG)" },
-  "sunfire-runes": { page: "Money making guide/Crafting sunfire runes", title: "Crafting sunfire runes (MMG)" },
-  elves: { page: "Money making guide/Pickpocketing elves", title: "Pickpocketing elves (MMG)" },
-  vyres: { page: "Money making guide/Pickpocketing vyres", title: "Pickpocketing vyres (MMG)" },
-  "master-farmers": { page: "Money making guide/Pickpocketing master farmers", title: "Pickpocketing master farmers (MMG)" },
-  "ardougne-knights": { page: "Money making guide/Pickpocketing Knights of Ardougne", title: "Pickpocketing knights (MMG)" },
-  "yew-longbow": { page: "Money making guide/Fletching yew longbows", title: "Fletching yew longbows (MMG)" },
-  "magic-longbow": { page: "Money making guide/Fletching magic longbows", title: "Fletching magic longbows (MMG)" },
-  "redwood-pyre": { page: "Money making guide/Making redwood pyre logs", title: "Making redwood pyre logs (MMG)" },
-  "sepulchre-floor-5-loot": { page: "Money making guide/Hallowed Sepulchre (Floor 5)", title: "Hallowed Sepulchre Floor 5 (MMG)" },
-  "wilderness-agility-tickets": { page: "Money making guide/Wilderness Agility Course", title: "Wilderness Agility Course (MMG)" },
+  "grey-chins": mmg("Hunting chinchompas", "Hunting chinchompas"),
+  "red-chins": mmg("Hunting carnivorous chinchompas", "Hunting red chinchompas"),
+  "black-chins": mmg("Hunting black chinchompas", "Hunting black chinchompas"),
+  "sunlight-antelope": mmg("Hunting sunlight antelopes", "Hunting sunlight antelopes"),
+  "moonlight-antelope": mmg("Hunting moonlight antelopes", "Hunting moonlight antelopes"),
+  "infernal-shale-afk": mmg(
+    "Mining and crushing infernal shale (Infernal shale deposit)",
+    "Infernal shale deposit",
+  ),
+  "infernal-shale-rocks": mmg(
+    "Mining and crushing infernal shale (Infernal shale rocks)",
+    "Infernal shale rocks",
+  ),
+  "infernal-shale": mmg(
+    "Mining and crushing infernal shale (Tick manipulation)",
+    "Infernal shale tick manip",
+  ),
+  amethyst: mmg("Mining amethyst", "Mining amethyst"),
+  "zeah-salts": mmg("Mining salts", "Mining salts"),
+  "volcanic-ash": mmg("Mining volcanic ash", "Mining volcanic ash"),
+  "lead-ore-deepfin": mmg("Mining lead ore (Deepfin mine)", "Mining lead ore Deepfin"),
+  basalt: mmg("Mining basalt", "Mining basalt"),
+  "runite-ore": mmg("Mining runite ore", "Mining runite ore"),
+  "iron-ore": mmg("Mining iron ore", "Mining iron ore"),
+  "gem-rock": mmg("Mining gemstones", "Mining gemstones"),
+  "rubium-splinters": mmg("Mining rubium splinters", "Mining rubium splinters"),
+  "rubium-splinters-afk": mmg("Mining rubium splinters", "Mining rubium splinters"),
+  "motherlode-mine": mmg("Motherlode Mine", "Motherlode Mine"),
+  "blast-mine": mmg("Blast mining", "Blast mining"),
+  "dark-crab": mmg("Catching dark crabs", "Catching dark crabs"),
+  minnows: mmg("Catching minnows", "Catching minnows"),
+  "sacred-eel": mmg("Catching sacred eels", "Catching sacred eels"),
+  "infernal-eel": mmg("Catching infernal eels", "Catching infernal eels"),
+  "drift-net": mmg("Drift net fishing", "Drift net fishing"),
+  shark: mmg("Catching sharks", "Catching sharks"),
+  lobster: mmg("Catching lobsters", "Catching lobsters"),
+  anglerfish: mmg("Catching anglerfish", "Catching anglerfish"),
+  "magic-logs": mmg("Cutting magic logs", "Cutting magic logs"),
+  "redwood-logs": mmg("Cutting redwood logs", "Cutting redwood logs"),
+  "yew-logs": mmg("Cutting yew logs", "Cutting yew logs"),
+  "camphor-logs": mmg("Cutting camphor logs", "Cutting camphor logs"),
+  "oak-logs": mmg("Cutting oak logs", "Cutting oak logs"),
+  "engorged-bloodwood": mmg("Chopping the engorged bloodwood tree", "Engorged bloodwood"),
+  "bf-iron": mmg("Smelting iron bars at Blast Furnace", "BF iron bars"),
+  "bf-steel": mmg("Smelting steel bars at Blast Furnace", "BF steel bars"),
+  "bf-mithril": mmg("Smelting mithril bars at Blast Furnace", "BF mithril bars"),
+  "bf-adamant": mmg("Smelting adamantite bars at Blast Furnace", "BF adamant bars"),
+  "bf-rune": mmg("Smelting runite bars at Blast Furnace", "BF rune bars"),
+  cannonballs: mmg("Smithing steel cannonballs", "Smithing cannonballs"),
+  "cannonballs-double": mmg("Smithing steel cannonballs", "Smithing cannonballs"),
+  "rune-2h": mmg("Smithing rune items", "Smithing rune items"),
+  "astral-runes": mmg("Crafting astral runes", "Crafting astral runes"),
+  "mud-runes": mmg("Crafting mud runes", "Crafting mud runes"),
+  "steam-runes-abyss": mmg("Crafting steam runes", "Crafting steam runes"),
+  "aether-runes": mmg("Crafting aether runes using scarred extract", "Crafting aether runes"),
+  "sunfire-runes": mmg("Crafting sunfire runes", "Crafting sunfire runes"),
+  "nature-runes-double-diary": mmg(
+    "Crafting double nature runes (Achievement Diary Cape teleport)",
+    "Double nature runes",
+  ),
+  "blood-runes-true": mmg("Crafting blood runes", "Crafting blood runes"),
+  "blood-runes-abyss": mmg("Crafting blood runes through the Abyss", "Blood runes (Abyss)"),
+  "death-runes-abyss": mmg("Crafting death runes through the Abyss", "Death runes (Abyss)"),
+  "wrath-runes": mmg("Crafting wrath runes", "Crafting wrath runes"),
+  "soul-runes-true": mmg("Crafting soul runes", "Crafting soul runes"),
+  "cosmic-runes": mmg("Crafting cosmic runes", "Crafting cosmic runes"),
+  "cosmic-runes-abyss": mmg("Crafting cosmic runes through the Abyss", "Cosmic runes (Abyss)"),
+  "nature-runes-abyss": mmg("Crafting nature runes through the Abyss", "Nature runes (Abyss)"),
+  "chaos-runes-abyss": mmg("Crafting chaos runes through the Abyss", "Chaos runes (Abyss)"),
+  "law-runes-abyss-double": mmg(
+    "Crafting double law runes through the Abyss",
+    "Double law runes (Abyss)",
+  ),
+  "air-runes": mmg("Crafting air runes (high level)", "Crafting air runes"),
+  elves: mmg("Pickpocketing elves", "Pickpocketing elves"),
+  vyres: mmg("Pickpocketing vyres", "Pickpocketing vyres"),
+  "master-farmers": mmg("Pickpocketing master farmers", "Pickpocketing master farmers"),
+  "ardougne-knights": mmg("Pickpocketing Knights of Ardougne", "Pickpocketing knights"),
+  "rogues-castle-medium": mmg("Stealing from Rogues' Castle chests", "Rogues' Castle chests"),
+  "rogues-castle-hard": mmg("Stealing from Rogues' Castle chests", "Rogues' Castle chests"),
+  "yew-longbow": mmg("Fletching yew longbows", "Fletching yew longbows"),
+  "magic-longbow": mmg("Fletching magic longbows", "Fletching magic longbows"),
+  "redwood-pyre": mmg("Making redwood pyre logs", "Making redwood pyre logs"),
+  "guthix-rest": mmg("Making Guthix rests", "Making Guthix rests"),
+  "super-combat": mmg(
+    "Making super combat potions (with prescription goggles)",
+    "Making super combat potions",
+  ),
+  "mastering-mixology": mmg("Mastering Mixology", "Mastering Mixology"),
+  "gotr-mass": mmg("Guardians of the Rift", "Guardians of the Rift"),
+  zalcano: mmg("Killing Zalcano", "Killing Zalcano"),
+  "zalcano-xp": mmg("Killing Zalcano (Experience)", "Killing Zalcano (Experience)"),
+  "trawl-halibut": mmg("Deep sea trawling for halibut", "Trawling halibut"),
+  "trawl-bluefin": mmg("Deep sea trawling for bluefin", "Trawling bluefin"),
+  "trawl-marlin": mmg("Deep sea trawling for marlin", "Trawling marlin"),
+  "trawl-yellowfin": mmg("Deep sea trawling for yellowfin", "Trawling yellowfin"),
+  "agility-pyramid": mmg("Climbing the Agility Pyramid", "Agility Pyramid"),
+  "sepulchre-floor-5-loot": mmg("Hallowed Sepulchre (Floor 5)", "Hallowed Sepulchre Floor 5"),
+  "sepulchre-floor-4": mmg("Hallowed Sepulchre (Floor 4)", "Hallowed Sepulchre Floor 4"),
+  "sepulchre-floor-3": mmg("Hallowed Sepulchre (Floor 3)", "Hallowed Sepulchre Floor 3"),
+  "hallowed-sepulchre": mmg("Hallowed Sepulchre (Floor 5)", "Hallowed Sepulchre Floor 5"),
+  "wilderness-agility-tickets": mmg("Wilderness Agility Course", "Wilderness Agility Course"),
+  "wilderness-agility": mmg("Wilderness Agility Course", "Wilderness Agility Course"),
 };
 
 type PrefixRule = { match: (id: string) => boolean; ref: WikiRef };
@@ -124,6 +185,7 @@ const PREFIX_RULES: PrefixRule[] = [
   { match: (id) => id.startsWith("birdhouse-"), ref: { page: "Bird house trapping", title: "Bird house trapping" } },
   { match: (id) => id.startsWith("infernal-shale"), ref: BY_ID["infernal-shale"] },
   { match: (id) => id.startsWith("rubium-splinters"), ref: BY_ID["rubium-splinters"] },
+  { match: (id) => id.startsWith("trawl-"), ref: mmg("Deep sea trawling for yellowfin", "Deep sea trawling") },
 ];
 
 export function resolveMethodWiki(id: string, skillKey?: string | null): WikiRef {
@@ -133,6 +195,10 @@ export function resolveMethodWiki(id: string, skillKey?: string | null): WikiRef
   }
   const exact = BY_ID[id];
   if (exact) return exact;
+  if (id.startsWith("degrime-")) {
+    const herb = id.slice("degrime-".length).replace(/-/g, " ");
+    return mmg(`Degriming grimy ${herb}`, `Degriming grimy ${herb}`);
+  }
   for (const rule of PREFIX_RULES) {
     if (rule.match(id)) return rule.ref;
   }
