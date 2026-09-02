@@ -3,7 +3,7 @@
  * Only fields that appear on that page are filled. Never invent a number.
  */
 
-export const WIKI_RATES_PULLED_AT = "2026-08-28";
+export const WIKI_RATES_PULLED_AT = "2026-09-02";
 
 export type WikiSlotKey = "mmg" | "skillGuide" | "wiki";
 
@@ -39,7 +39,7 @@ export const WIKI_PAGE_RATES: Record<string, MethodWikiSnapshots> = {
   },
   "redwood-pyre": { mmg: mmg(28_000, 1_050_000) },
   "sepulchre-floor-5-loot": {
-    mmg: mmg(88_060, 1_725_517, "MMG Results agility 88,060; profit 1,725,517 after tax"),
+    mmg: mmg(88_060, 1_520_743, "MMG Floor 5 Results: 88,060 Agility; profit 1,520,743 after tax"),
     skillGuide: range(85_800, 98_500, "Agility training: floor 5 85,800 (F4–F5 loot) to 98,500 (grand coffin)"),
   },
   "sepulchre-floor-4": {
