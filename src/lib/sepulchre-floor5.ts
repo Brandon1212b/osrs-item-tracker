@@ -1,20 +1,18 @@
 import type { ActivityMethod } from "@/lib/activity-methods";
 
+function perHour(runs: number, qtyPerRun: number): number {
+  return qtyPerRun * runs;
+}
+
 /**
  * https://oldschool.runescape.wiki/w/Money_making_guide/Hallowed_Sepulchre_(Floor_5)
- *
- * Wiki template: isperkill=y, kph=7, floors 4–5 coffins + grand coffin.
- * Per-run outputs are multiplied by 7 for hourly rates.
+ * isperkill=y, kph=7, F4+F5 coffins + grand coffin (2 extra high rolls).
  */
-const RUNS_PER_HOUR = 7;
-const F4_COFFINS = 2;
-const F5_COFFINS = 3;
-const MED_COFFINS = F4_COFFINS * 0.6 + F5_COFFINS * 0.2; // 1.8 / run
-const HIGH_COFFINS = F4_COFFINS * 0.4 + F5_COFFINS * 0.8 + 2; // 5.2 / run (grand chest = 2 high rolls)
-
-function perHourFromRun(qtyPerRun: number): number {
-  return qtyPerRun * RUNS_PER_HOUR;
-}
+const F5_RUNS = 7;
+const F5_F4 = 2;
+const F5_F5 = 3;
+const F5_MED = F5_F4 * 0.6 + F5_F5 * 0.2;
+const F5_HIGH = F5_F4 * 0.4 + F5_F5 * 0.8 + 2;
 
 export const SEPULCHRE_FLOOR_5: ActivityMethod = {
   id: "sepulchre-floor-5-loot",
@@ -25,98 +23,134 @@ export const SEPULCHRE_FLOOR_5: ActivityMethod = {
   rateBands: [
     {
       level: 92,
-      xpPerHour: 12_580 * RUNS_PER_HOUR, // 88,060
-      secondaryXpPerHour: 1_200 * RUNS_PER_HOUR, // 8,400 Thieving
-      // Hallowed marks are untradeable; wiki values 231 marks as 2.31 hallowed sacks.
-      // Sack itself is also untradeable, so this residual is the wiki sack EV.
+      xpPerHour: 12_580 * F5_RUNS,
+      secondaryXpPerHour: 1_200 * F5_RUNS,
       expectedLootGpPerHour: 194_813,
     },
   ],
   consumables: [
-    { name: "Mahogany plank", qty: 3 * RUNS_PER_HOUR },
-    { name: "Rune nails", qty: 7.5 * RUNS_PER_HOUR },
-    { name: "Vampyre dust", qty: 1 * RUNS_PER_HOUR },
+    { name: "Mahogany plank", qty: 3 * F5_RUNS },
+    { name: "Rune nails", qty: 7.5 * F5_RUNS },
+    { name: "Vampyre dust", qty: 1 * F5_RUNS },
   ],
   rewards: [
-    {
-      name: "Ring of endurance (uncharged)",
-      expectedQtyPerHour: perHourFromRun(1 / 200),
-    },
+    { name: "Ring of endurance (uncharged)", expectedQtyPerHour: perHour(F5_RUNS, 1 / 200) },
     {
       name: "Strange old lockpick (full)",
-      expectedQtyPerHour: perHourFromRun(F4_COFFINS / 60 + F5_COFFINS / 40),
+      expectedQtyPerHour: perHour(F5_RUNS, F5_F4 / 60 + F5_F5 / 40),
     },
-    { name: "Adamant 2h sword", expectedQtyPerHour: perHourFromRun(MED_COFFINS * 0.1) },
-    { name: "Adamant platebody", expectedQtyPerHour: perHourFromRun(MED_COFFINS * 0.1) },
-    {
-      name: "Cosmic rune",
-      expectedQtyPerHour: perHourFromRun(MED_COFFINS * ((60 + 100) / 2) * 0.1),
-    },
-    {
-      name: "Death rune",
-      expectedQtyPerHour: perHourFromRun(MED_COFFINS * ((60 + 100) / 2) * 0.1),
-    },
-    {
-      name: "Nature rune",
-      expectedQtyPerHour: perHourFromRun(MED_COFFINS * ((60 + 100) / 2) * 0.1),
-    },
-    {
-      name: "Adamant bolts",
-      expectedQtyPerHour: perHourFromRun(MED_COFFINS * ((50 + 200) / 2) * 0.1),
-    },
+    { name: "Adamant 2h sword", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 0.1) },
+    { name: "Adamant platebody", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 0.1) },
+    { name: "Cosmic rune", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 80 * 0.1) },
+    { name: "Death rune", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 80 * 0.1) },
+    { name: "Nature rune", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 80 * 0.1) },
+    { name: "Adamant bolts", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 125 * 0.1) },
     {
       name: "Monkfish",
-      expectedQtyPerHour: perHourFromRun(
-        MED_COFFINS * ((1 + 3) / 2) * 0.1 + HIGH_COFFINS * ((2 + 6) / 2) * 0.1,
-      ),
+      expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 2 * 0.1 + F5_HIGH * 4 * 0.1),
     },
-    { name: "Prayer potion(4)", expectedQtyPerHour: perHourFromRun(MED_COFFINS * 0.1) },
-    {
-      name: "Grimy ranarr weed",
-      expectedQtyPerHour: perHourFromRun(MED_COFFINS * ((1 + 2) / 2) * 0.1),
-    },
+    { name: "Prayer potion(4)", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 0.1) },
+    { name: "Grimy ranarr weed", expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 1.5 * 0.1) },
     {
       name: "Coins",
-      expectedQtyPerHour: perHourFromRun(
-        MED_COFFINS * ((7_500 + 12_500) / 2) * 0.1 +
-          HIGH_COFFINS * ((17_500 + 25_000) / 2) * 0.1,
-      ),
+      expectedQtyPerHour: perHour(F5_RUNS, F5_MED * 10_000 * 0.1 + F5_HIGH * 21_250 * 0.1),
     },
-    { name: "Rune 2h sword", expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * 0.1) },
-    { name: "Rune platebody", expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * 0.1) },
-    {
-      name: "Law rune",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((150 + 250) / 2) * 0.1),
-    },
-    {
-      name: "Blood rune",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((150 + 250) / 2) * 0.1),
-    },
-    {
-      name: "Soul rune",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((150 + 250) / 2) * 0.1),
-    },
-    {
-      name: "Runite bolts",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((150 + 250) / 2) * 0.1),
-    },
-    {
-      name: "Sanfew serum(4)",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((1 + 2) / 2) * 0.1),
-    },
-    {
-      name: "Ranarr seed",
-      expectedQtyPerHour: perHourFromRun(HIGH_COFFINS * ((1 + 2) / 2) * 0.1),
-    },
+    { name: "Rune 2h sword", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 0.1) },
+    { name: "Rune platebody", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 0.1) },
+    { name: "Law rune", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 200 * 0.1) },
+    { name: "Blood rune", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 200 * 0.1) },
+    { name: "Soul rune", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 200 * 0.1) },
+    { name: "Runite bolts", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 200 * 0.1) },
+    { name: "Sanfew serum(4)", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 1.5 * 0.1) },
+    { name: "Ranarr seed", expectedQtyPerHour: perHour(F5_RUNS, F5_HIGH * 1.5 * 0.1) },
   ],
   intensity: "high",
   notes:
-    "Wiki MMG Floor 5, 7 runs/hr, F4+F5 coffins + grand coffin. Live GE on coffin loot minus planks/nails/dust. 231 hallowed marks/hr valued as sack EV (untradeable). Also ~1,400 Prayer / 2,100 Magic / 7,350 Construction XP/hr.",
+    "Wiki MMG Floor 5, 7 runs/hr. Live GE on coffin loot minus supplies. 231 marks/hr as sack EV. Also Prayer/Magic/Construction XP.",
+};
+
+/**
+ * https://oldschool.runescape.wiki/w/Money_making_guide/Hallowed_Sepulchre_(Floor_4)
+ * isperkill=y, kph=12, looting F3+F4 coffins (no floor 5).
+ */
+const F4_RUNS = 12;
+const F4_F3 = 2;
+const F4_F4 = 2;
+const F4_LOW = F4_F3 * 0.15;
+const F4_MED = F4_F3 * 0.65 + F4_F4 * 0.6;
+const F4_HIGH = F4_F3 * 0.2 + F4_F4 * 0.4;
+
+export const SEPULCHRE_FLOOR_4: ActivityMethod = {
+  id: "sepulchre-floor-4",
+  label: "Hallowed Sepulchre (Floor 4)",
+  skillKey: "agility",
+  secondarySkill: "thieving",
+  level: 77,
+  rateBands: [
+    {
+      level: 77,
+      xpPerHour: 6_080 * F4_RUNS,
+      secondaryXpPerHour: 800 * F4_RUNS,
+      expectedLootGpPerHour: 189_888,
+    },
+  ],
+  consumables: [
+    { name: "Mahogany plank", qty: 1 * F4_RUNS },
+    { name: "Rune nails", qty: 2.5 * F4_RUNS },
+    { name: "Vampyre dust", qty: 1 * F4_RUNS },
+    { name: "Cosmic rune", qty: 1 * F4_RUNS },
+  ],
+  rewards: [
+    {
+      name: "Strange old lockpick (full)",
+      expectedQtyPerHour: perHour(F4_RUNS, F4_F4 / 60 + F4_F3 / 90),
+    },
+    { name: "Monk's robe top", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 0.1) },
+    { name: "Monk's robe", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 0.1) },
+    { name: "Holy symbol", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 0.1) },
+    { name: "Air rune", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 625 * 0.1) },
+    { name: "Fire rune", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 625 * 0.1) },
+    { name: "Chaos rune", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 37.5 * 0.1) },
+    { name: "Mithril bolts", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 125 * 0.1) },
+    { name: "Prayer potion(2)", expectedQtyPerHour: perHour(F4_RUNS, F4_LOW * 0.1) },
+    { name: "Adamant 2h sword", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 0.1) },
+    { name: "Adamant platebody", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 0.1) },
+    { name: "Cosmic rune", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 80 * 0.1) },
+    { name: "Death rune", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 80 * 0.1) },
+    { name: "Nature rune", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 80 * 0.1) },
+    { name: "Adamant bolts", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 125 * 0.1) },
+    {
+      name: "Monkfish",
+      expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 2 * 0.1 + F4_HIGH * 4 * 0.1),
+    },
+    { name: "Prayer potion(4)", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 0.1) },
+    { name: "Grimy ranarr weed", expectedQtyPerHour: perHour(F4_RUNS, F4_MED * 1.5 * 0.1) },
+    {
+      name: "Coins",
+      expectedQtyPerHour: perHour(
+        F4_RUNS,
+        F4_LOW * 2_250 * 0.1 + F4_MED * 10_000 * 0.1 + F4_HIGH * 21_250 * 0.1,
+      ),
+    },
+    { name: "Rune 2h sword", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 0.1) },
+    { name: "Rune platebody", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 0.1) },
+    { name: "Law rune", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 200 * 0.1) },
+    { name: "Blood rune", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 200 * 0.1) },
+    { name: "Soul rune", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 200 * 0.1) },
+    { name: "Runite bolts", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 200 * 0.1) },
+    { name: "Sanfew serum(4)", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 1.5 * 0.1) },
+    { name: "Ranarr seed", expectedQtyPerHour: perHour(F4_RUNS, F4_HIGH * 1.5 * 0.1) },
+  ],
+  intensity: "high",
+  notes:
+    "Wiki MMG Floor 4, 12 runs/hr, F3+F4 coffins. Live GE on coffin loot minus supplies. 204 marks/hr as sack EV.",
 };
 
 export function sepulchreFloor5ItemNames(): string[] {
   const names = new Set<string>();
-  for (const p of SEPULCHRE_FLOOR_5.consumables) names.add(p.name);
-  for (const r of SEPULCHRE_FLOOR_5.rewards) names.add(r.name);
+  for (const method of [SEPULCHRE_FLOOR_5, SEPULCHRE_FLOOR_4]) {
+    for (const p of method.consumables) names.add(p.name);
+    for (const r of method.rewards) names.add(r.name);
+  }
   return [...names];
 }
