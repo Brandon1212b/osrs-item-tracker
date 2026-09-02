@@ -23,6 +23,7 @@ import { sailingActivityItemNames } from "./sailing-activity-methods";
 import { activityMethodItemNames } from "./activity-methods";
 import { wikiAuditActivityItemNames } from "./wiki-audit-activities";
 import { sepulchreFloor5ItemNames } from "./sepulchre-floor5";
+import { sepulchreFloor4ItemNames } from "./sepulchre-floor4";
 import type { ItemDetail, PriceRow, PlayerStatsResult, RangeKey, Trend } from "./osrs.server";
 
 const allNames = () => {
@@ -52,6 +53,7 @@ const allNames = () => {
       ...activityMethodItemNames(),
       ...wikiAuditActivityItemNames(),
       ...sepulchreFloor5ItemNames(),
+      ...sepulchreFloor4ItemNames(),
     ]),
   ];
 };
