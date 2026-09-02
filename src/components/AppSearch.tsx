@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 
 import { WikiImage } from "@/components/WikiImage";
+import { PopupDismissShield, swallowBehindPopup } from "@/components/popup-dismiss-shield";
 import { useMarketData } from "@/hooks/useMarketData";
 import { CATALOG } from "@/lib/osrs-catalog";
 import { itemSearchText } from "@/lib/item-search-aliases";
@@ -56,14 +57,16 @@ export function AppSearch() {
   }, [q, rowsByName]);
 
   const close = () => {
+    swallowBehindPopup();
     setOpen(false);
     setQ("");
   };
 
   return (
     <>
+      {open && <PopupDismissShield onDismiss={close} />}
       {open && (
-        <div className="pointer-events-auto absolute bottom-full right-0 mb-2 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-[22px] border border-white/10 bg-card/90 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl">
+        <div className="pointer-events-auto absolute bottom-full right-0 z-[90] mb-2 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-[22px] border border-white/10 bg-card/90 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl">
           <div className="flex items-center gap-2 px-3 pt-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <Input
@@ -136,10 +139,16 @@ export function AppSearch() {
       )}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (open) {
+            close();
+            return;
+          }
+          setOpen(true);
+        }}
         aria-label={open ? "Close search" : "Search items and methods"}
         aria-expanded={open}
-        className={`pointer-events-auto inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-white/10 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl transition-colors ${
+        className={`pointer-events-auto relative z-[90] inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-white/10 shadow-[0_10px_40px_-12px_oklch(0_0_0/0.7)] backdrop-blur-2xl transition-colors ${
           open
             ? "bg-primary/20 text-primary"
             : "bg-card/75 text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
