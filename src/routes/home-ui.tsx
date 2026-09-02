@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
-import { PopupDismissShield } from "@/components/popup-dismiss-shield";
+import { PopupDismissShield, swallowBehindPopup } from "@/components/popup-dismiss-shield";
 
 export function EquipmentPaperDoll({
   active,
@@ -194,14 +194,19 @@ export function FilterPopover({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  const toggle = () => {
+    if (open) swallowBehindPopup();
+    onOpenChange(!open);
+  };
+
   return (
     <div className={`relative ${open ? "z-[80]" : ""} ${className}`}>
       <button
         type="button"
         aria-label={ariaLabel ?? label}
         aria-expanded={open}
-        onClick={() => onOpenChange(!open)}
-        className="flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left"
+        onClick={toggle}
+        className="relative z-[90] flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left"
       >
         {icon}
         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
@@ -213,7 +218,7 @@ export function FilterPopover({
         <>
           <PopupDismissShield onDismiss={() => onOpenChange(false)} />
           <div
-            className={`absolute left-0 top-full z-[80] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
+            className={`absolute left-0 top-full z-[90] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
           >
             {children}
           </div>
