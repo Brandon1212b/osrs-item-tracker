@@ -231,34 +231,50 @@ export const DEEP_SEA_TRAWL_METHODS: ActivityMethod[] = [
   },
 ];
 
+/** Wiki MMG: isperkill=y, kph=83, 61+ streak. OutputNnum is per lap. */
+const WILDY_LAPS_PER_HOUR = 83;
+const WILDY_FEE_PER_HOUR = 150_000;
+
 export const WILDERNESS_AGILITY_ACTIVITY: ActivityMethod[] = [
   {
     id: "wilderness-agility-tickets",
-    label: "Wilderness Agility Course (tickets)",
+    label: "Wilderness Agility Course",
     skillKey: "agility",
     level: 52,
     rateBands: [
-      { level: 52, xpPerHour: 47_400, expectedLootGpPerHour: 0 },
-      { level: 80, xpPerHour: 55_000, expectedLootGpPerHour: 0 },
-      { level: 99, xpPerHour: 65_800, expectedLootGpPerHour: 0 },
+      // MMG Results: 571.4 xp/lap * 83 laps = 47,426 (course only; tickets are extra XP).
+      { level: 52, xpPerHour: 47_426 },
     ],
-    consumables: [{ name: "Coins", qty: 150_000 }],
+    consumables: [{ name: "Coins", qty: WILDY_FEE_PER_HOUR }],
     rewards: [
-      { name: "Rune kiteshield", expectedQtyPerHour: 24.9 },
-      { name: "Rune chainbody", expectedQtyPerHour: 24.9 },
-      { name: "Blighted super restore(4)", expectedQtyPerHour: 118 },
-      { name: "Blighted anglerfish", expectedQtyPerHour: 390 },
-      { name: "Blighted manta ray", expectedQtyPerHour: 390 },
-      { name: "Blighted karambwan", expectedQtyPerHour: 390 },
-      { name: "Rune med helm", expectedQtyPerHour: 8.3 },
-      { name: "Adamant platebody", expectedQtyPerHour: 8.3 },
-      { name: "Adamant platelegs", expectedQtyPerHour: 4.15 },
-      { name: "Adamant full helm", expectedQtyPerHour: 4.15 },
-      { name: "Mithril plateskirt", expectedQtyPerHour: 4.15 },
-      { name: "Mithril platelegs", expectedQtyPerHour: 4.15 },
+      { name: "Rune kiteshield", expectedQtyPerHour: (3 / 10) * WILDY_LAPS_PER_HOUR },
+      { name: "Rune chainbody", expectedQtyPerHour: (3 / 10) * WILDY_LAPS_PER_HOUR },
+      {
+        name: "Blighted super restore(4)",
+        expectedQtyPerHour: (6 * (7 / 31) + 1 / 16) * WILDY_LAPS_PER_HOUR,
+      },
+      {
+        name: "Blighted anglerfish",
+        expectedQtyPerHour: (17 * (8 / 31) + 5 / 16) * WILDY_LAPS_PER_HOUR,
+      },
+      {
+        name: "Blighted manta ray",
+        expectedQtyPerHour: (17 * (8 / 31) + 5 / 16) * WILDY_LAPS_PER_HOUR,
+      },
+      {
+        name: "Blighted karambwan",
+        expectedQtyPerHour: (17 * (8 / 31) + 5 / 16) * WILDY_LAPS_PER_HOUR,
+      },
+      { name: "Rune med helm", expectedQtyPerHour: (1 / 10) * WILDY_LAPS_PER_HOUR },
+      { name: "Adamant platebody", expectedQtyPerHour: (1 / 10) * WILDY_LAPS_PER_HOUR },
+      { name: "Adamant platelegs", expectedQtyPerHour: (1 / 20) * WILDY_LAPS_PER_HOUR },
+      { name: "Adamant full helm", expectedQtyPerHour: (1 / 20) * WILDY_LAPS_PER_HOUR },
+      { name: "Mithril plateskirt", expectedQtyPerHour: (1 / 20) * WILDY_LAPS_PER_HOUR },
+      { name: "Mithril platelegs", expectedQtyPerHour: (1 / 20) * WILDY_LAPS_PER_HOUR },
     ],
     intensity: "high",
-    notes: "Wiki MMG ~83 laps/hr. Live GE on dispenser loot minus 150k fee.",
+    notes:
+      "Wiki MMG 61+ streak, 83 laps/hr. Live GE on dispenser loot minus 150k fee. Tickets add up to ~18.4k extra XP/hr if cashed.",
   },
 ];
 
@@ -334,3 +350,72 @@ export const AGILITY_PYRAMID_ACTIVITY: ActivityMethod[] = [
     notes: "26 laps/hr max times 10k pyramid top.",
   },
 ];
+
+export const ZALCANO_METHODS: ActivityMethod[] = [
+  {
+    id: "zalcano",
+    label: "Zalcano (loot)",
+    skillKey: "mining",
+    secondarySkill: "smithing",
+    level: 70,
+    rateBands: [
+      { level: 70, xpPerHour: 12_000, expectedLootGpPerHour: 400_000, secondaryXpPerHour: 1_440 },
+      { level: 90, xpPerHour: 12_000, expectedLootGpPerHour: 500_000, secondaryXpPerHour: 1_440 },
+    ],
+    consumables: [
+      { name: "Stamina potion(4)", qty: 3 },
+      { name: "Saradomin brew(4)", qty: 3 },
+    ],
+    rewards: [
+      { name: "Crystal shard", expectedQtyPerHour: 99.36 },
+      { name: "Gold ore", expectedQtyPerHour: 107.6 },
+      { name: "Coal", expectedQtyPerHour: 48.7 },
+      { name: "Runite ore", expectedQtyPerHour: 6 },
+      { name: "Adamantite bar", expectedQtyPerHour: 12 },
+      { name: "Mithril bar", expectedQtyPerHour: 68.4 },
+      { name: "Steel bar", expectedQtyPerHour: 81.6 },
+    ],
+    intensity: "high",
+    notes: "Wiki MMG ~48 kc/hr. Live GE on shards/ores/bars minus brews/stams. Residual = rune pack + unique EV.",
+  },
+  {
+    id: "zalcano-xp",
+    label: "Zalcano (experience)",
+    skillKey: "mining",
+    secondarySkill: "smithing",
+    level: 70,
+    rateBands: [{ level: 70, xpPerHour: 52_800, expectedLootGpPerHour: 200_000, secondaryXpPerHour: 6_240 }],
+    consumables: [
+      { name: "Stamina potion(4)", qty: 3 },
+      { name: "Saradomin brew(4)", qty: 3 },
+    ],
+    rewards: [{ name: "Crystal shard", expectedQtyPerHour: 99.36 }],
+    intensity: "high",
+    notes: "Wiki MMG experience variant (~1100 Mining XP/kill). Lower loot focus.",
+  },
+];
+
+const WIKI_AUDIT_ACTIVITIES: ActivityMethod[] = [
+  ...TITHE_FARM_METHODS,
+  ...FARMING_CONTRACT_METHODS,
+  ...HESPORI_METHODS,
+  ...FORESTRY_METHODS,
+  ...HUNTER_RUMOUR_METHODS,
+  ...IMPLING_METHODS,
+  ...DEEP_SEA_TRAWL_METHODS,
+  ...WILDERNESS_AGILITY_ACTIVITY,
+  ...SEPULCHRE_ACTIVITY,
+  ...BRIMHAVEN_AGILITY_ACTIVITY,
+  ...AGILITY_PYRAMID_ACTIVITY,
+  ...ZALCANO_METHODS,
+];
+
+/** Reward / consumable names that must be in the live GE snapshot. */
+export function wikiAuditActivityItemNames(): string[] {
+  const names = new Set<string>();
+  for (const m of WIKI_AUDIT_ACTIVITIES) {
+    for (const p of m.consumables) names.add(p.name);
+    for (const r of m.rewards) names.add(r.name);
+  }
+  return [...names];
+}
