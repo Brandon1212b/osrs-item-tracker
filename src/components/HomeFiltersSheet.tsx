@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
-import { PopupDismissShield } from "@/components/popup-dismiss-shield";
+import { PopupDismissShield, swallowBehindPopup } from "@/components/popup-dismiss-shield";
 import {
   GEAR_COMBAT_FILTERS,
   SKILLING_FILTERS,
@@ -80,7 +80,7 @@ export function HomeFiltersButton({
       onClick={onClick}
       aria-label={activeRsn ? `Open filters, player ${activeRsn}` : "Open filters"}
       title={activeRsn ? `Filters · ${activeRsn}` : "Filters"}
-      className={`relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
+      className={`relative z-[90] inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60 ${className}`}
     >
       <SlidersHorizontal className="size-4" />
       {showDot ? (
@@ -142,13 +142,18 @@ export function HomeFiltersSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  const toggle = () => {
+    if (open) swallowBehindPopup();
+    onOpenChange(!open);
+  };
+
   return (
     <div className={`relative shrink-0 ${open ? "z-[80]" : ""}`}>
-      <HomeFiltersButton activeRsn={activeRsn} onClick={() => onOpenChange(!open)} />
+      <HomeFiltersButton activeRsn={activeRsn} onClick={toggle} />
       {open ? (
         <>
           <PopupDismissShield onDismiss={() => onOpenChange(false)} />
-          <div className="absolute right-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-1.5rem))] rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
+          <div className="absolute right-0 top-full z-[90] mt-2 w-[min(22rem,calc(100vw-1.5rem))] rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
             <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto pr-0.5">
               <p className="text-sm font-semibold text-foreground">Filters</p>
               <section className="space-y-2">
