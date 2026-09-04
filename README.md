@@ -87,8 +87,7 @@ Rates come from wiki-audited method tables in `src/lib/*-methods.ts` and `src/li
 | Charts | Recharts |
 | Build | Vite 8, TypeScript |
 | Deploy | Vercel ([osrs-item-tracker.vercel.app](https://osrs-item-tracker.vercel.app)) |
-| Auth (partial) | Lovable Cloud / Supabase OAuth on `/auth` — watchlist is still local |
-| Editor | Also synced with [Lovable](https://lovable.dev) |
+| Auth (partial) | Supabase OAuth on `/auth` — watchlist is still local |
 
 ### Data sources
 
@@ -138,7 +137,7 @@ Do not commit secrets. The publishable Supabase key is safe to expose in the cli
 | `/item/$id` | Item detail + chart |
 | `/methods` | Skilling methods |
 | `/watchlist` | Local price alerts |
-| `/auth` | Google sign-in (Lovable / Supabase) |
+| `/auth` | Google sign-in (Supabase) |
 
 Bottom tab bar: **Prices** and **Methods**, plus a global search control. Filter / sort / selected skill persist in the URL (and last skill is remembered).
 
