@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Search, X } from "lucide-react";
 import {
   GEAR_COMBAT_FILTERS,
   GEAR_SLOT_FILTERS,
@@ -90,6 +90,8 @@ export function HomeMain({
   const [gearOpen, setGearOpen] = useState(false);
   const [skillOpen, setSkillOpen] = useState(false);
   const [supplyOpen, setSupplyOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const combatMeta = GEAR_COMBAT_FILTERS.find((f) => f.key === gearCombat);
   const slotMeta = GEAR_SLOT_FILTERS.find((f) => f.key === gearSlot);
@@ -103,16 +105,33 @@ export function HomeMain({
     slotMeta?.label,
     setMeta?.label ?? tierMeta?.label,
   ].filter(Boolean);
-  const gearLabel = gearLabelParts.join(" · ");
+  const gearLabel = gearLabelParts.join(" \u00b7 ");
   const combatLevel = combatMeta ? playerSkills?.[combatMeta.skillKey] : undefined;
   const skillLevel = skill !== "all" ? playerSkills?.[skill] : undefined;
+
+  const searchExpanded = !showGearSub || searchOpen;
+
+  useEffect(() => {
+    if (!searchExpanded) return;
+    searchRef.current?.focus();
+  }, [searchExpanded]);
+
+  const openSearch = () => {
+    setGearOpen(false);
+    setSearchOpen(true);
+  };
+
+  const closeSearch = () => {
+    if (query) patchSearch({ q: "" });
+    setSearchOpen(false);
+  };
 
   const gearPopover = (
     <FilterPopover
       open={gearOpen}
       onOpenChange={setGearOpen}
       compact
-      className="shrink-0"
+      className="min-w-0 flex-1"
       contentClassName="w-[min(22rem,calc(100vw-1.5rem))]"
       icon={
         <WikiImage
@@ -124,7 +143,7 @@ export function HomeMain({
           className="size-[22px] shrink-0"
         />
       }
-      label={`${gearLabel}${combatLevel != null ? ` · ${combatLevel}` : ""}`}
+      label={`${gearLabel}${combatLevel != null ? ` \u00b7 ${combatLevel}` : ""}`}
       ariaLabel="Gear filters"
     >
       <div className="flex flex-col gap-3">
@@ -212,17 +231,43 @@ export function HomeMain({
   return (
     <main className="mx-auto w-full max-w-7xl px-3 pb-6 pt-0 sm:px-4">
       <div className="sticky top-0 z-30 -mx-3 flex items-center gap-2 border-b border-border/40 bg-background/95 px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-4 sm:px-4 pointer-events-auto isolate">
-        {showGearSub ? gearPopover : null}
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => patchSearch({ q: e.target.value })}
-            placeholder="Search items…"
-            className="pl-9"
-            aria-label="Search items"
-          />
-        </div>
+        {showGearSub && !searchExpanded ? gearPopover : null}
+        {searchExpanded ? (
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              value={query}
+              onChange={(e) => patchSearch({ q: e.target.value })}
+              placeholder="Search items\u2026"
+              className={`pl-9 ${showGearSub ? "pr-9" : ""}`}
+              aria-label="Search items"
+            />
+            {showGearSub ? (
+              <button
+                type="button"
+                onClick={closeSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={query ? "Clear and close search" : "Close search"}
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={query ? `Search items, current query ${query}` : "Search items"}
+            title="Search items"
+            className="relative z-[90] inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary/40 text-foreground hover:bg-secondary/60"
+          >
+            <Search className="size-4" />
+            {query ? (
+              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" aria-hidden />
+            ) : null}
+          </button>
+        )}
         <HomeFiltersSheet
           open={filtersOpen}
           onOpenChange={setFiltersOpen}
@@ -266,7 +311,7 @@ export function HomeMain({
             }
             label={
               skillMeta
-                ? `${skillMeta.label}${skillLevel != null ? ` · ${skillLevel}` : ""}`
+                ? `${skillMeta.label}${skillLevel != null ? ` \u00b7 ${skillLevel}` : ""}`
                 : "All items"
             }
             ariaLabel="Skill filter"
