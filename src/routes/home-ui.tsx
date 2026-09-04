@@ -159,7 +159,7 @@ export function SkillsPanel({
             boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
           }}
         >
-          Total level: {hasLevels ? total : "—"}
+          Total level: {hasLevels ? total : "\u2014"}
         </div>
       </div>
     </div>
@@ -209,9 +209,7 @@ export function FilterPopover({
         aria-expanded={open}
         onClick={toggle}
         className={`relative z-[90] flex min-w-0 items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/25 text-left ${
-          compact
-            ? "h-11 max-w-[8.75rem] px-2 sm:max-w-[14rem] sm:px-2.5"
-            : "w-full py-1.5 pl-2.5 pr-1"
+          compact ? "h-11 w-full px-2 sm:px-2.5" : "w-full py-1.5 pl-2.5 pr-1"
         }`}
       >
         {icon}
