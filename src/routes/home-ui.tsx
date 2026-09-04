@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { GEAR_SLOT_FILTERS } from "@/lib/osrs-catalog";
 import { SKILLS_PANEL } from "@/lib/skills-panel";
 import { WikiImage } from "@/components/WikiImage";
-import { PopupDismissShield, swallowBehindPopup } from "@/components/popup-dismiss-shield";
+import { PopupDismissShield, PopupPortal, swallowBehindPopup } from "@/components/popup-dismiss-shield";
 
 export function EquipmentPaperDoll({
   active,
@@ -187,6 +187,9 @@ export function FilterPopover({
   compact?: boolean;
   children: React.ReactNode;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -196,13 +199,31 @@ export function FilterPopover({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  useLayoutEffect(() => {
+    if (!open) {
+      setAnchor(null);
+      return;
+    }
+    const update = () => {
+      const el = rootRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const maxW = Math.min(352, window.innerWidth - 24);
+      const left = Math.min(Math.max(12, r.left), window.innerWidth - maxW - 12);
+      setAnchor({ top: r.bottom + 8, left });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [open]);
+
   const toggle = () => {
     if (open) swallowBehindPopup();
     onOpenChange(!open);
   };
 
   return (
-    <div className={`relative ${open ? "z-[80]" : ""} ${className}`}>
+    <div ref={rootRef} className={`relative ${open ? "z-[90]" : ""} ${className}`}>
       <button
         type="button"
         aria-label={ariaLabel ?? label}
@@ -221,11 +242,16 @@ export function FilterPopover({
       {open ? (
         <>
           <PopupDismissShield onDismiss={() => onOpenChange(false)} />
-          <div
-            className={`absolute left-0 top-full z-[90] mt-2 max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
-          >
-            {children}
-          </div>
+          {anchor ? (
+            <PopupPortal>
+              <div
+                className={`fixed z-[90] max-h-[min(70dvh,32rem)] overflow-y-auto rounded-md border bg-popover p-3 text-popover-foreground shadow-md ${contentClassName}`}
+                style={{ top: anchor.top, left: anchor.left }}
+              >
+                {children}
+              </div>
+            </PopupPortal>
+          ) : null}
         </>
       ) : null}
     </div>
