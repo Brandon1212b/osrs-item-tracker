@@ -174,6 +174,7 @@ export function FilterPopover({
   ariaLabel,
   className = "",
   contentClassName = "",
+  compact = false,
   children,
 }: {
   open: boolean;
@@ -183,6 +184,7 @@ export function FilterPopover({
   ariaLabel?: string;
   className?: string;
   contentClassName?: string;
+  compact?: boolean;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -206,7 +208,11 @@ export function FilterPopover({
         aria-label={ariaLabel ?? label}
         aria-expanded={open}
         onClick={toggle}
-        className="relative z-[90] flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-secondary/25 py-1.5 pl-2.5 pr-1 text-left"
+        className={`relative z-[90] flex min-w-0 items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/25 text-left ${
+          compact
+            ? "h-11 max-w-[8.75rem] px-2 sm:max-w-[14rem] sm:px-2.5"
+            : "w-full py-1.5 pl-2.5 pr-1"
+        }`}
       >
         {icon}
         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</span>
