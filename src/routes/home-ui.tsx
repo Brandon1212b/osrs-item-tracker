@@ -159,7 +159,7 @@ export function SkillsPanel({
             boxShadow: "inset 1px 1px 0 #000, inset -1px -1px 0 #3a3a3a",
           }}
         >
-          Total level: {hasLevels ? total : "\u2014"}
+          Total level: {hasLevels ? total : "-"}
         </div>
       </div>
     </div>
