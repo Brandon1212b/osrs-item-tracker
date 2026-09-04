@@ -105,16 +105,17 @@ export function HomeMain({
     slotMeta?.label,
     setMeta?.label ?? tierMeta?.label,
   ].filter(Boolean);
-  const gearLabel = gearLabelParts.join(" \u00b7 ");
+  const gearLabel = gearLabelParts.join(" \u00b7 ".replace("\\u00b7", "\u00b7"));
   const combatLevel = combatMeta ? playerSkills?.[combatMeta.skillKey] : undefined;
   const skillLevel = skill !== "all" ? playerSkills?.[skill] : undefined;
+  const sep = "\u00b7";
 
   const searchExpanded = !showGearSub || searchOpen;
 
   useEffect(() => {
-    if (!searchExpanded) return;
+    if (!searchOpen) return;
     searchRef.current?.focus();
-  }, [searchExpanded]);
+  }, [searchOpen]);
 
   const openSearch = () => {
     setGearOpen(false);
@@ -143,7 +144,7 @@ export function HomeMain({
           className="size-[22px] shrink-0"
         />
       }
-      label={`${gearLabel}${combatLevel != null ? ` \u00b7 ${combatLevel}` : ""}`}
+      label={`${gearLabel}${combatLevel != null ? ` ${sep} ${combatLevel}` : ""}`}
       ariaLabel="Gear filters"
     >
       <div className="flex flex-col gap-3">
@@ -239,7 +240,7 @@ export function HomeMain({
               ref={searchRef}
               value={query}
               onChange={(e) => patchSearch({ q: e.target.value })}
-              placeholder="Search items\u2026"
+              placeholder={"Search items" + "\u2026"}
               className={`pl-9 ${showGearSub ? "pr-9" : ""}`}
               aria-label="Search items"
             />
@@ -311,7 +312,7 @@ export function HomeMain({
             }
             label={
               skillMeta
-                ? `${skillMeta.label}${skillLevel != null ? ` \u00b7 ${skillLevel}` : ""}`
+                ? `${skillMeta.label}${skillLevel != null ? ` ${sep} ${skillLevel}` : ""}`
                 : "All items"
             }
             ariaLabel="Skill filter"
