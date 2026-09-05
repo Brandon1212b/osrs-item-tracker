@@ -22,8 +22,9 @@ const routeApi = getRouteApi("/");
 type Filter = "all" | "gear" | "skilling" | "supplies";
 type SortKey = "gainers" | "losers" | "expensive" | "cheap" | "value";
 
-const DEFAULT_RANGE: RangeKey = "6m";
+const DEFAULT_RANGE: RangeKey = "1m";
 const DEFAULT_SORT: SortKey = "losers";
+const DEFAULT_TIER = "end";
 
 const SCROLL_KEY = "ge-watch-home-scroll";
 
@@ -94,7 +95,7 @@ export function Home() {
         if (next.q) cleaned.q = next.q;
         if (next.combat && next.combat !== "all") cleaned.combat = next.combat;
         if (next.slot && next.slot !== "all") cleaned.slot = next.slot;
-        if (next.tier && next.tier !== "all") cleaned.tier = next.tier;
+        if (next.tier && next.tier !== DEFAULT_TIER) cleaned.tier = next.tier;
         if (next.set && next.set !== "all") cleaned.set = next.set;
         if (next.skill && next.skill !== "all") cleaned.skill = next.skill;
         if (next.supply && next.supply !== "all") cleaned.supply = next.supply;
@@ -255,7 +256,7 @@ export function Home() {
       filter: next,
       combat: "all",
       slot: "all",
-      tier: "all",
+      tier: next === "gear" ? DEFAULT_TIER : "all",
       set: "all",
       skill: "all",
       supply: "all",
