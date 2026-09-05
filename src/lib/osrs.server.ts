@@ -187,21 +187,28 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   return rows;
 }
 
-function scalePoints(
-  points: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[],
-  qty: number,
-) {
+type TimeseriesPoint = {
+  timestamp: number;
+  avgHighPrice: number | null;
+  avgLowPrice: number | null;
+  highPriceVolume?: number | null;
+  lowPriceVolume?: number | null;
+};
+
+function scalePoints(points: TimeseriesPoint[], qty: number) {
   if (qty === 1) return points;
   return points.map((p) => ({
     timestamp: p.timestamp,
     avgHighPrice: p.avgHighPrice != null ? p.avgHighPrice * qty : null,
     avgLowPrice: p.avgLowPrice != null ? p.avgLowPrice * qty : null,
+    highPriceVolume: p.highPriceVolume,
+    lowPriceVolume: p.lowPriceVolume,
   }));
 }
 
 function summarise(
   id: number,
-  points: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[],
+  points: TimeseriesPoint[],
   windowPoints = 180,
 ): Trend | null {
   const series = points
@@ -297,7 +304,7 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
         const primary = comp?.sources[0];
         const fetchId = primary ? await sourceGeId(primary.name) : row.id;
         if (fetchId == null) return;
-        const res = await api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+        const res = await api<{ data: TimeseriesPoint[] }>(
           `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
         );
         const points = scalePoints(res.data ?? [], primary?.qty ?? 1);
@@ -316,15 +323,23 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
   return promise;
 }
 
+export type PricePoint = {
+  t: number;
+  p: number;
+  /** Combined high+low GE volume for this timestep. */
+  v: number;
+};
+
 export type ItemDetail = {
   row: PriceRow;
   range: RangeKey;
   rangeLabel: string;
-  series: { t: number; p: number }[];
+  series: PricePoint[];
   min: number;
   max: number;
   avg: number;
   change: number;
+  volumeTotal: number;
   trend: Trend | null;
   equipment: EquipmentStats | null;
 };
@@ -417,7 +432,7 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
 
   const [res, equipment] = await Promise.all([
     fetchId != null
-      ? api<{ data: { timestamp: number; avgHighPrice: number | null; avgLowPrice: number | null }[] }>(
+      ? api<{ data: TimeseriesPoint[] }>(
           `/timeseries?timestep=${cfg.step}&id=${fetchId}`,
         )
       : Promise.resolve({ data: [] }),
@@ -430,15 +445,17 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
         p.avgHighPrice != null && p.avgLowPrice != null
           ? (p.avgHighPrice + p.avgLowPrice) / 2
           : (p.avgHighPrice ?? p.avgLowPrice);
-      return mid != null ? { t: p.timestamp * 1000, p: Math.round(mid) } : null;
+      const v = (p.highPriceVolume ?? 0) + (p.lowPriceVolume ?? 0);
+      return mid != null ? { t: p.timestamp * 1000, p: Math.round(mid), v } : null;
     })
-    .filter((x): x is { t: number; p: number } => x !== null)
+    .filter((x): x is PricePoint => x !== null)
     .slice(-cfg.points);
 
   const prices = series.map((s) => s.p);
   const first = prices[0] ?? 0;
   const last = prices[prices.length - 1] ?? 0;
   const trend = series.length ? summarise(id, raw, Math.max(cfg.points, 180)) : null;
+  const volumeTotal = series.reduce((sum, s) => sum + (s.v || 0), 0);
 
   const value: ItemDetail = {
     row,
@@ -449,6 +466,7 @@ export async function getItemDetail(names: string[], id: number, range: RangeKey
     max: prices.length ? Math.max(...prices) : row.high ?? 0,
     avg: prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : row.high ?? 0,
     change: first ? Math.round(((last - first) / first) * 1000) / 10 : 0,
+    volumeTotal,
     trend,
     equipment,
   };
