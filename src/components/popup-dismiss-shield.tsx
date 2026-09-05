@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * After a popup unmounts mid-gesture, iOS/Safari still delivers the leftover
@@ -29,10 +30,14 @@ export function swallowBehindPopup(ms = 500) {
   swallowUntil = Date.now() + ms;
 }
 
+function portal(node: React.ReactNode) {
+  if (typeof document === "undefined") return null;
+  return createPortal(node, document.body);
+}
+
 /**
- * Full-screen tap catcher. A near-invisible fill is required so iOS actually
- * hits this layer. Dismiss + swallow on pointerup so the leftover click cannot
- * open the item/method under the finger.
+ * Full-screen tap catcher, always mounted on document.body so sticky headers
+ * with backdrop-filter cannot trap `position: fixed` to the header strip.
  */
 export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
   useEffect(() => {
@@ -44,10 +49,10 @@ export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
     onDismiss();
   };
 
-  return (
+  return portal(
     <div
       aria-hidden
-      className="fixed inset-0 z-[60]"
+      className="fixed inset-0 z-[80]"
       style={{ backgroundColor: "rgba(0,0,0,0.01)", touchAction: "none" }}
       onPointerDown={(e) => {
         e.preventDefault();
@@ -70,6 +75,10 @@ export function PopupDismissShield({ onDismiss }: { onDismiss: () => void }) {
         e.preventDefault();
         e.stopPropagation();
       }}
-    />
+    />,
   );
+}
+
+export function PopupPortal({ children }: { children: React.ReactNode }) {
+  return portal(children);
 }

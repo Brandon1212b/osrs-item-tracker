@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Loader2, SlidersHorizontal, User, X } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
-import { PopupDismissShield, swallowBehindPopup } from "@/components/popup-dismiss-shield";
+import { PopupDismissShield, PopupPortal, swallowBehindPopup } from "@/components/popup-dismiss-shield";
 import {
   GEAR_COMBAT_FILTERS,
   SKILLING_FILTERS,
@@ -133,6 +133,9 @@ export function HomeFiltersSheet({
   onSortChange: (next: SortKey) => void;
   onRangeChange: (next: RangeKey) => void;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(null);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -142,148 +145,171 @@ export function HomeFiltersSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  useLayoutEffect(() => {
+    if (!open) {
+      setAnchor(null);
+      return;
+    }
+    const update = () => {
+      const el = rootRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setAnchor({ top: r.bottom + 8, right: Math.max(12, window.innerWidth - r.right) });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [open]);
+
   const toggle = () => {
     if (open) swallowBehindPopup();
     onOpenChange(!open);
   };
 
   return (
-    <div className={`relative shrink-0 ${open ? "z-[80]" : ""}`}>
+    <div ref={rootRef} className={`relative shrink-0 ${open ? "z-[90]" : ""}`}>
       <HomeFiltersButton activeRsn={activeRsn} onClick={toggle} />
       {open ? (
         <>
           <PopupDismissShield onDismiss={() => onOpenChange(false)} />
-          <div className="absolute right-0 top-full z-[90] mt-2 w-[min(22rem,calc(100vw-1.5rem))] rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
-            <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto pr-0.5">
-              <p className="text-sm font-semibold text-foreground">Filters</p>
-              <section className="space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Player
-                </p>
-                <form
-                  className="flex items-center gap-1.5"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    loadRsn(rsnDraft);
-                  }}
-                >
-                  <div className="relative min-w-0 flex-1">
-                    <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      value={rsnDraft}
-                      onChange={(e) => setRsnDraft(e.target.value)}
-                      placeholder="RSN…"
-                      className="h-10 pl-8 pr-8 text-base"
-                      aria-label="Old School RuneScape username"
-                      autoComplete="username"
-                    />
-                    {activeRsn && (
+          {anchor ? (
+            <PopupPortal>
+              <div
+                className="fixed z-[90] w-[min(22rem,calc(100vw-1.5rem))] rounded-md border bg-popover p-3 text-popover-foreground shadow-md"
+                style={{ top: anchor.top, right: anchor.right }}
+              >
+                <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto pr-0.5">
+                  <p className="text-sm font-semibold text-foreground">Filters</p>
+                  <section className="space-y-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      Player
+                    </p>
+                    <form
+                      className="flex items-center gap-1.5"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        loadRsn(rsnDraft);
+                      }}
+                    >
+                      <div className="relative min-w-0 flex-1">
+                        <User className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={rsnDraft}
+                          onChange={(e) => setRsnDraft(e.target.value)}
+                          placeholder="RSN..."
+                          className="h-10 pl-8 pr-8 text-base"
+                          aria-label="Old School RuneScape username"
+                          autoComplete="username"
+                        />
+                        {activeRsn && (
+                          <button
+                            type="button"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label="Clear player"
+                            onClick={clearRsn}
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        )}
+                      </div>
                       <button
-                        type="button"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        aria-label="Clear player"
-                        onClick={clearRsn}
+                        type="submit"
+                        disabled={!rsnDraft.trim() || playerQuery.isFetching}
+                        className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary/60 px-3 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
                       >
-                        <X className="size-3.5" />
+                        {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
                       </button>
+                    </form>
+                    {activeRsn && !playerQuery.isError && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Locked items hide gear above {activeRsn}'s levels.
+                      </p>
                     )}
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={!rsnDraft.trim() || playerQuery.isFetching}
-                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary/60 px-3 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
-                  >
-                    {playerQuery.isFetching ? <Loader2 className="size-3.5 animate-spin" /> : "Load"}
-                  </button>
-                </form>
-                {activeRsn && !playerQuery.isError && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Locked items hide gear above {activeRsn}'s levels.
-                  </p>
-                )}
-                {playerQuery.isError && (
-                  <p className="text-[11px] text-destructive">
-                    {(playerQuery.error as Error)?.message ?? "Lookup failed"}
-                  </p>
-                )}
-              </section>
+                    {playerQuery.isError && (
+                      <p className="text-[11px] text-destructive">
+                        {(playerQuery.error as Error)?.message ?? "Lookup failed"}
+                      </p>
+                    )}
+                  </section>
 
-              <section className="space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Category</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {CATEGORIES.map((c) => (
-                    <Chip
-                      key={c.key}
-                      active={filter === c.key}
-                      onClick={() => onFilterChange(c.key)}
-                      label={c.label}
-                    />
-                  ))}
-                </div>
-                {filter === "gear" && (
-                  <>
-                    <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Gear style</p>
+                  <section className="space-y-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Category</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {GEAR_COMBAT_FILTERS.map((c) => (
+                      {CATEGORIES.map((c) => (
                         <Chip
                           key={c.key}
-                          active={gearCombat === c.key}
-                          onClick={() => onCombatChange(gearCombat === c.key ? "all" : c.key)}
+                          active={filter === c.key}
+                          onClick={() => onFilterChange(c.key)}
                           label={c.label}
                         />
                       ))}
                     </div>
-                  </>
-                )}
-                {filter === "skilling" && (
-                  <>
-                    <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Skill</p>
+                    {filter === "gear" && (
+                      <>
+                        <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Gear style</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {GEAR_COMBAT_FILTERS.map((c) => (
+                            <Chip
+                              key={c.key}
+                              active={gearCombat === c.key}
+                              onClick={() => onCombatChange(gearCombat === c.key ? "all" : c.key)}
+                              label={c.label}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {filter === "skilling" && (
+                      <>
+                        <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Skill</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {SKILLING_FILTERS.map((c) => (
+                            <Chip
+                              key={c.key}
+                              active={skill === c.key}
+                              onClick={() => onSkillChange(skill === c.key ? "all" : c.key)}
+                              label={c.label}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {filter === "supplies" && (
+                      <>
+                        <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Supplies</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {SUPPLIES_FILTERS.map((c) => (
+                            <Chip
+                              key={c.key}
+                              active={supplyType === c.key}
+                              onClick={() => onSupplyChange(supplyType === c.key ? "all" : c.key)}
+                              label={c.label}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </section>
+                  <section className="space-y-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sort</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {SKILLING_FILTERS.map((c) => (
-                        <Chip
-                          key={c.key}
-                          active={skill === c.key}
-                          onClick={() => onSkillChange(skill === c.key ? "all" : c.key)}
-                          label={c.label}
-                        />
+                      {SORTS.map((s) => (
+                        <Chip key={s.key} active={sort === s.key} onClick={() => onSortChange(s.key)} label={s.label} />
                       ))}
                     </div>
-                  </>
-                )}
-                {filter === "supplies" && (
-                  <>
-                    <p className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Supplies</p>
+                  </section>
+                  <section className="space-y-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Range</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {SUPPLIES_FILTERS.map((c) => (
-                        <Chip
-                          key={c.key}
-                          active={supplyType === c.key}
-                          onClick={() => onSupplyChange(supplyType === c.key ? "all" : c.key)}
-                          label={c.label}
-                        />
+                      {RANGES.map((r) => (
+                        <Chip key={r.key} active={range === r.key} onClick={() => onRangeChange(r.key)} label={r.label} />
                       ))}
                     </div>
-                  </>
-                )}
-              </section>
-              <section className="space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sort</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {SORTS.map((s) => (
-                    <Chip key={s.key} active={sort === s.key} onClick={() => onSortChange(s.key)} label={s.label} />
-                  ))}
+                  </section>
                 </div>
-              </section>
-              <section className="space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Range</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {RANGES.map((r) => (
-                    <Chip key={r.key} active={range === r.key} onClick={() => onRangeChange(r.key)} label={r.label} />
-                  ))}
-                </div>
-              </section>
-            </div>
-          </div>
+              </div>
+            </PopupPortal>
+          ) : null}
         </>
       ) : null}
     </div>
