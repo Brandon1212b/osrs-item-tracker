@@ -1,5 +1,6 @@
 import { COMPOSITE_BY_ID, COMPOSITE_ITEMS } from "./composite-items";
 import { geLookupName } from "./ge-name-aliases";
+import { cacheGet, cacheSet } from "./durable-cache";
 
 const BASE = "https://prices.runescape.wiki/api/v1/osrs";
 const UA = "OSRS Gear & Skilling Price Tracker - lovable.app";
@@ -111,6 +112,11 @@ function resolveMapping(
 
 export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   if (snapshotCache && Date.now() - snapshotCache.at < 2 * MIN) return snapshotCache.value;
+  const durableSnap = await cacheGet<PriceRow[]>("snapshot", 2 * MIN);
+  if (durableSnap) {
+    snapshotCache = { at: Date.now(), value: durableSnap };
+    return durableSnap;
+  }
 
   const [mapping, latest, day] = await Promise.all([
     getMapping(),
@@ -184,6 +190,7 @@ export async function getSnapshot(names: string[]): Promise<PriceRow[]> {
   }
 
   snapshotCache = { at: Date.now(), value: rows };
+  await cacheSet("snapshot", rows, 2 * MIN);
   return rows;
 }
 
@@ -290,6 +297,12 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
   const ttl = range === "1d" || range === "1w" ? 5 * MIN : 60 * MIN;
   if (cached && Date.now() - cached.at < ttl) return cached.value;
 
+  const durable = await cacheGet<Record<number, Trend>>(`trends:${range}`, ttl);
+  if (durable) {
+    trendCaches.set(range, { at: Date.now(), value: durable });
+    return durable;
+  }
+
   const inFlight = trendInFlights.get(range);
   if (inFlight) return inFlight;
 
@@ -297,7 +310,7 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
     const rows = await getSnapshot(names);
     const cfg = RANGES[range];
     const result: Record<number, Trend> = {};
-    await pool(rows, 10, async (row) => {
+    await pool(rows, 20, async (row) => {
       try {
         const comp = COMPOSITE_BY_ID.get(row.id);
         if (comp && (comp.fixedCoins != null || comp.sources.length === 0)) return;
@@ -315,6 +328,7 @@ export async function getTrends(names: string[], range: RangeKey = "6m"): Promis
       }
     });
     trendCaches.set(range, { at: Date.now(), value: result });
+    await cacheSet(`trends:${range}`, result, ttl);
     trendInFlights.delete(range);
     return result;
   })();
@@ -515,8 +529,14 @@ export async function getPlayerStats(rsn: string): Promise<PlayerStatsResult> {
 }
 
 export async function getItemRequirementsMap(names: string[]): Promise<Record<number, Record<string, number>>> {
-  if (requirementsMapCache && Date.now() - requirementsMapCache.at < 24 * 60 * MIN) {
+  const reqTtl = 24 * 60 * MIN;
+  if (requirementsMapCache && Date.now() - requirementsMapCache.at < reqTtl) {
     return requirementsMapCache.value;
+  }
+  const durableReqs = await cacheGet<Record<number, Record<string, number>>>("item-reqs", reqTtl);
+  if (durableReqs) {
+    requirementsMapCache = { at: Date.now(), value: durableReqs };
+    return durableReqs;
   }
 
   const rows = await getSnapshot(names);
@@ -534,5 +554,6 @@ export async function getItemRequirementsMap(names: string[]): Promise<Record<nu
   });
 
   requirementsMapCache = { at: Date.now(), value: result };
+  await cacheSet("item-reqs", result, reqTtl);
   return result;
 }
