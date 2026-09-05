@@ -155,11 +155,25 @@ function ItemPage() {
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold tabular-nums gold-text">{gp(price)}</div>
-              {row.highalch != null && (
-                <div className="mt-0.5 text-xs tabular-nums text-muted-foreground">
-                  High alch {gp(row.highalch)}
+              <div className="mt-1.5 space-y-0.5 text-xs tabular-nums">
+                <div className="flex items-baseline justify-end gap-2">
+                  <span className="text-muted-foreground">Buy</span>
+                  <span className="font-semibold text-foreground">{gp(row.high)}</span>
                 </div>
-              )}
+                <div className="flex items-baseline justify-end gap-2">
+                  <span className="text-muted-foreground">Sell</span>
+                  <span className="font-semibold text-foreground">{gp(row.low)}</span>
+                </div>
+                {row.high != null && row.low != null && row.high !== row.low && (
+                  <div className="text-[11px] text-muted-foreground">Spread {gp(row.high - row.low)}</div>
+                )}
+                {row.highalch != null && (
+                  <div className="text-muted-foreground">High alch {gp(row.highalch)}</div>
+                )}
+                {row.volume != null && (
+                  <div className="text-muted-foreground">24h vol {formatCompact(row.volume)}</div>
+                )}
+              </div>
               <span
                 className="mt-1.5 inline-block rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: `var(--${signal.token})`, color: `var(--${signal.token}-foreground)` }}
@@ -189,7 +203,14 @@ function ItemPage() {
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pr-16">
-              <h2 className="text-lg font-semibold">Price over {d.rangeLabel}</h2>
+              <h2 className="text-lg font-semibold">
+                Price over {d.rangeLabel}
+                {d.volumeTotal > 0 && (
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">
+                    · vol {formatCompact(d.volumeTotal)}
+                  </span>
+                )}
+              </h2>
               <div className="flex flex-wrap gap-1.5">
                 {RANGES.map((r) => (
                   <button
