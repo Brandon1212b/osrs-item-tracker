@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { gp } from "@/lib/format";
+import { formatCompact, gp } from "@/lib/format";
 
-type Point = { t: number; p: number };
+type Point = { t: number; p: number; v?: number };
 
 export function PriceChart({
   series,
@@ -22,12 +22,19 @@ export function PriceChart({
     );
   }
 
+  const volumes = series.map((s) => s.v ?? 0);
+  const hasVolume = volumes.some((v) => v > 0);
+  const maxVol = Math.max(0, ...volumes);
+
   const w = 800;
-  const h = 280;
+  const h = hasVolume ? 340 : 280;
   const padL = 8;
   const padR = 8;
   const padT = 28;
-  const padB = 28;
+  const padB = 8;
+  const volH = hasVolume ? 64 : 0;
+  const gap = hasVolume ? 10 : 0;
+  const priceBottom = h - padB - volH - gap;
   const prices = series.map((s) => s.p);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
@@ -37,14 +44,15 @@ export function PriceChart({
   const lowIdx = prices.indexOf(min);
 
   const x = (i: number) => padL + (i / (series.length - 1)) * (w - padL - padR);
-  const y = (p: number) => padT + (1 - (p - min) / span) * (h - padT - padB);
+  const y = (p: number) => padT + (1 - (p - min) / span) * (priceBottom - padT);
+  const barW = Math.max(1.2, ((w - padL - padR) / series.length) * 0.72);
 
   // Percent positions for HTML overlays (match SVG viewBox)
   const pctX = (i: number) => `${(x(i) / w) * 100}%`;
   const pctY = (p: number) => `${(y(p) / h) * 100}%`;
 
   const line = series.map((s, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(s.p).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(series.length - 1)},${h - padB} L${padL},${h - padB} Z`;
+  const area = `${line} L${x(series.length - 1)},${priceBottom} L${padL},${priceBottom} Z`;
   const gid = `chart-${tone}`;
 
   const fmtTime = (t: number) =>
@@ -54,7 +62,7 @@ export function PriceChart({
 
   return (
     <div className="relative">
-      <div className="relative h-72 w-full">
+      <div className={`relative w-full ${hasVolume ? "h-[22rem]" : "h-72"}`}>
         <svg
           viewBox={`0 0 ${w} ${h}`}
           className="absolute inset-0 h-full w-full touch-none"
@@ -63,6 +71,22 @@ export function PriceChart({
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             const rel = ((e.clientX - r.left) / r.width) * w;
+            const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
+            setHover(Math.min(series.length - 1, Math.max(0, i)));
+          }}
+          onTouchStart={(e) => {
+            const t = e.touches[0];
+            if (!t) return;
+            const r = e.currentTarget.getBoundingClientRect();
+            const rel = ((t.clientX - r.left) / r.width) * w;
+            const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
+            setHover(Math.min(series.length - 1, Math.max(0, i)));
+          }}
+          onTouchMove={(e) => {
+            const t = e.touches[0];
+            if (!t) return;
+            const r = e.currentTarget.getBoundingClientRect();
+            const rel = ((t.clientX - r.left) / r.width) * w;
             const i = Math.round(((rel - padL) / (w - padL - padR)) * (series.length - 1));
             setHover(Math.min(series.length - 1, Math.max(0, i)));
           }}
@@ -78,8 +102,8 @@ export function PriceChart({
               key={f}
               x1={padL}
               x2={w - padR}
-              y1={padT + f * (h - padT - padB)}
-              y2={padT + f * (h - padT - padB)}
+              y1={padT + f * (priceBottom - padT)}
+              y2={padT + f * (priceBottom - padT)}
               stroke="var(--border)"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
@@ -87,6 +111,26 @@ export function PriceChart({
           ))}
           <path d={area} fill={`url(#${gid})`} />
           <path d={line} fill="none" stroke={`var(--${tone})`} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+
+          {hasVolume &&
+            series.map((s, i) => {
+              const v = s.v ?? 0;
+              const bh = maxVol > 0 ? (v / maxVol) * volH : 0;
+              const bx = x(i) - barW / 2;
+              const by = h - padB - bh;
+              const activeBar = hover === i;
+              return (
+                <rect
+                  key={i}
+                  x={bx}
+                  y={by}
+                  width={barW}
+                  height={Math.max(0, bh)}
+                  fill={activeBar ? `var(--${tone})` : "var(--muted-foreground)"}
+                  opacity={activeBar ? 0.85 : 0.28}
+                />
+              );
+            })}
 
           {active && hover != null && (
             <line
@@ -135,6 +179,7 @@ export function PriceChart({
           {active ? (
             <span className="rounded-md bg-background/90 px-2.5 py-1 font-medium shadow-sm backdrop-blur">
               {fmtTime(active.t)} · {gp(active.p)}
+              {hasVolume ? ` · vol ${formatCompact(active.v ?? 0)}` : ""}
             </span>
           ) : null}
         </div>
