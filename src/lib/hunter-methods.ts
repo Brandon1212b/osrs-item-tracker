@@ -270,5 +270,7 @@ export function hunterMethodItemNames(): string[] {
     if (m.output) names.add(m.output.name);
     if (m.outputs) for (const p of m.outputs) names.add(p.name);
   }
+  names.add("Letvek");
+  names.add("Stymphike feather");
   return [...names].filter((n) => n !== "Coins");
 }

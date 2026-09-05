@@ -68,4 +68,37 @@ export const HUNTER_RATE_TABLES: ActivityMethod[] = [
     intensity: "medium",
     notes: "Wiki herbiboar XP/h table. Herb list is MMG at 99 Herblore.",
   },
+  {
+    id: "letvek",
+    label: "Letvek (Vampyrium box traps)",
+    skillKey: "hunter",
+    level: 76,
+    rateBands: [
+      { level: 76, xpPerHour: 95_000 },
+      { level: 80, xpPerHour: 106_000 },
+      { level: 99, xpPerHour: 115_000 },
+    ],
+    consumables: [],
+    rewards: [{ name: "Letvek", expectedQtyPerHour: 520 }],
+    intensity: "medium",
+    notes:
+      "Blood Moon Rises / Vampyrium. 208.5 XP per catch. Community ~500–550 bait/hr; lazy box-reset ~104k at 99. Bait for Stymphikes.",
+  },
+  {
+    id: "stymphike",
+    label: "Stymphike (Vampyrium)",
+    skillKey: "hunter",
+    level: 82,
+    rateBands: [
+      { level: 82, xpPerHour: 120_000 },
+      { level: 85, xpPerHour: 130_000 },
+      { level: 86, xpPerHour: 140_000 },
+      { level: 99, xpPerHour: 143_000 },
+    ],
+    consumables: [{ name: "Letvek", qty: 90 }],
+    rewards: [{ name: "Stymphike feather", expectedQtyPerHour: 1_335 }],
+    intensity: "low",
+    notes:
+      "Blood Moon Rises / Vampyrium. 1,350 XP per spear. Wiki XP table; 15 feathers/catch. Hide-in-bush auto-spear is AFK; click the bird for slightly better uptime. ~1 Letvek per catch (sometimes 2–3). Feathers turn in for limited off-task Venators.",
+  },
 ];
